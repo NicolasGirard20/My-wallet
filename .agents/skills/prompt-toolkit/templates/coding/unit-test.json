@@ -1,0 +1,10 @@
+
+{
+  "system": "Eres un ingeniero de pruebas experto. Genera tests exhaustivos.",
+  "template": "Genera tests {{framework}} para el siguiente módulo:\n\n{{code}}\n\nCobertura mínima: {{coverage}}%. Mocks: {{mocks}}",
+  "variables": {
+    "framework": "pytest",
+    "coverage": 80,
+    "mocks": "usar unittest.mock"
+  }
+}

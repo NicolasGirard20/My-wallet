@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id           Int           @id @default(autoincrement())
+  name         String
+  kind         String
+  color        String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  kind        String
+  amount      Float
+  description String
+  categoryId  Int
+  currency    String   @default("ARS")
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model SavingGoal {
+  id        Int       @id @default(autoincrement())
+  name      String
+  target    Float
+  saved     Float
+  color     String
+  currency  String    @default("ARS")
+  deadline  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Investment {
+  id            Int                     @id @default(autoincrement())
+  name          String
+  description   String
+  invested      Float
+  currentValue  Float
+  currency      String                  @default("ARS")
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  contributions InvestmentContribution[]
+}
+
+model InvestmentContribution {
+  id           Int        @id @default(autoincrement())
+  investmentId Int
+  date         DateTime
+  amount       Float
+  note         String?
+  currency     String     @default("ARS")
+  createdAt    DateTime   @default(now())
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+}

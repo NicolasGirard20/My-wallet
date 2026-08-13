@@ -1,0 +1,20 @@
+
+{
+  "version": "1.0.0",
+  "templates": [
+    {
+      "id": "refactor",
+      "name": "Refactor de código",
+      "path": "coding/refactor.md",
+      "variables": ["lang", "code", "goal"],
+      "tags": ["coding", "maintenance"]
+    },
+    {
+      "id": "security-review",
+      "name": "Revisión de seguridad",
+      "path": "review/security-review.md",
+      "variables": ["file_path", "code_snippet"],
+      "tags": ["security", "review"]
+    }
+  ]
+}

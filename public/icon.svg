@@ -1,0 +1,41 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .background { fill: black; }
+      .foreground { fill: white; }
+      .accent { fill: #d4af37; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: white; }
+      .foreground { fill: black; }
+      .accent { fill: #d4af37; }
+    }
+  </style>
+  <rect class="background" width="180" height="180" rx="37" />
+  <rect x="19" y="19" width="142" height="142" rx="31" class="foreground" opacity="0.08" />
+  <g>
+    <path
+      d="M50 64C50 53.5066 58.5066 45 69 45H121C133.15 45 143 54.8497 143 67V117C143 129.15 133.15 139 121 139H69C58.5066 139 50 130.493 50 120V64Z"
+      class="foreground"
+    />
+    <path
+      d="M50 79H143V105C143 117.15 133.15 127 121 127H72C59.8497 127 50 117.15 50 105V79Z"
+      class="background"
+      opacity="0.12"
+    />
+    <path
+      d="M63 60C63 57.2386 65.2386 55 68 55H116C119.314 55 122 57.6863 122 61C122 64.3137 119.314 67 116 67H68C65.2386 67 63 64.7614 63 62V60Z"
+      class="accent"
+    />
+    <path
+      d="M106 86C106 80.4772 110.477 76 116 76H138C140.761 76 143 78.2386 143 81V101C143 103.761 140.761 106 138 106H116C110.477 106 106 101.523 106 96V86Z"
+      class="foreground"
+    />
+    <circle cx="125.5" cy="91" r="4.5" class="background" />
+    <path
+      d="M71 79H114C118.418 79 122 82.5817 122 87C122 91.4183 118.418 95 114 95H71C66.5817 95 63 91.4183 63 87C63 82.5817 66.5817 79 71 79Z"
+      class="background"
+      opacity="0.16"
+    />
+  </g>
+</svg>
