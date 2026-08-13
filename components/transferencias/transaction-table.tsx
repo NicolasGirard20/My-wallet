@@ -40,6 +40,7 @@ export function TransactionTable({
 }) {
   const { transactions, categories, deleteTransaction } = useData()
   const [query, setQuery] = useState("")
+  const [dateFilter, setDateFilter] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [sortKey, setSortKey] = useState<SortKey>("date")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
@@ -55,25 +56,39 @@ export function TransactionTable({
 
   const rows = useMemo(() => {
     let list = transactions.filter((t) => t.kind === kind)
+
     if (categoryFilter !== "all") {
       list = list.filter((t) => t.categoryId === Number(categoryFilter))
     }
+
+    if (dateFilter) {
+      list = list.filter((t) => t.date.startsWith(dateFilter))
+    }
+
     if (query.trim()) {
       const q = query.toLowerCase()
-      list = list.filter(
-        (t) =>
+      list = list.filter((t) => {
+        const categoryName = catMap.get(t.categoryId)?.name.toLowerCase() ?? ""
+        const formattedDate = formatDate(t.date).toLowerCase()
+
+        return (
           t.description.toLowerCase().includes(q) ||
-          (catMap.get(t.categoryId)?.name.toLowerCase().includes(q) ?? false),
-      )
+          categoryName.includes(q) ||
+          t.date.includes(q) ||
+          formattedDate.includes(q)
+        )
+      })
     }
+
     list = [...list].sort((a, b) => {
       let cmp = 0
       if (sortKey === "date") cmp = a.date.localeCompare(b.date)
       else cmp = a.amount - b.amount
       return sortDir === "asc" ? cmp : -cmp
     })
+
     return list
-  }, [transactions, kind, categoryFilter, query, catMap, sortKey, sortDir])
+  }, [transactions, kind, categoryFilter, dateFilter, query, catMap, sortKey, sortDir])
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -86,31 +101,42 @@ export function TransactionTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por descripción o categoría"
+            placeholder="Buscar por descripción, categoría o fecha"
             className="pl-9"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={(v) => v && setCategoryFilter(v)}>
-          <SelectTrigger className="sm:w-56">
-            <SelectValue placeholder="Categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="all">Todas las categorías</SelectItem>
-              {kindCategories.map((c) => (
-                <SelectItem key={c.id} value={String(c.id)}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+
+        <div className="flex items-center gap-3">
+          <Input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full lg:w-44"
+            aria-label="Filtrar por fecha"
+          />
+
+          <Select value={categoryFilter} onValueChange={(v) => v && setCategoryFilter(v)}>
+            <SelectTrigger className="w-full sm:w-56">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {kindCategories.map((c) => (
+                  <SelectItem key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {rows.length === 0 ? (

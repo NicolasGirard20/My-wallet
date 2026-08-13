@@ -2,6 +2,11 @@ import * as XLSX from "xlsx"
 import { CHART_COLORS } from "@/components/shared/color-picker"
 import type { Category, Currency, Transaction, TransactionKind } from "./types"
 
+// ─── Limits ───────────────────────────────────────────────────────────────────
+
+export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
+export const MAX_ROWS = 5000
+
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 function montoHeader(currency: Currency) {
@@ -50,6 +55,34 @@ export function exportTransactionsToExcel(
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
+export const ALLOWED_EXTENSIONS = [".xlsx", ".xls", ".csv"] as const
+
+export enum ParseErrorType {
+  READ_FAILURE = "read_failure",
+  NO_SHEETS = "no_sheets",
+  EMPTY_FILE = "empty_file",
+  INVALID_EXTENSION = "invalid_extension",
+  FILE_TOO_LARGE = "file_too_large",
+}
+
+export class ParseFileError extends Error {
+  type: ParseErrorType
+
+  constructor(type: ParseErrorType, message: string) {
+    super(message)
+    this.name = "ParseFileError"
+    this.type = type
+  }
+}
+
+export function validateFileExtension(filename: string): string | null {
+  const ext = filename.toLowerCase().slice(filename.lastIndexOf("."))
+  if (!ALLOWED_EXTENSIONS.includes(ext as typeof ALLOWED_EXTENSIONS[number])) {
+    return ext || "(sin extensión)"
+  }
+  return null
+}
+
 export interface ExcelRow {
   Tipo?: string
   Fecha?: string
@@ -61,17 +94,18 @@ export interface ExcelRow {
 export interface ParsedExcelResult {
   validRows: ValidatedImportRow[]
   errors: ImportRowError[]
-  newCategories: Category[] // categories that need to be created
+  structuralErrors: string[]
+  newCategories: Category[]
 }
 
 export interface ValidatedImportRow {
-  rowIndex: number // 0-based data row index
+  rowIndex: number
   kind: TransactionKind
   description: string
   categoryName: string
-  categoryId: number // id of existing category or placeholder (negative) for new one
-  amount: number // in its own currency
-  date: string // ISO
+  categoryId: number
+  amount: number
+  date: string
 }
 
 export interface ImportRowError {
@@ -83,9 +117,18 @@ export interface ImportRowError {
 /** Accepts a File and returns parsed rows */
 export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
   const buffer = await file.arrayBuffer()
-  const wb = XLSX.read(buffer, { type: "array" })
+  const wb = XLSX.read(buffer, { type: "array", cellDates: true })
+
+  if (!wb.SheetNames || wb.SheetNames.length === 0) {
+    throw new ParseFileError(ParseErrorType.NO_SHEETS, "El archivo no contiene hojas de cálculo.")
+  }
+
   const sheetName = wb.SheetNames[0]
   const sheet = wb.Sheets[sheetName]
+  if (!sheet || !sheet["!ref"]) {
+    throw new ParseFileError(ParseErrorType.EMPTY_FILE, `La hoja "${sheetName}" está vacía.`)
+  }
+
   return XLSX.utils.sheet_to_json<ExcelRow>(sheet, { defval: "" })
 }
 
@@ -95,9 +138,6 @@ export function validateExcelRows(
   categories: Category[],
   currency: Currency,
 ): ParsedExcelResult {
-  const validRows: ValidatedImportRow[] = []
-  const errors: ImportRowError[] = []
-  const newCategoryMap = new Map<string, Category>() // key: "kind:name"
   const montoKey = montoHeader(currency)
 
   const catLookup = new Map<string, Category>()
@@ -107,13 +147,52 @@ export function validateExcelRows(
 
   let colorIdx = 0
 
+  // ── Structural checks ────────────────────────────────────────────────────
+  const structuralErrors: string[] = []
+  const validRows: ValidatedImportRow[] = []
+  const errors: ImportRowError[] = []
+  const newCategoryMap = new Map<string, Category>()
+
+  let montoAlias: string | undefined
+
+  // Validate monto column header exists — tolerate common variations
+  if (rows.length > 0) {
+    const firstRowKeys = Object.keys(rows[0])
+    const hasMontoColumn = firstRowKeys.some((k) => k === montoKey)
+    montoAlias = !hasMontoColumn
+      ? firstRowKeys.find((k) => /^monto/i.test(k.trim()))
+      : undefined
+
+    if (!hasMontoColumn && !montoAlias) {
+      structuralErrors.push(
+        `No se encontró la columna "${montoKey}". Columnas detectadas: ${firstRowKeys.join(", ") || "(ninguna)"}. ` +
+          `Asegurate de que el encabezado coincida exactamente, incluida la moneda entre paréntesis.`,
+      )
+    }
+  } else {
+    structuralErrors.push("El archivo no contiene filas de datos.")
+  }
+
+  if (structuralErrors.length > 0) {
+    return { validRows: [], errors, structuralErrors, newCategories: [] }
+  }
+
+  // Validate row count
+  if (rows.length > MAX_ROWS) {
+    structuralErrors.push(
+      `El archivo tiene ${rows.length} filas. El máximo permitido es ${MAX_ROWS}. ` +
+        `Dividí el archivo en partes más chicas.`,
+    )
+    return { validRows: [], errors, structuralErrors, newCategories: [] }
+  }
+
   rows.forEach((row, rowIndex) => {
     // Skip empty rows
     const tipo = String(row.Tipo ?? "").trim()
     const fecha = String(row.Fecha ?? "").trim()
     const desc = String(row.Descripción ?? "").trim()
     const catName = String(row.Categoría ?? "").trim()
-    const montoRaw = row[montoKey]
+    const montoRaw = row[montoAlias ?? montoKey]
 
     if (!tipo && !fecha && !desc && !catName && !montoRaw) return // fully empty
 
@@ -133,7 +212,11 @@ export function validateExcelRows(
     // Validate Monto
     const amount = typeof montoRaw === "number" ? montoRaw : Number(String(montoRaw).replace(",", "."))
     if (!Number.isFinite(amount) || amount <= 0) {
-      errors.push({ rowIndex, reason: `Monto inválido: "${montoRaw}". Debe ser un número mayor a cero.`, raw: row })
+      const actualKey = montoAlias ?? montoKey
+      const hint = !montoRaw
+        ? ` El valor está vacío. Asegurate de que la columna "${actualKey}" tenga un número.`
+        : " Debe ser un número mayor a cero (usá punto para decimales, ej: 1500.50)."
+      errors.push({ rowIndex, reason: `Monto inválido: "${montoRaw}".${hint}`, raw: row })
       return
     }
 
@@ -151,7 +234,11 @@ export function validateExcelRows(
         const excelEpoch = new Date(1899, 11, 30)
         date = new Date(excelEpoch.getTime() + serial * 86400000).toISOString()
       } else {
-        errors.push({ rowIndex, reason: `Fecha inválida: "${fecha}". Formato esperado: AAAA-MM-DD.`, raw: row })
+        errors.push({
+          rowIndex,
+          reason: `Fecha inválida: "${fecha}". Formatos aceptados: AAAA-MM-DD (ej: 2026-08-13), DD/MM/AAAA (ej: 13/08/2026) o número de serie de Excel.`,
+          raw: row,
+        })
         return
       }
     }
@@ -194,6 +281,7 @@ export function validateExcelRows(
   return {
     validRows,
     errors,
+    structuralErrors,
     newCategories: Array.from(newCategoryMap.values()),
   }
 }

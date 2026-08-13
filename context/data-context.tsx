@@ -47,7 +47,7 @@ interface DataContextValue {
   updateTransaction: (id: number, tx: Partial<Omit<Transaction, "id" | "currency">>) => Promise<void>
   deleteTransaction: (id: number) => Promise<void>
 
-  addCategory: (name: string, kind: TransactionKind, color: string) => Promise<void>
+  addCategory: (name: string, kind: TransactionKind, color: string) => Promise<Category>
   updateCategory: (id: number, name: string, color: string) => Promise<void>
   deleteCategory: (id: number) => Promise<void>
   categoriesByKind: (kind: TransactionKind) => Category[]
@@ -148,9 +148,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const addCategory = useCallback(async (name: string, kind: TransactionKind, color: string) => {
-    await createCategoryAction({ name, kind, color })
+    const created = await createCategoryAction({ name, kind, color })
     const cats = await getCategoriesAction()
     setCategories(cats)
+    return created
   }, [])
 
   const updateCategory = useCallback(async (id: number, name: string, color: string) => {

@@ -73,7 +73,7 @@ En resumen, el agente no debe crear o modificar `DESIGN.md`; debe mantener actua
 
 ## Arquitectura General
 
-Proyecto **Next.js 16 con App Router**, 100% frontend sin backend, base de datos ni API. Todo el estado es local en React (memoria volátil) con persistencia mínima en `localStorage`.
+Proyecto **Next.js 16 con App Router** con arquitectura **3 capas**: Client Components → Server Actions → Service Layer → PostgreSQL (Prisma ORM). Los contexts de React mantienen caché local sincronizada con el backend mediante Server Actions.
 
 ### Estructura de carpetas
 
@@ -97,6 +97,21 @@ app/                          # Next.js App Router (páginas y layouts)
     inversiones/
       page.tsx                # Listado de inversiones
       [id]/page.tsx           # Detalle de inversión + contribuciones
+  actions/                    # Server Actions — validación + auth guard + mapping
+    auth.ts                   # loginAction, logoutAction, getSessionAction, changePasswordAction
+    transactions.ts           # CRUD + import transacciones
+    categories.ts             # CRUD categorías
+    savings.ts                # CRUD metas de ahorro
+    investments.ts            # CRUD inversiones + contribuciones
+  service/                    # Capa de datos — queries Prisma
+    db.ts                     # Singleton PrismaClient con adapter-pg
+    auth.service.ts           # validación y hashing de contraseñas (bcryptjs)
+    transaction.service.ts    # CRUD transacciones
+    category.service.ts       # CRUD categorías
+    saving-goal.service.ts    # CRUD metas de ahorro
+    investment.service.ts     # CRUD inversiones + transacciones atómicas
+  lib/
+    session.ts                # Sesión cifrada con iron-session (cookie)
 
 components/
   providers.tsx               # Composición de providers globales
@@ -126,10 +141,10 @@ components/
     separator.tsx, sheet.tsx, sonner.tsx, table.tsx
     tabs.tsx, tooltip.tsx
 
-context/
-  auth-context.tsx            # AuthProvider: login hardcodeado, sesión en localStorage
+context/                      # Caché local del lado cliente
+  auth-context.tsx            # AuthProvider: login/logout, sesión en memoria + cookie
   currency-context.tsx        # CurrencyProvider: estado USD/ARS + helper de formato
-  data-context.tsx            # DataProvider: CRUD completo de todos los datos
+  data-context.tsx            # DataProvider: CRUD mediante Server Actions, datos refrescados del backend
 
 lib/
   types.ts                    # Interfaces y tipos TypeScript del dominio
@@ -140,7 +155,13 @@ lib/
   theme.ts                    # Temas dinámicos por moneda (USD=emerald, ARS=celeste)
   nav.ts                      # Definición de ítems de navegación con match functions
   utils.ts                    # Utilidad cn() (clsx + tailwind-merge)
-```
+
+prisma/
+  schema.prisma               # Modelos: User, Category, Transaction, SavingGoal, Investment, InvestmentContribution
+  seed.ts                     # Usuario admin + categorías default
+  migrations/                 # Migraciones SQL (pendientes de ejecutar)
+
+.env                          # DATABASE_URL, AUTH_SECRET, ADMIN_INIT_PASSWORD
 
 ### Stack tecnológico
 
@@ -156,6 +177,11 @@ lib/
 | Excel | xlsx (SheetJS) | 0.18.5 |
 | Iconos | lucide-react | 1.16.0 |
 | Tema claro/oscuro | next-themes | 0.4.6 |
+| ORM | Prisma + @prisma/adapter-pg | 7.9.1 |
+| Base de datos | PostgreSQL (pg) | 8.23.0 |
+| Autenticación | iron-session (cookie cifrada) | 8.0.4 |
+| Hashing | bcryptjs | 3.0.3 |
+| Validación | Zod (declarado) | 4.4.3 |
 | Package manager | pnpm | workspace |
 
 ### Rutas
@@ -175,11 +201,13 @@ lib/
 
 Tres React Contexts anidados en `components/providers.tsx`:
 
-1. **AuthContext** → autenticación (login/logout) y sesión en localStorage
+1. **AuthContext** → autenticación (login/logout) y sesión en memoria + cookie cifrada via iron-session
 2. **CurrencyContext** → moneda activa (USD/ARS) y formateo
 3. **DataContext** → datos de la app (transacciones, categorías, ahorros, inversiones) con CRUD completo
 
 Todos usan el patrón `createContext<T | null>(null)` + hook `useX()` que lanza error si se usa fuera del provider.
+
+Los datos NO son volátiles — se obtienen del backend mediante Server Actions (`app/actions/`) que consultan PostgreSQL a través de Prisma. El DataContext refresca su estado local luego de cada mutación llamando a las Server Actions correspondientes.
 
 ### Modelos de datos
 
@@ -193,7 +221,7 @@ Definidos en `lib/types.ts` usando `interface` para objetos y `type` para unione
 - `Investment` — id, name, description, invested, currentValue, contributions[], createdAt
 - `InvestmentContribution` — id, date, amount, note?
 
-Generación de IDs: prefijo + `Math.random().toString(36).slice(2, 9)`
+Los IDs son auto-incrementales manejados por Prisma/PostgreSQL.
 
 ---
 
@@ -243,7 +271,7 @@ Generación de IDs: prefijo + `Math.random().toString(36).slice(2, 9)`
 
 ### Reglas obligatorias
 
-1. **NUNCA exponer secretos, tokens, claves API o contraseñas en el código fuente**, ni en variables de entorno visibles en el cliente. Todo secreto debe estar del lado del servidor. Si en el futuro se agrega un backend, las claves deben residir exclusivamente en variables de entorno del servidor.
+1. **NUNCA exponer secretos, tokens, claves API o contraseñas en el código fuente**, ni en variables de entorno visibles en el cliente. Todo secreto debe estar del lado del servidor. Las claves residen en `.env` (DATABASE_URL, AUTH_SECRET, ADMIN_INIT_PASSWORD) y nunca deben filtrarse al bundle del cliente.
 
 2. **NUNCA loguear información sensible**: credenciales, tokens, datos personales, montos exactos con contexto identificable. Los logs deben ser genéricos y no contener PII (Personally Identifiable Information).
 
@@ -261,7 +289,7 @@ Generación de IDs: prefijo + `Math.random().toString(36).slice(2, 9)`
 
 7. **Dependencias**: mantener las dependencias actualizadas. No agregar librerías sin revisar su estado de seguridad y mantenimiento.
 
-8. **CORS/CSRF**: si en el futuro se agregan API routes, implementar protección CSRF y configurar CORS restrictivamente.
+8. **CORS/CSRF**: si en el futuro se agregan API routes REST tradicionales, implementar protección CSRF y configurar CORS restrictivamente. Las Server Actions actuales están protegidas por `requireSession()` y no exponen rutas REST.
 9. **env**: Nunca leer archivo .env sin autorización.
 
 ---
@@ -338,6 +366,7 @@ pnpm dev          # Iniciar servidor de desarrollo con Turbopack
 pnpm build        # Build de producción
 pnpm start        # Iniciar servidor de producción
 pnpm lint         # Ejecutar ESLint
+pnpm prisma:seed  # Poblar DB con usuario admin + categorías default
 ```
 
 <!-- BEGIN:nextjs-agent-rules -->
