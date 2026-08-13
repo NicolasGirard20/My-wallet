@@ -98,7 +98,6 @@ export default function LoginPage() {
                   id="username"
                   value={username}
                   autoComplete="username"
-                  placeholder="adminWallet"
                   onChange={(e) => {
                     setUsername(e.target.value)
                     setError(null)

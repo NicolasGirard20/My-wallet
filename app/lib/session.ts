@@ -5,9 +5,12 @@ export interface SessionData {
   userId: number
   username: string
 }
+//AUTH SECRET is used to encrypt the session cookie. It should be a long, random string that is kept secret. You can generate a secure random string using a tool like openssl or a password manager.
+if (!process.env.AUTH_SECRET) throw new Error("AUTH_SECRET is not set")
 
+// Session options es una configuración para la sesión
 const sessionOptions: SessionOptions = {
-  password: process.env.AUTH_SECRET || "a-very-long-secret-that-is-at-least-32-chars",
+  password: process.env.AUTH_SECRET ,
   cookieName: "mywallet_session",
   cookieOptions: {
     httpOnly: true,
