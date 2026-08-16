@@ -38,9 +38,12 @@ import { logger } from "@/app/imports/dev"
 interface DataContextValue {
   loading: boolean
   transactions: Transaction[]
+  allTransactions: Transaction[]
   categories: Category[]
   savings: SavingGoal[]
+  allSavings: SavingGoal[]
   investments: Investment[]
+  allInvestments: Investment[]
 
   addTransaction: (tx: Omit<Transaction, "id" | "currency">) => Promise<void>
   importTransactions: (txs: Omit<Transaction, "id" | "currency">[]) => Promise<void>
@@ -257,9 +260,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     () => ({
       loading,
       transactions: visibleTransactions,
+      allTransactions: transactions,
       categories,
       savings: visibleSavings,
+      allSavings: savings,
       investments: visibleInvestments,
+      allInvestments: investments,
       addTransaction,
       importTransactions,
       updateTransaction,
@@ -281,9 +287,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [
       loading,
       visibleTransactions,
+      transactions,
       categories,
       visibleSavings,
+      savings,
       visibleInvestments,
+      investments,
       addTransaction,
       importTransactions,
       updateTransaction,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useCurrency } from "@/context/currency-context"
+import type { Currency } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface AmountDisplayProps {
@@ -9,6 +10,7 @@ interface AmountDisplayProps {
   showSign?: boolean
   compact?: boolean
   className?: string
+  from?: Currency
 }
 
 export function AmountDisplay({
@@ -17,8 +19,11 @@ export function AmountDisplay({
   showSign = false,
   compact = false,
   className,
+  from,
 }: AmountDisplayProps) {
-  const { format } = useCurrency()
+  const { format, convert } = useCurrency()
+
+  const amount = from ? convert(value, from) : value
 
   return (
     <span
@@ -29,7 +34,7 @@ export function AmountDisplay({
         className,
       )}
     >
-      {format(value, { compact, showSign })}
+      {format(amount, { compact, showSign })}
     </span>
   )
 }

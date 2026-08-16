@@ -1,10 +1,21 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowDownLeft, ArrowUpRight, PiggyBank, TrendingUp, Wallet } from "lucide-react"
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  PiggyBank,
+  TrendingUp,
+  Wallet,
+} from "lucide-react"
 
+import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
-import { categoryBreakdown, monthlySeries, totals } from "@/lib/selectors"
+import {
+  categoryBreakdownCrossCurrency,
+  monthlySeriesCrossCurrency,
+  totalsCrossCurrency,
+} from "@/lib/selectors"
 import { formatDate } from "@/lib/format"
 import { navItems } from "@/lib/nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,29 +28,63 @@ import { AmountDisplay } from "@/components/shared/amount-display"
 import { CategoryBadge } from "@/components/shared/category-badge"
 
 export default function InicioPage() {
-  const { transactions, categories, savings, investments, getCategory } = useData()
+  const { allTransactions, categories, allSavings, allInvestments, getCategory } = useData()
+  const { currency, convert, rate, dollarType } = useCurrency()
 
-  const { income, expense, balance } = totals(transactions)
-  const monthly = monthlySeries(transactions, 6)
-  const expenseSlices = categoryBreakdown(transactions, categories, "expense")
+  const { income, expense, balance } = totalsCrossCurrency(allTransactions, convert)
+  const monthly = monthlySeriesCrossCurrency(allTransactions, convert, 6)
+  const expenseSlices = categoryBreakdownCrossCurrency(
+    allTransactions, categories, "expense", convert,
+  )
 
-  const totalSaved = savings.reduce((acc, s) => acc + s.saved, 0)
-  const invValue = investments.reduce((acc, i) => acc + i.currentValue, 0)
+  const totalSaved = allSavings.reduce((acc, s) => convert(s.saved, s.currency) + acc, 0)
+  const invValue = allInvestments.reduce((acc, i) => convert(i.currentValue, i.currency) + acc, 0)
 
-  const recent = [...transactions]
+  const recent = [...allTransactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6)
 
+  const currencyLabel = currency === "USD" ? "dólares" : "pesos"
+  const rateHint = rate
+    ? `Dólar ${rate.nombre}: $${rate.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
+    : `Tipo de dólar: ${dollarType}`
+
   return (
     <>
-      <PageHeader title="Inicio" description="Resumen general de tus finanzas personales." />
+      <PageHeader
+        title="Inicio"
+        description={`Resumen general de tus finanzas en ${currencyLabel} (USD + ARS convertidos). ${rateHint}`}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Balance total" value={balance} icon={Wallet} accent hint="Ingresos menos gastos" />
-        <StatCard title="Ingresos" value={income} kind="income" icon={ArrowUpRight} hint="Histórico acumulado" />
-        <StatCard title="Gastos" value={expense} kind="expense" icon={ArrowDownLeft} hint="Histórico acumulado" />
-        <StatCard title="Ahorros + Inversiones" value={totalSaved + invValue} icon={PiggyBank} hint="Metas y carteras" />
+        <StatCard
+          title="Balance total"
+          value={balance}
+          icon={Wallet}
+          accent
+          hint="USD + ARS convertidos a la moneda activa"
+        />
+        <StatCard
+          title="Ingresos"
+          value={income}
+          kind="income"
+          icon={ArrowUpRight}
+          hint="USD + ARS convertidos"
+        />
+        <StatCard
+          title="Gastos"
+          value={expense}
+          kind="expense"
+          icon={ArrowDownLeft}
+          hint="USD + ARS convertidos"
+        />
+        <StatCard
+          title="Ahorros + Inversiones"
+          value={totalSaved + invValue}
+          icon={PiggyBank}
+          hint="USD + ARS convertidos"
+        />
       </div>
 
       {/* Charts */}
@@ -47,7 +92,9 @@ export default function InicioPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Ingresos vs Gastos</CardTitle>
-            <CardDescription>Evolución de los últimos 6 meses</CardDescription>
+            <CardDescription>
+              Evolución de los últimos 6 meses · USD + ARS convertidos a {currencyLabel}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <BalanceChart data={monthly} />
@@ -57,7 +104,7 @@ export default function InicioPage() {
         <Card>
           <CardHeader>
             <CardTitle>Gastos por categoría</CardTitle>
-            <CardDescription>Distribución histórica</CardDescription>
+            <CardDescription>Distribución histórica · USD + ARS convertidos</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <CategoryChart data={expenseSlices} />
@@ -78,7 +125,9 @@ export default function InicioPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Movimientos recientes</CardTitle>
-            <CardDescription>Tus últimas transacciones</CardDescription>
+            <CardDescription>
+              Últimas transacciones de todas las monedas · USD + ARS convertidos a {currencyLabel}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col">
             {recent.map((tx, i) => {
@@ -108,12 +157,16 @@ export default function InicioPage() {
                         </span>
                       </div>
                     </div>
-                    <AmountDisplay
-                      value={tx.kind === "income" ? tx.amount : -tx.amount}
-                      kind={tx.kind}
-                      showSign
-                      className="text-sm font-semibold"
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <AmountDisplay
+                        value={tx.kind === "income" ? tx.amount : -tx.amount}
+                        kind={tx.kind}
+                        showSign
+                        from={tx.currency}
+                        className="text-sm font-semibold"
+                      />
+                      <span className="text-[10px] text-muted-foreground">{tx.currency}</span>
+                    </div>
                   </div>
                 </div>
               )
@@ -146,7 +199,7 @@ export default function InicioPage() {
               })}
             <div className="col-span-2 flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
               <TrendingUp className="size-4 shrink-0" />
-              Cambiá entre dólares y pesos desde el selector de moneda.
+              Los totales del panel incluyen USD + ARS convertidos con la cotización activa.
             </div>
           </CardContent>
         </Card>

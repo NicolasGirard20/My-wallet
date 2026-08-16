@@ -1,7 +1,8 @@
 import type { Currency } from "./types"
 
-// Amounts are stored in their own currency (USD or ARS). No conversion happens
-// at display time; the active currency only selects which records are shown.
+// Amounts are stored in their own currency (USD or ARS). The active currency
+// selects which records are shown; conversion between currencies is handled
+// centrally by CurrencyContext using the dollar rate from DolarAPI.
 export const CURRENCY_META: Record<
   Currency,
   { label: string; symbol: string; code: string; locale: string; flag: string }
