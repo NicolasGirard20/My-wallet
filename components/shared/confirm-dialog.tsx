@@ -17,7 +17,9 @@ interface ConfirmDialogProps {
   title: string
   description?: string
   confirmLabel?: string
+  confirmVariant?: "default" | "destructive"
   onConfirm: () => void
+  children?: React.ReactNode
 }
 
 export function ConfirmDialog({
@@ -26,7 +28,9 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Eliminar",
+  confirmVariant = "destructive",
   onConfirm,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -35,10 +39,11 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
+        {children}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>Cancelar</DialogClose>
           <Button
-            variant="destructive"
+            variant={confirmVariant}
             onClick={() => {
               onConfirm()
               onOpenChange(false)

@@ -164,7 +164,7 @@ export async function addContributionAction(
     const investment = await service.getInvestmentById(investmentId)
     if (!investment) throw new Error("Inversión no encontrada")
 
-    if (!Number.isFinite(data.amount) || data.amount <= 0) throw new Error("El monto debe ser mayor a 0")
+    if (!Number.isFinite(data.amount) || data.amount === 0) throw new Error("El monto no puede ser 0")
     if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
     const parsedDate = new Date(data.date)
     if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")

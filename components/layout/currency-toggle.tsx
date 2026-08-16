@@ -1,6 +1,7 @@
 "use client"
 
-import { CircleHelp, RefreshCw } from "lucide-react"
+import { RefreshCw } from "lucide-react"
+import { HelpCircle } from "lucide-react"
 
 import { useCurrency } from "@/context/currency-context"
 import { CURRENCY_META } from "@/lib/format"
@@ -17,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 
 const OPTIONS: Currency[] = ["USD", "ARS"]
 
@@ -78,7 +79,7 @@ export function CurrencyToggle({ className }: { className?: string }) {
         >
           <span className="flex items-center gap-1.5">
             <span className="font-medium text-foreground">
-              {rate ? `Dólar ${rate.nombre}` : "Cotización"}
+              {rate ? `${rate.nombre}:` : "Cotización"}
             </span>
             {rate ? (
               <span className="font-mono tabular-nums">
@@ -92,16 +93,20 @@ export function CurrencyToggle({ className }: { className?: string }) {
           </span>
           <RefreshCw
             className={cn("size-3.5", ratesLoading && "animate-spin")}
-            aria-hidden
+            aria-label="Actualizar cotización"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation()
+              refreshRates(true)
+            }}
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuContent align="start" className="w-80">
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="flex items-center justify-between">
-              <span>Tipo de dólar</span>
+            <DropdownMenuLabel className="flex flex-col gap-0.5">
+              <span className="font-medium text-foreground">Tipo de dólar</span>
               {updatedAtLabel ? (
                 <span className="text-[10px] font-normal text-muted-foreground">
-                  {updatedAtLabel} hs
+                  Actualizado {updatedAtLabel} hs
                 </span>
               ) : null}
             </DropdownMenuLabel>
@@ -116,10 +121,13 @@ export function CurrencyToggle({ className }: { className?: string }) {
             ) : (
               rates.map((r) => (
                 <DropdownMenuRadioItem key={r.casa} value={r.casa}>
-                  <span className="flex flex-1 items-center justify-between gap-2">
-                    <span>{r.nombre}</span>
-                    <span className="font-mono tabular-nums text-muted-foreground">
-                      ${r.venta.toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+                  <span className="grid w-full grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-3">
+                    <span className="truncate">{r.nombre}</span>
+                    <span className="text-right font-mono tabular-nums text-muted-foreground">
+                      C: ${r.compra.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
+                    </span>
+                    <span className="text-right font-mono tabular-nums text-muted-foreground">
+                      V: ${r.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
                     </span>
                   </span>
                 </DropdownMenuRadioItem>
@@ -127,18 +135,15 @@ export function CurrencyToggle({ className }: { className?: string }) {
             )}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => refreshRates()} disabled={ratesLoading}>
+          <DropdownMenuItem onClick={() => refreshRates(true)} disabled={ratesLoading}>
             <RefreshCw className={cn("size-4", ratesLoading && "animate-spin")} />
             Actualizar cotización
             <Tooltip>
-              <TooltipTrigger
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                className="ml-auto flex items-center"
-              >
-                <CircleHelp className="size-3.5 text-muted-foreground" />
+              <TooltipTrigger className="ml-auto cursor-help">
+                <HelpCircle className="size-3.5 text-muted-foreground/60 hover:text-muted-foreground" />
               </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-56 text-xs">
-                La cotización se actualiza automáticamente cada 5 minutos. Usá este botón para forzar una actualización manual si querés el valor más reciente.
+              <TooltipContent side="top" align="center">
+                <p className="max-w-xs">Actualiza las cotizaciones de dólares desde la API. Los datos pueden tardar unos segundos en reflejarse.</p>
               </TooltipContent>
             </Tooltip>
           </DropdownMenuItem>

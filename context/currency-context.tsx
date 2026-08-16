@@ -25,7 +25,7 @@ interface CurrencyContextValue {
   convertToActive: (amount: number, from: Currency) => number
   ratesLoading: boolean
   ratesUpdatedAt: string | null
-  refreshRates: () => Promise<void>
+  refreshRates: (force?: boolean) => Promise<void>
   ratesError: string | null
 }
 
@@ -72,11 +72,11 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     setCurrency(currency === "USD" ? "ARS" : "USD")
   }, [currency, setCurrency])
 
-  const refreshRates = useCallback(async () => {
+  const refreshRates = useCallback(async (force = false) => {
     setRatesLoading(true)
     setRatesError(null)
     try {
-      const snapshot = await getExchangeRatesAction()
+      const snapshot = await getExchangeRatesAction(force)
       setRates(snapshot.rates)
       setRatesUpdatedAt(snapshot.fetchedAt)
     } catch (error) {

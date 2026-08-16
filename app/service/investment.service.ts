@@ -79,7 +79,7 @@ export async function addContribution(investmentId: number, data: {
   note?: string
 }) {
   try {
-    const amount = Math.max(data.amount, 0)
+    const amount = data.amount
 
     const [contribution] = await prisma.$transaction([
       prisma.investmentContribution.create({
@@ -108,7 +108,7 @@ export async function deleteContribution(contributionId: number) {
     })
     if (!contribution) throw new Error("Aporte no encontrado")
 
-    const amount = Math.max(contribution.amount, 0)
+    const amount = contribution.amount
 
     await prisma.$transaction([
       prisma.investmentContribution.delete({ where: { id: contributionId } }),

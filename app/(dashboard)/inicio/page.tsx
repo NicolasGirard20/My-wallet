@@ -46,14 +46,14 @@ export default function InicioPage() {
 
   const currencyLabel = currency === "USD" ? "dólares" : "pesos"
   const rateHint = rate
-    ? `Dólar ${rate.nombre}: $${rate.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
+    ? `Dólar ${rate.nombre}: C $${rate.compra.toLocaleString("es-AR", { maximumFractionDigits: 0 })} / V $${rate.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
     : `Tipo de dólar: ${dollarType}`
 
   return (
     <>
       <PageHeader
         title="Inicio"
-        description={`Resumen general de tus finanzas en ${currencyLabel} (USD + ARS convertidos). ${rateHint}`}
+        description={`Resumen general de tus finanzas en ${currencyLabel} (USD + ARS convertidos).`}
       />
 
       {/* Stats */}

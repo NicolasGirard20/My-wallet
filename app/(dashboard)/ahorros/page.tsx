@@ -1,25 +1,37 @@
 "use client"
 
 import { useState } from "react"
-import { PiggyBank, Plus, Target, TrendingUp } from "lucide-react"
+import { Edit3, MinusCircle, PiggyBank, Plus, PlusCircle, Target, Trash2, TrendingUp } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AmountDisplay } from "@/components/shared/amount-display"
 import { ColorPicker } from "@/components/shared/color-picker"
+import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useData } from "@/context/data-context"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import type { SavingGoal } from "@/lib/types"
 
 export default function AhorrosPage() {
-  const { savings, addSaving, deleteSaving } = useData()
+  const { savings, addSaving, updateSaving, deleteSaving } = useData()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [target, setTarget] = useState("1000")
   const [saved, setSaved] = useState("0")
   const [color, setColor] = useState("--chart-1")
+
+  const [editingGoal, setEditingGoal] = useState<SavingGoal | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editTarget, setEditTarget] = useState("")
+  const [editColor, setEditColor] = useState("")
+
+  const [adjustGoal, setAdjustGoal] = useState<SavingGoal | null>(null)
+  const [adjustDelta, setAdjustDelta] = useState("")
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   function handleSubmit() {
     const parsedTarget = Number(target)
@@ -37,6 +49,35 @@ export default function AhorrosPage() {
     setTarget("1000")
     setSaved("0")
     setColor("--chart-1")
+  }
+
+  function handleEdit(goal: SavingGoal) {
+    setEditingGoal(goal)
+    setEditName(goal.name)
+    setEditTarget(String(goal.target))
+    setEditColor(goal.color)
+  }
+
+  function handleSaveEdit() {
+    if (!editingGoal) return
+    const parsedTarget = Number(editTarget)
+    if (!editName.trim() || !Number.isFinite(parsedTarget) || parsedTarget <= 0) return
+    updateSaving(editingGoal.id, {
+      name: editName.trim(),
+      target: parsedTarget,
+      color: editColor,
+    })
+    setEditingGoal(null)
+  }
+
+  function handleAdjustSave() {
+    if (!adjustGoal) return
+    const delta = Number(adjustDelta)
+    if (!Number.isFinite(delta) || delta === 0) return
+    const newSaved = Math.max(0, adjustGoal.saved + delta)
+    updateSaving(adjustGoal.id, { saved: newSaved })
+    setAdjustGoal(null)
+    setAdjustDelta("")
   }
 
   return (
@@ -102,9 +143,17 @@ export default function AhorrosPage() {
                       </CardDescription>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon-sm" onClick={() => deleteSaving(goal.id)} aria-label={`Eliminar ${goal.name}`}>
-                    <PiggyBank className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(goal)} aria-label={`Editar ${goal.name}`}>
+                      <Edit3 className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => setAdjustGoal(goal)} aria-label={`Ajustar ahorro de ${goal.name}`}>
+                      <PlusCircle className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => setConfirmDeleteId(goal.id)} aria-label={`Eliminar ${goal.name}`}>
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
@@ -142,6 +191,62 @@ export default function AhorrosPage() {
           )
         })}
       </div>
+
+      <ConfirmDialog
+        open={editingGoal !== null}
+        onOpenChange={(open) => { if (!open) setEditingGoal(null) }}
+        title="Editar meta"
+        description="Modificá los datos de esta meta de ahorro."
+        confirmLabel="Guardar"
+        confirmVariant="default"
+        onConfirm={handleSaveEdit}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Nombre</label>
+            <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Objetivo</label>
+            <Input type="number" min="0" value={editTarget} onChange={(e) => setEditTarget(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Color</label>
+            <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
+        </div>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={adjustGoal !== null}
+        onOpenChange={(open) => { if (!open) { setAdjustGoal(null); setAdjustDelta("") } }}
+        title="Ajustar ahorro"
+        description={
+          adjustGoal
+            ? `Ahorrado actual: ${adjustGoal.saved.toLocaleString()}. Ingresá un monto positivo para depositar o negativo para retirar.`
+            : undefined
+        }
+        confirmLabel="Aplicar"
+        confirmVariant="default"
+        onConfirm={handleAdjustSave}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monto a ajustar</label>
+            <Input type="number" value={adjustDelta} onChange={(e) => setAdjustDelta(e.target.value)} placeholder="Ej: 500 o -200" />
+          </div>
+        </div>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Eliminar meta"
+        description="¿Estás seguro de eliminar esta meta de ahorro? Esta acción no se puede deshacer."
+        onConfirm={() => {
+          if (confirmDeleteId !== null) deleteSaving(confirmDeleteId)
+        }}
+      />
     </>
   )
 }

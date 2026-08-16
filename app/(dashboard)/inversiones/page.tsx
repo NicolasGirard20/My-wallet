@@ -2,22 +2,31 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, TrendingUp } from "lucide-react"
+import { Edit3, Plus, TrendingUp, Trash2 } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AmountDisplay } from "@/components/shared/amount-display"
+import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useData } from "@/context/data-context"
 import { formatDate } from "@/lib/format"
+import type { Investment } from "@/lib/types"
 
 export default function InversionesPage() {
-  const { investments, addInvestment } = useData()
+  const { investments, addInvestment, updateInvestment, deleteInvestment } = useData()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [currentValue, setCurrentValue] = useState("1000")
+
+  const [editingInv, setEditingInv] = useState<Investment | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editDescription, setEditDescription] = useState("")
+  const [editCurrentValue, setEditCurrentValue] = useState("")
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   function handleSubmit() {
     const parsed = Number(currentValue)
@@ -33,6 +42,25 @@ export default function InversionesPage() {
     setName("")
     setDescription("")
     setCurrentValue("1000")
+  }
+
+  function handleEdit(inv: Investment) {
+    setEditingInv(inv)
+    setEditName(inv.name)
+    setEditDescription(inv.description)
+    setEditCurrentValue(String(inv.currentValue))
+  }
+
+  function handleSaveEdit() {
+    if (!editingInv) return
+    const parsed = Number(editCurrentValue)
+    if (!editName.trim() || !Number.isFinite(parsed) || parsed < 0) return
+    updateInvestment(editingInv.id, {
+      name: editName.trim(),
+      description: editDescription.trim(),
+      currentValue: parsed,
+    })
+    setEditingInv(null)
   }
 
   return (
@@ -79,8 +107,16 @@ export default function InversionesPage() {
         {investments.map((item) => {
           const change = item.currentValue - item.invested
           return (
-            <Link key={item.id} href={`/inversiones/${item.id}`}>
-              <Card className="h-full transition-colors hover:border-primary/30">
+            <Card key={item.id} className="group relative h-full transition-colors hover:border-primary/30">
+              <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <Button variant="ghost" size="icon-sm" onClick={(e) => { e.preventDefault(); handleEdit(item) }} aria-label={`Editar ${item.name}`}>
+                  <Edit3 className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon-sm" onClick={(e) => { e.preventDefault(); setConfirmDeleteId(item.id) }} aria-label={`Eliminar ${item.name}`}>
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              <Link href={`/inversiones/${item.id}`} className="block h-full">
                 <CardHeader>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -109,11 +145,46 @@ export default function InversionesPage() {
                     <AmountDisplay value={change} kind={change >= 0 ? "income" : "expense"} showSign className="font-medium" />
                   </div>
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+            </Card>
           )
         })}
       </div>
+
+      <ConfirmDialog
+        open={editingInv !== null}
+        onOpenChange={(open) => { if (!open) setEditingInv(null) }}
+        title="Editar inversión"
+        description="Modificá los datos de esta inversión."
+        confirmLabel="Guardar"
+        confirmVariant="default"
+        onConfirm={handleSaveEdit}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Nombre</label>
+            <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Descripción</label>
+            <Input value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Valor actual</label>
+            <Input type="number" min="0" value={editCurrentValue} onChange={(e) => setEditCurrentValue(e.target.value)} />
+          </div>
+        </div>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Eliminar inversión"
+        description="¿Estás seguro de eliminar esta inversión? Esta acción no se puede deshacer."
+        onConfirm={() => {
+          if (confirmDeleteId !== null) deleteInvestment(confirmDeleteId)
+        }}
+      />
     </>
   )
 }

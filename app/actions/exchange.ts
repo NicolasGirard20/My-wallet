@@ -33,11 +33,11 @@ function isDollarRate(value: unknown): value is DollarRate {
   )
 }
 
-export async function getExchangeRatesAction(): Promise<ExchangeSnapshot> {
+export async function getExchangeRatesAction(force = false): Promise<ExchangeSnapshot> {
   await requireSession()
 
   const now = Date.now()
-  if (cache && cache.expiresAt > now) {
+  if (!force && cache && cache.expiresAt > now) {
     return cache.snapshot
   }
 

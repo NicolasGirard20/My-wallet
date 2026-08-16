@@ -64,6 +64,7 @@ interface DataContextValue {
   updateInvestment: (id: number, inv: Partial<Pick<Investment, "name" | "description" | "currentValue">>) => Promise<void>
   deleteInvestment: (id: number) => Promise<void>
   addContribution: (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency">) => Promise<void>
+  deleteContribution: (contributionId: number) => Promise<void>
   getInvestment: (id: number) => Investment | undefined
 }
 
@@ -251,6 +252,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [currency],
   )
 
+  const deleteContribution = useCallback(async (contributionId: number) => {
+    await deleteContributionAction(contributionId)
+    const invs = await getInvestmentsAction()
+    setInvestments(invs)
+  }, [])
+
   const getInvestment = useCallback(
     (id: number) => visibleInvestments.find((i) => i.id === id),
     [visibleInvestments],
@@ -282,6 +289,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateInvestment,
       deleteInvestment,
       addContribution,
+      deleteContribution,
       getInvestment,
     }),
     [
@@ -309,6 +317,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateInvestment,
       deleteInvestment,
       addContribution,
+      deleteContribution,
       getInvestment,
     ],
   )
