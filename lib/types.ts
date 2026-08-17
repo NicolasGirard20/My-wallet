@@ -2,6 +2,17 @@ export type Currency = "USD" | "ARS"
 
 export type TransactionKind = "income" | "expense"
 
+export type UserRole = "admin" | "user"
+
+export interface User {
+  id: number
+  username: string
+  name: string
+  email: string
+  role: UserRole
+  createdAt: string
+}
+
 export interface Category {
   id: number
   name: string

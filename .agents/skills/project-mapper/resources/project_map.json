@@ -1,8 +1,8 @@
 {
   "project_name": "my-wallet",
-  "generated_at": "2026-08-16T14:41:16.659192Z",
-  "total_files": 87,
-  "total_symbols": 296,
+  "generated_at": "2026-08-17T20:34:59.619748Z",
+  "total_files": 88,
+  "total_symbols": 315,
   "architecture": {
     "entry_points": [
       "(detectar manualmente)"
@@ -50,14 +50,15 @@
     {
       "path": "app/(dashboard)/ahorros/page.tsx",
       "language": "tsx",
-      "size_lines": 148,
-      "summary": "Funciones: AhorrosPage, handleSubmit",
+      "size_lines": 253,
+      "summary": "Funciones: AhorrosPage, handleSubmit, handleEdit, handleSaveEdit, handleAdjustSave",
       "imports": [
         "react",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
         "@/components/shared/color-picker",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -72,13 +73,31 @@
       "functions": [
         {
           "name": "AhorrosPage",
-          "line": 16,
+          "line": 18,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 24,
+          "line": 36,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleEdit",
+          "line": 54,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEdit",
+          "line": 61,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleAdjustSave",
+          "line": 73,
           "is_async": false,
           "docstring": null
         }
@@ -88,11 +107,12 @@
     {
       "path": "app/(dashboard)/inicio/page.tsx",
       "language": "tsx",
-      "size_lines": 157,
+      "size_lines": 209,
       "summary": "Funciones: InicioPage, totalSaved, invValue, recent",
       "imports": [
         "next/link",
         "lucide-react",
+        "@/context/currency-context",
         "@/context/data-context",
         "@/lib/selectors",
         "@/lib/format",
@@ -113,25 +133,25 @@
       "functions": [
         {
           "name": "InicioPage",
-          "line": 19,
+          "line": 30,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "totalSaved",
-          "line": 26,
+          "line": 40,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "invValue",
-          "line": 27,
+          "line": 41,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "recent",
-          "line": 29,
+          "line": 43,
           "is_async": false,
           "docstring": null
         }
@@ -141,14 +161,15 @@
     {
       "path": "app/(dashboard)/inversiones/[id]/page.tsx",
       "language": "tsx",
-      "size_lines": 164,
-      "summary": "Funciones: InversionDetallePage, handleAddContribution, change",
+      "size_lines": 220,
+      "summary": "Funciones: InversionDetallePage, handleAddContribution, handleUpdateValue, change",
       "imports": [
         "react",
         "next/navigation",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -162,19 +183,25 @@
       "functions": [
         {
           "name": "InversionDetallePage",
-          "line": 15,
+          "line": 16,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleAddContribution",
-          "line": 42,
+          "line": 48,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleUpdateValue",
+          "line": 67,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "change",
-          "line": 25,
+          "line": 31,
           "is_async": false,
           "docstring": null
         }
@@ -184,14 +211,15 @@
     {
       "path": "app/(dashboard)/inversiones/page.tsx",
       "language": "tsx",
-      "size_lines": 120,
-      "summary": "Funciones: InversionesPage, handleSubmit",
+      "size_lines": 191,
+      "summary": "Funciones: InversionesPage, handleSubmit, handleEdit, handleSaveEdit",
       "imports": [
         "react",
         "next/link",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -205,13 +233,25 @@
       "functions": [
         {
           "name": "InversionesPage",
-          "line": 15,
+          "line": 17,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 22,
+          "line": 31,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleEdit",
+          "line": 47,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEdit",
+          "line": 54,
           "is_async": false,
           "docstring": null
         }
@@ -429,6 +469,37 @@
           "name": "categories",
           "line": 11,
           "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
+      "path": "app/actions/exchange.ts",
+      "language": "typescript",
+      "size_lines": 70,
+      "summary": "Funciones: isDollarRate, getExchangeRatesAction",
+      "imports": [
+        "@/app/lib/session",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "interface",
+        "interface",
+        "getExchangeRatesAction"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "isDollarRate",
+          "line": 24,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "getExchangeRatesAction",
+          "line": 36,
+          "is_async": true,
           "docstring": null
         }
       ],
@@ -1205,12 +1276,16 @@
     {
       "path": "components/layout/currency-toggle.tsx",
       "language": "tsx",
-      "size_lines": 46,
+      "size_lines": 163,
       "summary": "Funciones: CurrencyToggle",
       "imports": [
+        "lucide-react",
+        "lucide-react",
         "@/context/currency-context",
         "@/lib/format",
-        "@/lib/utils"
+        "@/lib/utils",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/tooltip"
       ],
       "exports": [
         "CurrencyToggle"
@@ -1219,12 +1294,12 @@
       "functions": [
         {
           "name": "CurrencyToggle",
-          "line": 10,
+          "line": 25,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "components/layout/mobile-nav.tsx",
@@ -1345,7 +1420,7 @@
     {
       "path": "components/shared/amount-display.tsx",
       "language": "tsx",
-      "size_lines": 36,
+      "size_lines": 41,
       "summary": "Funciones: AmountDisplay",
       "imports": [
         "@/context/currency-context",
@@ -1358,7 +1433,7 @@
       "functions": [
         {
           "name": "AmountDisplay",
-          "line": 14,
+          "line": 16,
           "is_async": false,
           "docstring": null
         }
@@ -1421,7 +1496,7 @@
     {
       "path": "components/shared/confirm-dialog.tsx",
       "language": "tsx",
-      "size_lines": 54,
+      "size_lines": 59,
       "summary": "Funciones: ConfirmDialog",
       "imports": [
         "@/components/ui/dialog",
@@ -1434,7 +1509,7 @@
       "functions": [
         {
           "name": "ConfirmDialog",
-          "line": 23,
+          "line": 25,
           "is_async": false,
           "docstring": null
         }
@@ -2730,13 +2805,16 @@
     {
       "path": "context/currency-context.tsx",
       "language": "tsx",
-      "size_lines": 63,
-      "summary": "Funciones: CurrencyProvider, useCurrency, STORAGE_KEY, setCurrency, toggleCurrency",
+      "size_lines": 166,
+      "summary": "Funciones: CurrencyProvider, useCurrency, DEFAULT_DOLLAR_TYPE, setCurrency, setDollarType",
       "imports": [
         "react",
-        "@/lib/format"
+        "@/lib/format",
+        "@/app/actions/exchange",
+        "@/app/imports/dev"
       ],
       "exports": [
+        "DEFAULT_DOLLAR_TYPE",
         "CurrencyProvider",
         "useCurrency"
       ],
@@ -2744,53 +2822,83 @@
       "functions": [
         {
           "name": "CurrencyProvider",
-          "line": 19,
+          "line": 34,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useCurrency",
-          "line": 58,
+          "line": 161,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "STORAGE_KEY",
-          "line": 8,
+          "name": "DEFAULT_DOLLAR_TYPE",
+          "line": 13,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "setCurrency",
-          "line": 31,
+          "line": 53,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "setDollarType",
+          "line": 62,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "toggleCurrency",
-          "line": 40,
+          "line": 71,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "snapshot",
+          "line": 79,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "rate",
+          "line": 94,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "convert",
+          "line": 99,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "convertToActive",
+          "line": 112,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "format",
-          "line": 44,
+          "line": 117,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 50,
+          "line": 123,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "context/data-context.tsx",
       "language": "tsx",
-      "size_lines": 314,
+      "size_lines": 332,
       "summary": "Funciones: DataProvider, useData, visibleTransactions, visibleSavings, visibleInvestments",
       "imports": [
         "react",
@@ -2810,145 +2918,151 @@
       "functions": [
         {
           "name": "DataProvider",
-          "line": 69,
+          "line": 73,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useData",
-          "line": 310,
+          "line": 328,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleTransactions",
-          "line": 80,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "visibleSavings",
           "line": 84,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "visibleInvestments",
+          "name": "visibleSavings",
           "line": 88,
           "is_async": false,
           "docstring": null
         },
         {
+          "name": "visibleInvestments",
+          "line": 92,
+          "is_async": false,
+          "docstring": null
+        },
+        {
           "name": "loadAllData",
-          "line": 93,
+          "line": 97,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addTransaction",
-          "line": 120,
+          "line": 124,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "importTransactions",
-          "line": 126,
+          "line": 130,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 132,
+          "line": 136,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 144,
+          "line": 148,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCategory",
-          "line": 150,
+          "line": 154,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCategory",
-          "line": 157,
+          "line": 161,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategory",
-          "line": 163,
+          "line": 167,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "categoriesByKind",
-          "line": 171,
+          "line": 175,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getCategory",
-          "line": 176,
+          "line": 180,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "addSaving",
-          "line": 178,
+          "line": 182,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSaving",
-          "line": 190,
+          "line": 194,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSaving",
-          "line": 202,
+          "line": 206,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addInvestment",
-          "line": 208,
+          "line": 212,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestment",
-          "line": 222,
+          "line": 226,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 231,
+          "line": 235,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 237,
+          "line": 241,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteContribution",
+          "line": 255,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestment",
-          "line": 251,
+          "line": 261,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 256,
+          "line": 266,
           "is_async": false,
           "docstring": null
         }
@@ -3036,7 +3150,7 @@
     {
       "path": "lib/format.ts",
       "language": "typescript",
-      "size_lines": 52,
+      "size_lines": 53,
       "summary": "Funciones: formatCurrency, formatDate, formatMonth, validateDate",
       "imports": [],
       "exports": [
@@ -3050,25 +3164,25 @@
       "functions": [
         {
           "name": "formatCurrency",
-          "line": 13,
+          "line": 14,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "formatDate",
-          "line": 34,
+          "line": 35,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "formatMonth",
-          "line": 42,
+          "line": 43,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "validateDate",
-          "line": 46,
+          "line": 47,
           "is_async": false,
           "docstring": null
         }
@@ -3124,44 +3238,78 @@
     {
       "path": "lib/selectors.ts",
       "language": "typescript",
-      "size_lines": 74,
-      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, index",
+      "size_lines": 135,
+      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, totalsCrossCurrency, monthlySeriesCrossCurrency",
       "imports": [],
       "exports": [
+        "type",
         "totals",
         "interface",
         "monthlySeries",
         "interface",
-        "categoryBreakdown"
+        "categoryBreakdown",
+        "totalsCrossCurrency",
+        "monthlySeriesCrossCurrency",
+        "categoryBreakdownCrossCurrency"
       ],
       "classes": [],
       "functions": [
         {
           "name": "totals",
-          "line": 3,
+          "line": 5,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "monthlySeries",
-          "line": 21,
+          "line": 22,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "categoryBreakdown",
-          "line": 53,
+          "line": 54,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "totalsCrossCurrency",
+          "line": 76,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "monthlySeriesCrossCurrency",
+          "line": 87,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "categoryBreakdownCrossCurrency",
+          "line": 113,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "index",
-          "line": 34,
+          "line": 35,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "index",
+          "line": 100,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "converted",
+          "line": 122,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "lib/theme.ts",
@@ -3432,6 +3580,7 @@
     "app/actions/auth.ts": [],
     "app/actions/investments.ts": [],
     "app/actions/savings.ts": [],
+    "app/actions/exchange.ts": [],
     "app/actions/transactions.ts": [],
     "app/service/investment.service.ts": [],
     "app/service/db.ts": [],
@@ -3497,6 +3646,6 @@
       "typescript",
       "unknown"
     ],
-    "compression_ratio_estimate": "94.9%"
+    "compression_ratio_estimate": "95.0%"
   }
 }

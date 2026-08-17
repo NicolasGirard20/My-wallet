@@ -21,6 +21,7 @@ export async function loginAction(username: string, password: string) {
     const session = await getSession()
     session.userId = user.id
     session.username = user.username
+    session.role = user.role
     await session.save()
 
     logger.info("User logged in:", user.username)
@@ -46,7 +47,7 @@ export async function getSessionAction() {
   try {
     const session = await getSession()
     if (!session.userId) return null
-    return { userId: session.userId, username: session.username }
+    return { userId: session.userId, username: session.username, role: session.role }
   } catch (error) {
     logger.error("getSessionAction failed:", error)
     return null

@@ -1,10 +1,10 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 
-export async function getSavingGoals(currency?: string) {
+export async function getSavingGoals(userId: number, currency?: string) {
   try {
     return await prisma.savingGoal.findMany({
-      where: currency ? { currency } : undefined,
+      where: { userId, ...(currency ? { currency } : {}) },
       orderBy: { createdAt: "desc" },
     })
   } catch (error) {
@@ -13,9 +13,9 @@ export async function getSavingGoals(currency?: string) {
   }
 }
 
-export async function getSavingGoalById(id: number) {
+export async function getSavingGoalById(id: number, userId: number) {
   try {
-    return await prisma.savingGoal.findUnique({ where: { id } })
+    return await prisma.savingGoal.findUnique({ where: { id, userId } })
   } catch (error) {
     logger.error("getSavingGoalById failed:", error)
     throw new Error("Error al obtener la meta de ahorro")
@@ -29,6 +29,7 @@ export async function createSavingGoal(data: {
   color: string
   currency: string
   deadline?: Date
+  userId: number
 }) {
   try {
     return await prisma.savingGoal.create({ data })
@@ -40,6 +41,7 @@ export async function createSavingGoal(data: {
 
 export async function updateSavingGoal(
   id: number,
+  userId: number,
   data: Partial<{
     name: string
     target: number
@@ -50,16 +52,16 @@ export async function updateSavingGoal(
   }>,
 ) {
   try {
-    return await prisma.savingGoal.update({ where: { id }, data })
+    return await prisma.savingGoal.update({ where: { id, userId }, data })
   } catch (error) {
     logger.error("updateSavingGoal failed:", error)
     throw new Error("Error al actualizar la meta de ahorro")
   }
 }
 
-export async function deleteSavingGoal(id: number) {
+export async function deleteSavingGoal(id: number, userId: number) {
   try {
-    await prisma.savingGoal.delete({ where: { id } })
+    await prisma.savingGoal.delete({ where: { id, userId } })
   } catch (error) {
     logger.error("deleteSavingGoal failed:", error)
     throw new Error("Error al eliminar la meta de ahorro")

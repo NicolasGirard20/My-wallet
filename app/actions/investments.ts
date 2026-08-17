@@ -48,8 +48,8 @@ function mapInv(inv: {
 
 export async function getInvestmentsAction() {
   try {
-    await requireSession()
-    const investments = await service.getInvestments()
+    const session = await requireSession()
+    const investments = await service.getInvestments(session.userId)
     return investments.map(mapInv)
   } catch (error) {
     logger.error("getInvestmentsAction failed:", error)
@@ -59,8 +59,8 @@ export async function getInvestmentsAction() {
 
 export async function getInvestmentByIdAction(id: number) {
   try {
-    await requireSession()
-    const inv = await service.getInvestmentById(id)
+    const session = await requireSession()
+    const inv = await service.getInvestmentById(id, session.userId)
     if (!inv) return null
     return mapInv(inv)
   } catch (error) {
@@ -76,7 +76,7 @@ export async function createInvestmentAction(data: {
   currency: string
 }) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     if (!data.name?.trim()) throw new Error("El nombre es obligatorio")
     if (!Number.isFinite(data.currentValue) || data.currentValue < 0) {
@@ -90,6 +90,7 @@ export async function createInvestmentAction(data: {
       invested: data.currentValue,
       currentValue: data.currentValue,
       currency: data.currency,
+      userId: session.userId,
     })
 
     return mapInv({ ...inv, contributions: [] })
@@ -109,7 +110,7 @@ export async function updateInvestmentAction(
   }>,
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const updateData: Record<string, unknown> = {}
 
@@ -129,8 +130,8 @@ export async function updateInvestmentAction(
       updateData.currency = data.currency
     }
 
-    const inv = await service.updateInvestment(id, updateData)
-    const full = await service.getInvestmentById(id)
+    const inv = await service.updateInvestment(id, session.userId, updateData)
+    const full = await service.getInvestmentById(id, session.userId)
     if (!full) throw new Error("Inversión no encontrada")
     return mapInv(full)
   } catch (error) {
@@ -141,8 +142,8 @@ export async function updateInvestmentAction(
 
 export async function deleteInvestmentAction(id: number) {
   try {
-    await requireSession()
-    await service.deleteInvestment(id)
+    const session = await requireSession()
+    await service.deleteInvestment(id, session.userId)
   } catch (error) {
     logger.error("deleteInvestmentAction failed:", error)
     throw error
@@ -159,9 +160,9 @@ export async function addContributionAction(
   },
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
-    const investment = await service.getInvestmentById(investmentId)
+    const investment = await service.getInvestmentById(investmentId, session.userId)
     if (!investment) throw new Error("Inversión no encontrada")
 
     if (!Number.isFinite(data.amount) || data.amount === 0) throw new Error("El monto no puede ser 0")
@@ -169,7 +170,7 @@ export async function addContributionAction(
     const parsedDate = new Date(data.date)
     if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")
 
-    const contribution = await service.addContribution(investmentId, {
+    const contribution = await service.addContribution(investmentId, session.userId, {
       date: parsedDate,
       amount: data.amount,
       currency: data.currency,
@@ -191,8 +192,8 @@ export async function addContributionAction(
 
 export async function deleteContributionAction(contributionId: number) {
   try {
-    await requireSession()
-    await service.deleteContribution(contributionId)
+    const session = await requireSession()
+    await service.deleteContribution(contributionId, session.userId)
   } catch (error) {
     logger.error("deleteContributionAction failed:", error)
     throw error

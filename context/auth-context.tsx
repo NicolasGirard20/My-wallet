@@ -7,6 +7,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   hydrated: boolean
   username: string | null
+  isAdmin: boolean
   login: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ ok: boolean; error?: string }>
@@ -16,11 +17,15 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [username, setUsername] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
     getSessionAction().then((session) => {
-      if (session?.username) setUsername(session.username)
+      if (session?.username) {
+        setUsername(session.username)
+        setIsAdmin(session.role === "admin")
+      }
       setHydrated(true)
     })
   }, [])
@@ -52,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated: username !== null, hydrated, username, login, logout, changePassword }}
+      value={{ isAuthenticated: username !== null, hydrated, username, isAdmin, login, logout, changePassword }}
     >
       {children}
     </AuthContext.Provider>

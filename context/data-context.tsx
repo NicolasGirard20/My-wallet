@@ -71,7 +71,7 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, hydrated: authHydrated } = useAuth()
+  const { isAuthenticated, hydrated: authHydrated, username } = useAuth()
   const { currency } = useCurrency()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -79,6 +79,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [investments, setInvestments] = useState<Investment[]>([])
   const [loading, setLoading] = useState(false)
   const loadedRef = useRef(false)
+  const previousUsername = useRef<string | null>(null)
 
   // Views filtered by the active currency. Categories stay global.
   const visibleTransactions = useMemo(
@@ -115,11 +116,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (authHydrated && isAuthenticated && !loadedRef.current) {
+    if (!authHydrated) return
+
+    if (!isAuthenticated) {
+      setTransactions([])
+      setCategories([])
+      setSavings([])
+      setInvestments([])
+      loadedRef.current = false
+      return
+    }
+
+    if (username && username !== previousUsername.current) {
+      previousUsername.current = username
+      loadedRef.current = false
+    }
+
+    if (!loadedRef.current) {
       loadedRef.current = true
       loadAllData()
     }
-  }, [authHydrated, isAuthenticated, loadAllData])
+  }, [authHydrated, isAuthenticated, loadAllData, username])
 
   const addTransaction = useCallback(async (tx: Omit<Transaction, "id" | "currency">) => {
     await createTransactionAction({ ...tx, currency })

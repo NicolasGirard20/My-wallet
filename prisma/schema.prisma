@@ -7,12 +7,19 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
+  id           Int                     @id @default(autoincrement())
+  username     String                  @unique
   passwordHash String
   name         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  email        String                  @unique
+  role         String                  @default("user")
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  categories   Category[]
+  transactions Transaction[]
+  savingGoals  SavingGoal[]
+  investments  Investment[]
+  investmentContributions InvestmentContribution[]
 }
 
 model Category {
@@ -20,8 +27,10 @@ model Category {
   name         String
   kind         String
   color        String
+  userId       Int
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 }
 
@@ -33,9 +42,11 @@ model Transaction {
   categoryId  Int
   currency    String   @default("ARS")
   date        DateTime
+  userId      Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SavingGoal {
@@ -46,8 +57,10 @@ model SavingGoal {
   color     String
   currency  String    @default("ARS")
   deadline  DateTime?
+  userId    Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Investment {
@@ -57,9 +70,11 @@ model Investment {
   invested      Float
   currentValue  Float
   currency      String                  @default("ARS")
+  userId        Int
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
   contributions InvestmentContribution[]
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model InvestmentContribution {
@@ -69,6 +84,8 @@ model InvestmentContribution {
   amount       Float
   note         String?
   currency     String     @default("ARS")
+  userId       Int
   createdAt    DateTime   @default(now())
   investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

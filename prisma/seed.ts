@@ -48,24 +48,29 @@ async function main() {
 
   await prisma.user.upsert({
     where: { username: ADMIN_USERNAME },
-    update: { passwordHash },
+    update: { passwordHash, email: "adminWalletNic@gmail.com", role: "admin" },
     create: {
       username: ADMIN_USERNAME,
       passwordHash,
       name: "Administrador",
+      email: "adminWalletNic@gmail.com",
+      role: "admin",
     },
   })
   seedLog("✓ Admin user ready")
 
-  const existingCategories = await prisma.category.count()
+  const adminUser = await prisma.user.findUnique({ where: { username: ADMIN_USERNAME } })
+  if (!adminUser) throw new Error("Admin user not found")
+
+  const existingCategories = await prisma.category.count({ where: { userId: adminUser.id } })
   if (existingCategories === 0) {
     const allCategories = [...DEFAULT_INCOME_CATEGORIES, ...DEFAULT_EXPENSE_CATEGORIES]
     for (const cat of allCategories) {
-      await prisma.category.create({ data: cat })
+      await prisma.category.create({ data: { ...cat, userId: adminUser.id } })
     }
-    seedLog(`✓ Created ${allCategories.length} default categories`)
+    seedLog(`✓ Created ${allCategories.length} default categories for admin`)
   } else {
-    seedLog(`→ ${existingCategories} categories already exist, skipping`)
+    seedLog(`→ ${existingCategories} categories already exist for admin, skipping`)
   }
 
   seedLog("✅ Seeding completed successfully")
