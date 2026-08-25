@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { PencilIcon, Trash2Icon, SearchIcon, ArrowUpDownIcon } from "lucide-react"
+import { PencilIcon, Trash2Icon, SearchIcon, ArrowUpDownIcon, CheckIcon } from "lucide-react"
 
 import {
   Table,
@@ -14,13 +14,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { CategoryBadge } from "@/components/shared/category-badge"
 import { AmountDisplay } from "@/components/shared/amount-display"
@@ -40,8 +41,9 @@ export function TransactionTable({
 }) {
   const { transactions, categories, deleteTransaction } = useData()
   const [query, setQuery] = useState("")
-  const [dateFilter, setDateFilter] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [dateFrom, setDateFrom] = useState("")
+  const [dateTo, setDateTo] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<Set<number>>(new Set())
   const [sortKey, setSortKey] = useState<SortKey>("date")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null)
@@ -54,15 +56,40 @@ export function TransactionTable({
 
   const kindCategories = categories.filter((c) => c.kind === kind)
 
+  function toggleCategory(id: number) {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function clearCategories() {
+    setSelectedCategories(new Set())
+  }
+
+  const categoryLabel = useMemo(() => {
+    if (selectedCategories.size === 0) return "Todas las categorías"
+    if (selectedCategories.size === 1) {
+      const id = [...selectedCategories][0]
+      return catMap.get(id)?.name ?? "1 categoría"
+    }
+    return `${selectedCategories.size} categorías`
+  }, [selectedCategories, catMap])
+
   const rows = useMemo(() => {
     let list = transactions.filter((t) => t.kind === kind)
 
-    if (categoryFilter !== "all") {
-      list = list.filter((t) => t.categoryId === Number(categoryFilter))
+    if (selectedCategories.size > 0) {
+      list = list.filter((t) => selectedCategories.has(t.categoryId))
     }
 
-    if (dateFilter) {
-      list = list.filter((t) => t.date.startsWith(dateFilter))
+    if (dateFrom) {
+      list = list.filter((t) => t.date.slice(0, 10) >= dateFrom)
+    }
+    if (dateTo) {
+      list = list.filter((t) => t.date.slice(0, 10) <= dateTo)
     }
 
     if (query.trim()) {
@@ -88,7 +115,7 @@ export function TransactionTable({
     })
 
     return list
-  }, [transactions, kind, categoryFilter, dateFilter, query, catMap, sortKey, sortDir])
+  }, [transactions, kind, selectedCategories, dateFrom, dateTo, query, catMap, sortKey, sortDir])
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -112,30 +139,60 @@ export function TransactionTable({
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="w-full lg:w-44"
-            aria-label="Filtrar por fecha"
-          />
+        <div className="flex flex-wrap items-center gap-3">
 
-          <Select value={categoryFilter} onValueChange={(v) => v && setCategoryFilter(v)}>
-            <SelectTrigger className="w-full sm:w-56">
-              <SelectValue placeholder="Categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                {kindCategories.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span>Desde</span>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-36"
+                aria-label="Desde"
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span>Hasta</span>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-36"
+                aria-label="Hasta"
+              />
+            </label>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" className="w-full sm:w-48 justify-start" />}>
+                {categoryLabel}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Categorías</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={selectedCategories.size === 0}
+                    closeOnClick={false}
+                    onCheckedChange={() => clearCategories()}
+                  >
+                    Todas las categorías
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  {kindCategories.map((c) => (
+                    <DropdownMenuCheckboxItem
+                      key={c.id}
+                      checked={selectedCategories.has(c.id)}
+                      closeOnClick={false}
+                      onCheckedChange={() => toggleCategory(c.id)}
+                    >
+                      {c.name}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 

@@ -124,6 +124,7 @@ components/
     stat-card.tsx             # Tarjeta de métrica con ícono y monto formateado
     balance-chart.tsx         # Gráfico de área (ingresos vs gastos en el tiempo)
     category-chart.tsx        # Gráfico de torta (desglose por categoría)
+    period-filter.tsx         # Selector de período: Total o rango personalizado
   transferencias/
     transaction-form.tsx      # Formulario (Dialog) para crear/editar transacciones
     transaction-table.tsx     # Tabla con búsqueda, filtro, ordenamiento, editar, eliminar
