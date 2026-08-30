@@ -28,6 +28,7 @@ export interface Transaction {
   categoryId: number
   currency: Currency
   date: string // ISO date string
+  savingGoalId?: number
 }
 
 export interface SavingGoal {

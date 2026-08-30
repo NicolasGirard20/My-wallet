@@ -1,4 +1,5 @@
 import { prisma } from "@/app/service/db"
+import { getOrCreateSavingsCategory } from "@/app/service/category.service"
 import { logger } from "@/app/imports/dev"
 
 export async function getSavingGoals(userId: number, currency?: string) {
@@ -32,7 +33,27 @@ export async function createSavingGoal(data: {
   userId: number
 }) {
   try {
-    return await prisma.savingGoal.create({ data })
+    return await prisma.$transaction(async (tx) => {
+      const goal = await tx.savingGoal.create({ data })
+
+      if (goal.saved > 0) {
+        const cat = await getOrCreateSavingsCategory(data.userId, "expense", tx)
+        await tx.transaction.create({
+          data: {
+            kind: "expense",
+            amount: goal.saved,
+            description: `Depósito a ${goal.name}`,
+            categoryId: cat.id,
+            currency: goal.currency,
+            date: new Date(),
+            userId: data.userId,
+            savingGoalId: goal.id,
+          },
+        })
+      }
+
+      return goal
+    })
   } catch (error) {
     logger.error("createSavingGoal failed:", error)
     throw new Error("Error al crear la meta de ahorro")
@@ -52,9 +73,39 @@ export async function updateSavingGoal(
   }>,
 ) {
   try {
-    return await prisma.savingGoal.update({ where: { id, userId }, data })
+    return await prisma.$transaction(async (tx) => {
+      const previous = await tx.savingGoal.findUnique({ where: { id, userId } })
+      if (!previous) throw new Error("Meta de ahorro no encontrada")
+
+      const goal = await tx.savingGoal.update({ where: { id, userId }, data })
+
+      if (data.saved !== undefined) {
+        const delta = goal.saved - previous.saved
+        if (delta !== 0) {
+          const kind = delta > 0 ? "expense" : "income"
+          const cat = await getOrCreateSavingsCategory(userId, kind, tx)
+          await tx.transaction.create({
+            data: {
+              kind,
+              amount: Math.abs(delta),
+              description: delta > 0 ? `Depósito a ${goal.name}` : `Extracción de ${goal.name}`,
+              categoryId: cat.id,
+              currency: goal.currency,
+              date: new Date(),
+              userId,
+              savingGoalId: goal.id,
+            },
+          })
+        }
+      }
+
+      return goal
+    })
   } catch (error) {
     logger.error("updateSavingGoal failed:", error)
+    if (error instanceof Error) {
+      logger.error("updateSavingGoal cause:", error.message, error.stack)
+    }
     throw new Error("Error al actualizar la meta de ahorro")
   }
 }

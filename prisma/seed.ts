@@ -16,19 +16,21 @@ const ADMIN_PASSWORD = process.env.ADMIN_INIT_PASSWORD
 
 if (!ADMIN_PASSWORD) throw new Error("ADMIN_INIT_PASSWORD is not set")
 
-const DEFAULT_INCOME_CATEGORIES = [
-  { name: "Sueldo", kind: "income", color: "--chart-1" },
-  { name: "Freelance", kind: "income", color: "--chart-2" },
-  { name: "Dividendos", kind: "income", color: "--chart-3" },
-  { name: "Regalos", kind: "income", color: "--chart-4" },
-]
-
 const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Comida", kind: "expense", color: "--chart-1" },
   { name: "Alquiler", kind: "expense", color: "--chart-2" },
   { name: "Transporte", kind: "expense", color: "--chart-3" },
   { name: "Ocio", kind: "expense", color: "--chart-4" },
   { name: "Servicios", kind: "expense", color: "--chart-5" },
+  { name: "Ahorros", kind: "expense", color: "--chart-5" },
+]
+
+const DEFAULT_INCOME_CATEGORIES = [
+  { name: "Sueldo", kind: "income", color: "--chart-1" },
+  { name: "Freelance", kind: "income", color: "--chart-2" },
+  { name: "Dividendos", kind: "income", color: "--chart-3" },
+  { name: "Regalos", kind: "income", color: "--chart-4" },
+  { name: "Ahorros", kind: "income", color: "--chart-5" },
 ]
 
 const SEED = !process.env.NODE_ENV || process.env.NODE_ENV !== "production"

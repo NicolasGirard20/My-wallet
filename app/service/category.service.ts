@@ -1,6 +1,8 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 
+import type { Prisma } from "@prisma/client"
+
 export async function getCategories(userId: number) {
   try {
     return await prisma.category.findMany({
@@ -46,5 +48,22 @@ export async function deleteCategory(id: number, userId: number) {
   } catch (error) {
     logger.error("deleteCategory failed:", error)
     throw new Error("Error al eliminar la categoría")
+  }
+}
+
+export async function getOrCreateSavingsCategory(userId: number, kind: string, tx?: Prisma.TransactionClient) {
+  const client = tx ?? prisma
+  try {
+    const existing = await client.category.findFirst({
+      where: { userId, name: "Ahorros", kind },
+    })
+    if (existing) return existing
+
+    return await client.category.create({
+      data: { userId, name: "Ahorros", kind, color: "--chart-5" },
+    })
+  } catch (error) {
+    logger.error("getOrCreateSavingsCategory failed:", error)
+    throw new Error("Error al obtener o crear la categoría de ahorros")
   }
 }

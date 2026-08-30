@@ -13,6 +13,7 @@ function mapTx(tx: {
   categoryId: number
   currency: string
   date: Date
+  savingGoalId: number | null
   createdAt: Date
   updatedAt: Date
 }): Transaction {
@@ -24,6 +25,7 @@ function mapTx(tx: {
     categoryId: tx.categoryId,
     currency: tx.currency as Currency,
     date: tx.date.toISOString(),
+    savingGoalId: tx.savingGoalId ?? undefined,
   }
 }
 

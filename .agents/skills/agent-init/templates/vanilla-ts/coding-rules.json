@@ -1,0 +1,33 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "typescript": {
+    "strict": true,
+    "forbid_any": true,
+    "forbid_deep_relative_imports": true,
+    "prefer_path_alias": true
+  },
+  "nomenclature": {
+    "components": "PascalCase.tsx",
+    "services": "camelCase.ts",
+    "folders": "kebab-case",
+    "code_language": "en",
+    "ui_language": "es"
+  },
+  "styling": {
+    "framework": "unknown",
+    "forbid_inline_styles": true
+  },
+  "architecture": {
+    "services_path": "src/services/",
+    "models_path": "src/types/"
+  },
+  "security": {
+    "forbid_secrets_in_code": true,
+    "validate_inputs_before_persist": true
+  },
+  "code_quality": {
+    "lint_before_finish": true,
+    "lint_command": "npm run lint",
+    "no_new_deps_without_justification": true
+  }
+}

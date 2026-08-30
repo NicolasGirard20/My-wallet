@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
-import { CURRENCY_META, validateDate } from "@/lib/format"
+import { CURRENCY_META, formatCurrency, validateDate } from "@/lib/format"
 import type { Transaction, TransactionKind } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
@@ -44,13 +45,20 @@ function todayInput() {
 
 export function TransactionForm({ kind, open, onOpenChange, editing }: TransactionFormProps) {
   const { currency } = useCurrency()
-  const { categoriesByKind, addTransaction, updateTransaction } = useData()
+  const { categoriesByKind, savings, addTransaction, updateTransaction } = useData()
   const categories = categoriesByKind(kind)
 
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [date, setDate] = useState(todayInput())
+  const [pendingPayload, setPendingPayload] = useState<{
+    kind: TransactionKind
+    amount: number
+    description: string
+    categoryId: number
+    date: string
+  } | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -94,6 +102,11 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       date: parsedDate.toISOString(),
     }
 
+    if (editing && editing.savingGoalId && parsed !== editing.amount) {
+      setPendingPayload(payload)
+      return
+    }
+
     if (editing) {
       updateTransaction(editing.id, payload)
       toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
@@ -103,6 +116,28 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     }
     onOpenChange(false)
   }
+
+  const confirmDescription = useMemo(() => {
+    if (!pendingPayload || !editing) return ""
+    const oldAmount = editing.amount
+    const newAmount = pendingPayload.amount
+    const delta = newAmount - oldAmount
+    const absDelta = Math.abs(delta)
+    const goal = savings.find((s) => s.id === editing.savingGoalId)
+    const goalName = goal?.name ?? "una meta de ahorro"
+    const oldText = formatCurrency(oldAmount, editing.currency)
+    const newText = formatCurrency(newAmount, editing.currency)
+    const deltaText = formatCurrency(absDelta, editing.currency)
+    const impact =
+      kind === "expense"
+        ? delta > 0
+          ? `aumentará en ${deltaText}`
+          : `se reducirá en ${deltaText}`
+        : delta > 0
+          ? `se reducirá en ${deltaText}`
+          : `aumentará en ${deltaText}`
+    return `Esta transferencia está vinculada a la meta "${goalName}". Al cambiar el monto de ${oldText} a ${newText}, el ahorro ${impact}. ¿Continuar?`
+  }, [pendingPayload, editing, savings, kind])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,6 +216,23 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmDialog
+        open={pendingPayload !== null}
+        onOpenChange={(open) => { if (!open) setPendingPayload(null) }}
+        title="Editar transferencia vinculada a ahorro"
+        description={confirmDescription}
+        confirmLabel="Confirmar"
+        confirmVariant="default"
+        onConfirm={() => {
+          if (editing && pendingPayload) {
+            updateTransaction(editing.id, pendingPayload)
+            toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
+            setPendingPayload(null)
+            onOpenChange(false)
+          }
+        }}
+      />
     </Dialog>
   )
 }

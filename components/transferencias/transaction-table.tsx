@@ -27,7 +27,7 @@ import { CategoryBadge } from "@/components/shared/category-badge"
 import { AmountDisplay } from "@/components/shared/amount-display"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { useData } from "@/context/data-context"
-import { formatDate } from "@/lib/format"
+import { formatCurrency, formatDate } from "@/lib/format"
 import type { Category, Transaction, TransactionKind } from "@/lib/types"
 
 type SortKey = "date" | "amount"
@@ -39,7 +39,7 @@ export function TransactionTable({
   kind: TransactionKind
   onEdit: (tx: Transaction) => void
 }) {
-  const { transactions, categories, deleteTransaction } = useData()
+  const { transactions, categories, savings, deleteTransaction } = useData()
   const [query, setQuery] = useState("")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
@@ -125,6 +125,20 @@ export function TransactionTable({
       setSortDir("desc")
     }
   }
+
+  const deleteDescription = useMemo(() => {
+    if (!pendingDelete) return ""
+    if (pendingDelete.savingGoalId) {
+      const goal = savings.find((s) => s.id === pendingDelete.savingGoalId)
+      const goalName = goal?.name ?? "una meta de ahorro"
+      const amount = formatCurrency(pendingDelete.amount, pendingDelete.currency)
+      if (pendingDelete.kind === "expense") {
+        return `Esta transferencia está vinculada a la meta "${goalName}". Al eliminarla, el ahorro se reducirá en ${amount}. ¿Continuar?`
+      }
+      return `Esta transferencia está vinculada a la meta "${goalName}". Al eliminarla, el ahorro se aumentará en ${amount}. ¿Continuar?`
+    }
+    return `¿Seguro que querés eliminar "${pendingDelete.description}"? Esta acción no se puede deshacer.`
+  }, [pendingDelete, savings])
 
   return (
     <div className="flex flex-col gap-4">
@@ -295,7 +309,7 @@ export function TransactionTable({
         open={pendingDelete !== null}
         onOpenChange={(o) => !o && setPendingDelete(null)}
         title="Eliminar movimiento"
-        description={`¿Seguro que querés eliminar "${pendingDelete?.description}"? Esta acción no se puede deshacer.`}
+        description={deleteDescription}
         confirmLabel="Eliminar"
         onConfirm={() => {
           if (pendingDelete) deleteTransaction(pendingDelete.id)

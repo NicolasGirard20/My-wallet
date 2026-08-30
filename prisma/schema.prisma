@@ -35,32 +35,35 @@ model Category {
 }
 
 model Transaction {
-  id          Int      @id @default(autoincrement())
-  kind        String
-  amount      Float
-  description String
-  categoryId  Int
-  currency    String   @default("ARS")
-  date        DateTime
-  userId      Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int         @id @default(autoincrement())
+  kind         String
+  amount       Float
+  description  String
+  categoryId   Int
+  currency     String      @default("ARS")
+  date         DateTime
+  userId       Int
+  savingGoalId Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  savingGoal   SavingGoal? @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SavingGoal {
-  id        Int       @id @default(autoincrement())
-  name      String
-  target    Float
-  saved     Float
-  color     String
-  currency  String    @default("ARS")
-  deadline  DateTime?
-  userId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int           @id @default(autoincrement())
+  name         String
+  target       Float
+  saved        Float
+  color        String
+  currency     String        @default("ARS")
+  deadline     DateTime?
+  userId       Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 }
 
 model Investment {

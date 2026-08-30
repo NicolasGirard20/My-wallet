@@ -1,0 +1,39 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "agent": {
+    "on_session_start": ".agents/init.sh",
+    "rules_source": "AGENTS.md",
+    "coding_rules": ".agents/rules/coding-rules.json"
+  },
+  "skills": {
+    "project-mapper": {
+      "type": "local",
+      "path": ".agents/skills/project-mapper",
+      "auto_trigger": {
+        "on_session_start": true,
+        "map_ttl_hours": 2,
+        "force_regenerate_if_missing": true
+      },
+      "scripts": {
+        "generate": ".agents/skills/project-mapper/scripts/generate_map.py",
+        "inject": ".agents/skills/project-mapper/scripts/inject_relevant.py",
+        "compress": ".agents/skills/project-mapper/scripts/compress_context.py"
+      },
+      "output": ".agents/skills/project-mapper/resources"
+    },
+    "prompt-toolkit": {
+      "type": "local",
+      "path": ".agents/skills/prompt-toolkit",
+      "validate_critical_prompts": true,
+      "validator_rules": ".agents/skills/prompt-toolkit/validator/rules.json",
+      "project_rules_overlay": ".agents/rules/coding-rules.json"
+    },
+    "agent-init": {
+      "type": "local",
+      "path": ".agents/skills/agent-init",
+      "auto_trigger": {
+        "on_first_session": true
+      }
+    }
+  }
+}

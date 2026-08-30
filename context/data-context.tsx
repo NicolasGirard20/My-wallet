@@ -158,14 +158,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (tx.categoryId !== undefined) payload.categoryId = tx.categoryId
     if (tx.date !== undefined) payload.date = tx.date
     await updateTransactionAction(id, payload)
-    const txs = await getTransactionsAction()
+    const [txs, sav] = await Promise.all([getTransactionsAction(), getSavingGoalsAction()])
     setTransactions(txs)
+    setSavings(sav)
   }, [])
 
   const deleteTransaction = useCallback(async (id: number) => {
     await deleteTransactionAction(id)
-    const txs = await getTransactionsAction()
+    const [txs, sav] = await Promise.all([getTransactionsAction(), getSavingGoalsAction()])
     setTransactions(txs)
+    setSavings(sav)
   }, [])
 
   const addCategory = useCallback(async (name: string, kind: TransactionKind, color: string) => {

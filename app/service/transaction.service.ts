@@ -71,7 +71,30 @@ export async function updateTransaction(
   }>,
 ) {
   try {
-    return await prisma.transaction.update({ where: { id, userId }, data })
+    return await prisma.$transaction(async (tx) => {
+      const previous = await tx.transaction.findUnique({ where: { id, userId } })
+      if (!previous) throw new Error("Transacción no encontrada")
+
+      const transaction = await tx.transaction.update({ where: { id, userId }, data })
+
+      if (previous.savingGoalId && data.amount !== undefined) {
+        const goal = await tx.savingGoal.findUnique({
+          where: { id: previous.savingGoalId, userId },
+        })
+        if (goal) {
+          const kind = data.kind ?? previous.kind
+          const delta = data.amount - previous.amount
+          const adjustment = kind === "expense" ? delta : -delta
+          const newSaved = Math.max(0, goal.saved + adjustment)
+          await tx.savingGoal.update({
+            where: { id: goal.id },
+            data: { saved: newSaved },
+          })
+        }
+      }
+
+      return transaction
+    })
   } catch (error) {
     logger.error("updateTransaction failed:", error)
     throw new Error("Error al actualizar la transacción")
@@ -80,7 +103,26 @@ export async function updateTransaction(
 
 export async function deleteTransaction(id: number, userId: number) {
   try {
-    await prisma.transaction.delete({ where: { id, userId } })
+    await prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.findUnique({ where: { id, userId } })
+      if (!transaction) throw new Error("Transacción no encontrada")
+
+      if (transaction.savingGoalId) {
+        const goal = await tx.savingGoal.findUnique({
+          where: { id: transaction.savingGoalId, userId },
+        })
+        if (goal) {
+          const adjustment = transaction.kind === "expense" ? -transaction.amount : transaction.amount
+          const newSaved = Math.max(0, goal.saved + adjustment)
+          await tx.savingGoal.update({
+            where: { id: goal.id },
+            data: { saved: newSaved },
+          })
+        }
+      }
+
+      await tx.transaction.delete({ where: { id, userId } })
+    })
   } catch (error) {
     logger.error("deleteTransaction failed:", error)
     throw new Error("Error al eliminar la transacción")
