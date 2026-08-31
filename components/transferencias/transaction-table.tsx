@@ -39,7 +39,7 @@ export function TransactionTable({
   kind: TransactionKind
   onEdit: (tx: Transaction) => void
 }) {
-  const { transactions, categories, savings, deleteTransaction } = useData()
+  const { transactions, categories, savings, investments, deleteTransaction } = useData()
   const [query, setQuery] = useState("")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
@@ -136,6 +136,10 @@ export function TransactionTable({
         return `Esta transferencia está vinculada a la meta "${goalName}". Al eliminarla, el ahorro se reducirá en ${amount}. ¿Continuar?`
       }
       return `Esta transferencia está vinculada a la meta "${goalName}". Al eliminarla, el ahorro se aumentará en ${amount}. ¿Continuar?`
+    }
+    if (pendingDelete.investmentContributionId) {
+      const amount = formatCurrency(pendingDelete.amount, pendingDelete.currency)
+      return `Esta transferencia está vinculada a una inversión. Al eliminarla, el valor invertido y actual se ajustarán en ${amount}. ¿Continuar?`
     }
     return `¿Seguro que querés eliminar "${pendingDelete.description}"? Esta acción no se puede deshacer.`
   }, [pendingDelete, savings])

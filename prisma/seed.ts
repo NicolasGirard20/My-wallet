@@ -23,6 +23,7 @@ const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Ocio", kind: "expense", color: "--chart-4" },
   { name: "Servicios", kind: "expense", color: "--chart-5" },
   { name: "Ahorros", kind: "expense", color: "--chart-5" },
+  { name: "Inversiones", kind: "expense", color: "--chart-3" },
 ]
 
 const DEFAULT_INCOME_CATEGORIES = [
@@ -31,6 +32,7 @@ const DEFAULT_INCOME_CATEGORIES = [
   { name: "Dividendos", kind: "income", color: "--chart-3" },
   { name: "Regalos", kind: "income", color: "--chart-4" },
   { name: "Ahorros", kind: "income", color: "--chart-5" },
+  { name: "Inversiones", kind: "income", color: "--chart-3" },
 ]
 
 const SEED = !process.env.NODE_ENV || process.env.NODE_ENV !== "production"

@@ -199,3 +199,37 @@ export async function deleteContributionAction(contributionId: number) {
     throw error
   }
 }
+
+export async function updateContributionAction(
+  contributionId: number,
+  data: {
+    amount: number
+    date: string
+    note?: string
+  },
+) {
+  try {
+    const session = await requireSession()
+
+    if (!Number.isFinite(data.amount) || data.amount === 0) throw new Error("El monto no puede ser 0")
+    const parsedDate = new Date(data.date)
+    if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")
+
+    const contribution = await service.updateContribution(contributionId, session.userId, {
+      amount: data.amount,
+      date: parsedDate,
+      note: data.note?.trim() || undefined,
+    })
+
+    return {
+      ...contribution,
+      date: contribution.date.toISOString(),
+      createdAt: contribution.createdAt.toISOString(),
+      currency: contribution.currency as Currency,
+      note: contribution.note ?? undefined,
+    }
+  } catch (error) {
+    logger.error("updateContributionAction failed:", error)
+    throw error
+  }
+}

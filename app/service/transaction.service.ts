@@ -93,6 +93,29 @@ export async function updateTransaction(
         }
       }
 
+      if (previous.investmentContributionId && data.amount !== undefined) {
+        const contrib = await tx.investmentContribution.findUnique({
+          where: { id: previous.investmentContributionId, userId },
+        })
+        if (contrib) {
+          const kind = data.kind ?? previous.kind
+          const delta = data.amount - previous.amount
+          const adjustment = kind === "expense" ? delta : -delta
+          const newInvested = Math.max(0, contrib.amount + adjustment)
+          await tx.investmentContribution.update({
+            where: { id: contrib.id },
+            data: { amount: data.amount > 0 ? data.amount : -data.amount },
+          })
+          await tx.investment.update({
+            where: { id: contrib.investmentId, userId },
+            data: {
+              invested: { increment: adjustment },
+              currentValue: { increment: adjustment },
+            },
+          })
+        }
+      }
+
       return transaction
     })
   } catch (error) {
@@ -117,6 +140,27 @@ export async function deleteTransaction(id: number, userId: number) {
           await tx.savingGoal.update({
             where: { id: goal.id },
             data: { saved: newSaved },
+          })
+        }
+      }
+
+      if (transaction.investmentContributionId) {
+        const contrib = await tx.investmentContribution.findUnique({
+          where: { id: transaction.investmentContributionId, userId },
+        })
+        if (contrib) {
+          const adjustment = transaction.kind === "expense" ? -transaction.amount : transaction.amount
+          const newInvested = Math.max(0, contrib.amount + adjustment)
+          await tx.investmentContribution.update({
+            where: { id: contrib.id },
+            data: { amount: newInvested },
+          })
+          await tx.investment.update({
+            where: { id: contrib.investmentId, userId },
+            data: {
+              invested: { increment: adjustment },
+              currentValue: { increment: adjustment },
+            },
           })
         }
       }

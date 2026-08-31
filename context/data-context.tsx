@@ -24,6 +24,7 @@ import {
   deleteInvestmentAction,
   addContributionAction,
   deleteContributionAction,
+  updateContributionAction,
 } from "@/app/actions/investments"
 import type {
   Category,
@@ -65,6 +66,7 @@ interface DataContextValue {
   deleteInvestment: (id: number) => Promise<void>
   addContribution: (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency">) => Promise<void>
   deleteContribution: (contributionId: number) => Promise<void>
+  updateContribution: (contributionId: number, data: { amount: number; date: string; note?: string }) => Promise<void>
   getInvestment: (id: number) => Investment | undefined
 }
 
@@ -158,16 +160,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (tx.categoryId !== undefined) payload.categoryId = tx.categoryId
     if (tx.date !== undefined) payload.date = tx.date
     await updateTransactionAction(id, payload)
-    const [txs, sav] = await Promise.all([getTransactionsAction(), getSavingGoalsAction()])
+    const [txs, sav, invs] = await Promise.all([getTransactionsAction(), getSavingGoalsAction(), getInvestmentsAction()])
     setTransactions(txs)
     setSavings(sav)
+    setInvestments(invs)
   }, [])
 
   const deleteTransaction = useCallback(async (id: number) => {
     await deleteTransactionAction(id)
-    const [txs, sav] = await Promise.all([getTransactionsAction(), getSavingGoalsAction()])
+    const [txs, sav, invs] = await Promise.all([getTransactionsAction(), getSavingGoalsAction(), getInvestmentsAction()])
     setTransactions(txs)
     setSavings(sav)
+    setInvestments(invs)
   }, [])
 
   const addCategory = useCallback(async (name: string, kind: TransactionKind, color: string) => {
@@ -277,6 +281,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setInvestments(invs)
   }, [])
 
+  const updateContribution = useCallback(
+    async (contributionId: number, data: { amount: number; date: string; note?: string }) => {
+      await updateContributionAction(contributionId, data)
+      const invs = await getInvestmentsAction()
+      setInvestments(invs)
+    },
+    [],
+  )
+
   const getInvestment = useCallback(
     (id: number) => visibleInvestments.find((i) => i.id === id),
     [visibleInvestments],
@@ -309,6 +322,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteInvestment,
       addContribution,
       deleteContribution,
+      updateContribution,
       getInvestment,
     }),
     [
@@ -337,6 +351,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteInvestment,
       addContribution,
       deleteContribution,
+      updateContribution,
       getInvestment,
     ],
   )

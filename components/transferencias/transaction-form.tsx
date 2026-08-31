@@ -45,7 +45,7 @@ function todayInput() {
 
 export function TransactionForm({ kind, open, onOpenChange, editing }: TransactionFormProps) {
   const { currency } = useCurrency()
-  const { categoriesByKind, savings, addTransaction, updateTransaction } = useData()
+  const { categoriesByKind, savings, investments, addTransaction, updateTransaction } = useData()
   const categories = categoriesByKind(kind)
 
   const [amount, setAmount] = useState("")
@@ -102,7 +102,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       date: parsedDate.toISOString(),
     }
 
-    if (editing && editing.savingGoalId && parsed !== editing.amount) {
+    if (editing && (editing.savingGoalId || editing.investmentContributionId) && parsed !== editing.amount) {
       setPendingPayload(payload)
       return
     }
@@ -123,21 +123,45 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     const newAmount = pendingPayload.amount
     const delta = newAmount - oldAmount
     const absDelta = Math.abs(delta)
-    const goal = savings.find((s) => s.id === editing.savingGoalId)
-    const goalName = goal?.name ?? "una meta de ahorro"
     const oldText = formatCurrency(oldAmount, editing.currency)
     const newText = formatCurrency(newAmount, editing.currency)
     const deltaText = formatCurrency(absDelta, editing.currency)
-    const impact =
-      kind === "expense"
-        ? delta > 0
-          ? `aumentará en ${deltaText}`
-          : `se reducirá en ${deltaText}`
-        : delta > 0
-          ? `se reducirá en ${deltaText}`
-          : `aumentará en ${deltaText}`
-    return `Esta transferencia está vinculada a la meta "${goalName}". Al cambiar el monto de ${oldText} a ${newText}, el ahorro ${impact}. ¿Continuar?`
+
+    if (editing.savingGoalId) {
+      const goal = savings.find((s) => s.id === editing.savingGoalId)
+      const goalName = goal?.name ?? "una meta de ahorro"
+      const impact =
+        kind === "expense"
+          ? delta > 0
+            ? `aumentará en ${deltaText}`
+            : `se reducirá en ${deltaText}`
+          : delta > 0
+            ? `se reducirá en ${deltaText}`
+            : `aumentará en ${deltaText}`
+      return `Esta transferencia está vinculada a la meta "${goalName}". Al cambiar el monto de ${oldText} a ${newText}, el ahorro ${impact}. ¿Continuar?`
+    }
+
+    if (editing.investmentContributionId) {
+      const impact =
+        kind === "expense"
+          ? delta > 0
+            ? `aumentará en ${deltaText}`
+            : `se reducirá en ${deltaText}`
+          : delta > 0
+            ? `se reducirá en ${deltaText}`
+            : `aumentará en ${deltaText}`
+      return `Esta transferencia está vinculada a una inversión. Al cambiar el monto de ${oldText} a ${newText}, el valor invertido ${impact}. ¿Continuar?`
+    }
+
+    return ""
   }, [pendingPayload, editing, savings, kind])
+
+  const confirmTitle = useMemo(() => {
+    if (!editing) return "Editar transferencia vinculada"
+    if (editing.savingGoalId) return "Editar transferencia vinculada a ahorro"
+    if (editing.investmentContributionId) return "Editar transferencia vinculada a inversión"
+    return "Editar transferencia vinculada"
+  }, [editing])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -220,7 +244,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       <ConfirmDialog
         open={pendingPayload !== null}
         onOpenChange={(open) => { if (!open) setPendingPayload(null) }}
-        title="Editar transferencia vinculada a ahorro"
+        title={confirmTitle}
         description={confirmDescription}
         confirmLabel="Confirmar"
         confirmVariant="default"

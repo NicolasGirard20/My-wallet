@@ -35,20 +35,22 @@ model Category {
 }
 
 model Transaction {
-  id           Int         @id @default(autoincrement())
+  id           Int                     @id @default(autoincrement())
   kind         String
   amount       Float
   description  String
   categoryId   Int
-  currency     String      @default("ARS")
+  currency     String                  @default("ARS")
   date         DateTime
   userId       Int
   savingGoalId Int?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  savingGoal   SavingGoal? @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentContributionId Int?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  category     Category                @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  savingGoal   SavingGoal?             @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
+  investmentContribution InvestmentContribution? @relation(fields: [investmentContributionId], references: [id], onDelete: SetNull)
+  user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SavingGoal {
@@ -91,4 +93,5 @@ model InvestmentContribution {
   createdAt    DateTime   @default(now())
   investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 }

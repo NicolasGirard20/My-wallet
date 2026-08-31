@@ -67,3 +67,20 @@ export async function getOrCreateSavingsCategory(userId: number, kind: string, t
     throw new Error("Error al obtener o crear la categoría de ahorros")
   }
 }
+
+export async function getOrCreateInvestmentCategory(userId: number, kind: string, tx?: Prisma.TransactionClient) {
+  const client = tx ?? prisma
+  try {
+    const existing = await client.category.findFirst({
+      where: { userId, name: "Inversiones", kind },
+    })
+    if (existing) return existing
+
+    return await client.category.create({
+      data: { userId, name: "Inversiones", kind, color: "--chart-3" },
+    })
+  } catch (error) {
+    logger.error("getOrCreateInvestmentCategory failed:", error)
+    throw new Error("Error al obtener o crear la categoría de inversiones")
+  }
+}

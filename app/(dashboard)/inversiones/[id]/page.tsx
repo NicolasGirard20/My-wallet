@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Plus, TrendingUp, Trash2, RefreshCw } from "lucide-react"
+import { ArrowLeft, Edit3, Plus, TrendingUp, Trash2, RefreshCw } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AmountDisplay } from "@/components/shared/amount-display"
@@ -16,7 +16,7 @@ import { formatDate, validateDate } from "@/lib/format"
 export default function InversionDetallePage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
-  const { getInvestment, addContribution, deleteContribution, updateInvestment } = useData()
+  const { getInvestment, addContribution, deleteContribution, updateContribution, updateInvestment } = useData()
   const investmentId = Number(params.id)
   const investment = Number.isInteger(investmentId) ? getInvestment(investmentId) : undefined
   const [amount, setAmount] = useState("500")
@@ -27,6 +27,13 @@ export default function InversionDetallePage() {
   const [newValue, setNewValue] = useState("")
 
   const [confirmDeleteContribId, setConfirmDeleteContribId] = useState<number | null>(null)
+
+  const [editingContrib, setEditingContrib] = useState<{
+    id: number
+    amount: string
+    date: string
+    note: string
+  } | null>(null)
 
   const change = useMemo(
     () => (investment ? investment.currentValue - investment.invested : 0),
@@ -69,6 +76,29 @@ export default function InversionDetallePage() {
     if (!Number.isFinite(parsed) || parsed < 0 || !investment) return
     updateInvestment(investment.id, { currentValue: parsed })
     setUpdateValueOpen(false)
+  }
+
+  function handleEditContribution(contrib: { id: number; amount: number; date: string; note?: string }) {
+    setEditingContrib({
+      id: contrib.id,
+      amount: String(contrib.amount),
+      date: contrib.date.slice(0, 10),
+      note: contrib.note ?? "",
+    })
+  }
+
+  function handleSaveEditContribution() {
+    if (!editingContrib || !investment) return
+    const parsed = Number(editingContrib.amount)
+    if (!Number.isFinite(parsed) || parsed === 0) return
+    const parsedDate = validateDate(editingContrib.date)
+    if (!parsedDate) return
+    updateContribution(editingContrib.id, {
+      amount: parsed,
+      date: parsedDate.toISOString(),
+      note: editingContrib.note.trim() || undefined,
+    })
+    setEditingContrib(null)
   }
 
   return (
@@ -150,6 +180,14 @@ export default function InversionDetallePage() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      onClick={() => handleEditContribution(contribution)}
+                      aria-label="Editar movimiento"
+                    >
+                      <Edit3 className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => setConfirmDeleteContribId(contribution.id)}
                       aria-label="Eliminar movimiento"
                     >
@@ -209,11 +247,36 @@ export default function InversionDetallePage() {
         open={confirmDeleteContribId !== null}
         onOpenChange={(open) => { if (!open) setConfirmDeleteContribId(null) }}
         title="Eliminar movimiento"
-        description="¿Estás seguro de eliminar este movimiento? El valor invertido y actual se ajustarán automáticamente."
+        description="¿Estás seguro de eliminar este movimiento? El valor invertido y actual se ajustarán automáticamente, y la transferencia vinculada se eliminará."
         onConfirm={() => {
           if (confirmDeleteContribId !== null) deleteContribution(confirmDeleteContribId)
         }}
       />
+
+      <ConfirmDialog
+        open={editingContrib !== null}
+        onOpenChange={(open) => { if (!open) setEditingContrib(null) }}
+        title="Editar movimiento"
+        description="Modificá el monto, fecha o nota de este aporte o retiro."
+        confirmLabel="Guardar"
+        confirmVariant="default"
+        onConfirm={handleSaveEditContribution}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monto</label>
+            <Input type="number" value={editingContrib?.amount ?? ""} onChange={(e) => setEditingContrib((prev) => prev ? { ...prev, amount: e.target.value } : null)} placeholder="Positivo para aporte, negativo para retiro" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fecha</label>
+            <Input type="date" value={editingContrib?.date ?? ""} onChange={(e) => setEditingContrib((prev) => prev ? { ...prev, date: e.target.value } : null)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Nota</label>
+            <Input value={editingContrib?.note ?? ""} onChange={(e) => setEditingContrib((prev) => prev ? { ...prev, note: e.target.value } : null)} placeholder="Ej: aporte trimestral" />
+          </div>
+        </div>
+      </ConfirmDialog>
     </div>
   )
 }
