@@ -40,7 +40,26 @@ export async function createInvestment(data: {
   userId: number
 }) {
   try {
-    return await prisma.investment.create({ data })
+    return await prisma.$transaction(async (tx) => {
+      const investment = await tx.investment.create({ data })
+
+      if (data.invested > 0) {
+        const cat = await getOrCreateInvestmentCategory(data.userId, "expense", tx)
+        await tx.transaction.create({
+          data: {
+            kind: "expense",
+            amount: data.invested,
+            description: `Inversión inicial en ${data.name}`,
+            categoryId: cat.id,
+            currency: data.currency,
+            date: new Date(),
+            userId: data.userId,
+          },
+        })
+      }
+
+      return investment
+    })
   } catch (error) {
     logger.error("createInvestment failed:", error)
     throw new Error("Error al crear la inversión")
@@ -85,6 +104,12 @@ export async function addContribution(investmentId: number, userId: number, data
     const amount = data.amount
 
     return await prisma.$transaction(async (tx) => {
+      const investment = await tx.investment.findUnique({
+        where: { id: investmentId, userId },
+        select: { name: true },
+      })
+      if (!investment) throw new Error("Inversión no encontrada")
+
       const contribution = await tx.investmentContribution.create({
         data: { ...data, amount, investmentId, userId },
       })
@@ -103,7 +128,7 @@ export async function addContribution(investmentId: number, userId: number, data
         data: {
           kind,
           amount: Math.abs(amount),
-          description: amount > 0 ? `Aporte a ${data.note || "inversión"}` : `Retiro de ${data.note || "inversión"}`,
+          description: amount > 0 ? `Aporte a ${investment.name}` : `Retiro de ${investment.name}`,
           categoryId: cat.id,
           currency: data.currency,
           date: data.date,
@@ -166,6 +191,12 @@ export async function updateContribution(
       })
       if (!previous) throw new Error("Aporte no encontrado")
 
+      const investment = await tx.investment.findUnique({
+        where: { id: previous.investmentId, userId },
+        select: { name: true },
+      })
+      if (!investment) throw new Error("Inversión no encontrada")
+
       const contribution = await tx.investmentContribution.update({
         where: { id: contributionId },
         data: { amount: data.amount, date: data.date, note: data.note },
@@ -192,8 +223,8 @@ export async function updateContribution(
               kind,
               amount: Math.abs(data.amount),
               description: data.amount > 0
-                ? `Aporte a ${data.note || "inversión"}`
-                : `Retiro de ${data.note || "inversión"}`,
+                ? `Aporte a ${investment.name}`
+                : `Retiro de ${investment.name}`,
             },
           })
         }

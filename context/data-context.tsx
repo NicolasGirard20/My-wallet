@@ -206,12 +206,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await createSavingGoalAction({
       name: goal.name,
       target: goal.target,
+      saved: goal.saved,
       color: goal.color,
       currency,
       deadline: goal.deadline,
     })
-    const sav = await getSavingGoalsAction()
+    const [sav, txs] = await Promise.all([getSavingGoalsAction(), getTransactionsAction()])
     setSavings(sav)
+    setTransactions(txs)
   }, [currency])
 
   const updateSaving = useCallback(async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">>) => {
@@ -222,14 +224,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (goal.color !== undefined) payload.color = goal.color
     if (goal.deadline !== undefined) payload.deadline = goal.deadline ?? null
     await updateSavingGoalAction(id, payload)
-    const sav = await getSavingGoalsAction()
+    const [sav, txs] = await Promise.all([getSavingGoalsAction(), getTransactionsAction()])
     setSavings(sav)
+    setTransactions(txs)
   }, [])
 
   const deleteSaving = useCallback(async (id: number) => {
     await deleteSavingGoalAction(id)
-    const sav = await getSavingGoalsAction()
+    const [sav, txs] = await Promise.all([getSavingGoalsAction(), getTransactionsAction()])
     setSavings(sav)
+    setTransactions(txs)
   }, [])
 
   const addInvestment = useCallback(
@@ -257,8 +261,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteInvestment = useCallback(async (id: number) => {
     await deleteInvestmentAction(id)
-    const invs = await getInvestmentsAction()
+    const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
     setInvestments(invs)
+    setTransactions(txs)
   }, [])
 
   const addContribution = useCallback(
@@ -269,23 +274,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         currency,
         note: c.note,
       })
-      const invs = await getInvestmentsAction()
+      const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
       setInvestments(invs)
+      setTransactions(txs)
     },
     [currency],
   )
 
   const deleteContribution = useCallback(async (contributionId: number) => {
     await deleteContributionAction(contributionId)
-    const invs = await getInvestmentsAction()
+    const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
     setInvestments(invs)
+    setTransactions(txs)
   }, [])
 
   const updateContribution = useCallback(
     async (contributionId: number, data: { amount: number; date: string; note?: string }) => {
       await updateContributionAction(contributionId, data)
-      const invs = await getInvestmentsAction()
+      const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
       setInvestments(invs)
+      setTransactions(txs)
     },
     [],
   )
