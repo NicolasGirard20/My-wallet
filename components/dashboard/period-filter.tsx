@@ -20,7 +20,7 @@ interface PeriodFilterProps {
 }
 
 export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
-  function handleModeChange(mode: string) {
+  function handleModeChange(mode: "range" | "total" | null) {
     if (mode === "range") {
       const today = todayInput()
       onChange({ mode: "range", from: today, to: today })

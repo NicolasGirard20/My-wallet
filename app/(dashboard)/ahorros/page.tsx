@@ -22,11 +22,13 @@ export default function AhorrosPage() {
   const [target, setTarget] = useState("1000")
   const [saved, setSaved] = useState("0")
   const [color, setColor] = useState("--chart-1")
+  const [deadline, setDeadline] = useState("")
 
   const [editingGoal, setEditingGoal] = useState<SavingGoal | null>(null)
   const [editName, setEditName] = useState("")
   const [editTarget, setEditTarget] = useState("")
   const [editColor, setEditColor] = useState("")
+  const [editDeadline, setEditDeadline] = useState("")
 
   const [adjustGoal, setAdjustGoal] = useState<SavingGoal | null>(null)
   const [adjustDelta, setAdjustDelta] = useState("")
@@ -42,13 +44,14 @@ export default function AhorrosPage() {
       target: parsedTarget,
       saved: Math.max(0, Math.min(parsedSaved, parsedTarget)),
       color,
-      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 120).toISOString(),
+      deadline: deadline || undefined,
     })
     setOpen(false)
     setName("")
     setTarget("1000")
     setSaved("0")
     setColor("--chart-1")
+    setDeadline("")
   }
 
   function handleEdit(goal: SavingGoal) {
@@ -56,6 +59,7 @@ export default function AhorrosPage() {
     setEditName(goal.name)
     setEditTarget(String(goal.target))
     setEditColor(goal.color)
+    setEditDeadline(goal.deadline ? goal.deadline.slice(0, 10) : "")
   }
 
   function handleSaveEdit() {
@@ -66,6 +70,7 @@ export default function AhorrosPage() {
       name: editName.trim(),
       target: parsedTarget,
       color: editColor,
+      deadline: editDeadline || null,
     })
     setEditingGoal(null)
   }
@@ -115,6 +120,10 @@ export default function AhorrosPage() {
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium">Color</label>
               <ColorPicker value={color} onChange={setColor} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium">Fecha límite (opcional)</label>
+              <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
             </div>
             <div className="md:col-span-2 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
@@ -213,6 +222,10 @@ export default function AhorrosPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Color</label>
             <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fecha límite (opcional)</label>
+            <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
           </div>
         </div>
       </ConfirmDialog>

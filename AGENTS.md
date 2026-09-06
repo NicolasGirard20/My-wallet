@@ -125,6 +125,10 @@ components/
     balance-chart.tsx         # Gráfico de área (ingresos vs gastos en el tiempo)
     category-chart.tsx        # Gráfico de torta (desglose por categoría)
     period-filter.tsx         # Selector de período: Total o rango personalizado
+  calculator/
+    use-calculator.ts         # Hook: state machine de la calculadora flotante
+    calculator-panel.tsx      # UI: display + keypad + conversión USD/ARS + historial
+    floating-calculator.tsx   # FAB flotante abajo-derecha + Popover contenedor
   transferencias/
     transaction-form.tsx      # Formulario (Dialog) para crear/editar transacciones
     transaction-table.tsx     # Tabla con búsqueda, filtro, ordenamiento, editar, eliminar
@@ -138,7 +142,7 @@ components/
   ui/                         # Primitivas shadcn/ui (basadas en Base UI)
     avatar.tsx, badge.tsx, button.tsx, card.tsx, chart.tsx
     dialog.tsx, dropdown-menu.tsx, empty.tsx, field.tsx
-    input.tsx, label.tsx, progress.tsx, select.tsx
+    input.tsx, label.tsx, popover.tsx, progress.tsx, select.tsx
     separator.tsx, sheet.tsx, sonner.tsx, table.tsx
     tabs.tsx, tooltip.tsx
 

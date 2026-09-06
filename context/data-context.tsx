@@ -58,7 +58,7 @@ interface DataContextValue {
   getCategory: (id: number) => Category | undefined
 
   addSaving: (goal: Omit<SavingGoal, "id" | "currency">) => Promise<void>
-  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">>) => Promise<void>
+  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency" | "deadline">> & { deadline?: string | null }) => Promise<void>
   deleteSaving: (id: number) => Promise<void>
 
   addInvestment: (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency">) => Promise<void>
@@ -216,7 +216,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setTransactions(txs)
   }, [currency])
 
-  const updateSaving = useCallback(async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">>) => {
+  const updateSaving = useCallback(async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency" | "deadline">> & { deadline?: string | null }) => {
     const payload: Record<string, unknown> = {}
     if (goal.name !== undefined) payload.name = goal.name
     if (goal.target !== undefined) payload.target = goal.target

@@ -8,6 +8,7 @@ import { useAuth } from "@/context/auth-context"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { CurrencyToggle } from "@/components/layout/currency-toggle"
+import { FloatingCalculator } from "@/components/calculator/floating-calculator"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -49,6 +50,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <FloatingCalculator />
     </div>
   )
 }

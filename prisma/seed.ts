@@ -48,7 +48,10 @@ function seedError(...args: unknown[]) {
 async function main() {
   seedLog("Starting My Wallet seeding...")
 
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12)
+  const password = ADMIN_PASSWORD
+  if (!password) throw new Error("ADMIN_INIT_PASSWORD is not set")
+
+  const passwordHash = await bcrypt.hash(password, 12)
 
   await prisma.user.upsert({
     where: { username: ADMIN_USERNAME },
