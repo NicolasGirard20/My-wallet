@@ -26,7 +26,8 @@ import { CategoryBadge } from "@/components/shared/category-badge"
 import { AmountDisplay } from "@/components/shared/amount-display"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { useData } from "@/context/data-context"
-import { formatDate } from "@/lib/format"
+import { useCurrency } from "@/context/currency-context"
+import { formatCurrency, formatDate } from "@/lib/format"
 import type { Category, Transaction, TransactionKind } from "@/lib/types"
 
 type SortKey = "date" | "amount"
@@ -38,7 +39,8 @@ export function TransactionTable({
   kind: TransactionKind
   onEdit: (tx: Transaction) => void
 }) {
-  const { transactions, categories, deleteTransaction } = useData()
+  const { transactions, categories, checkingAccounts, deleteTransaction } = useData()
+  const { currency } = useCurrency()
   const [query, setQuery] = useState("")
   const [dateFilter, setDateFilter] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
@@ -51,6 +53,12 @@ export function TransactionTable({
     categories.forEach((c) => m.set(c.id, c))
     return m
   }, [categories])
+
+  const accMap = useMemo(() => {
+    const m = new Map<number, (typeof checkingAccounts)[0]>()
+    checkingAccounts.forEach((a) => m.set(a.id, a))
+    return m
+  }, [checkingAccounts])
 
   const kindCategories = categories.filter((c) => c.kind === kind)
 
@@ -189,7 +197,20 @@ export function TransactionTable({
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(tx.date)}
                     </TableCell>
-                    <TableCell className="font-medium">{tx.description}</TableCell>
+                    <TableCell>
+                      <div className="font-medium text-foreground">{tx.description}</div>
+                      {tx.checkingAccountId && accMap.get(tx.checkingAccountId) && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+                          <span
+                            className="size-1.5 rounded-full shrink-0"
+                            style={{
+                              backgroundColor: `var(${accMap.get(tx.checkingAccountId)!.color})`,
+                            }}
+                          />
+                          <span className="truncate">{accMap.get(tx.checkingAccountId)!.name}</span>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {cat ? (
                         <CategoryBadge name={cat.name} color={cat.color} />
@@ -200,10 +221,17 @@ export function TransactionTable({
                     <TableCell className="text-right">
                       <AmountDisplay
                         value={tx.amount}
+                        from={tx.currency}
                         kind={kind}
                         showSign
-                        className="justify-end"
+                        className="justify-end block"
                       />
+                      {tx.currency !== currency && (
+                        <span className="font-mono text-[10px] text-muted-foreground tabular-nums block">
+                          ({tx.currency === "ARS" ? "$" : "US$"}{" "}
+                          {tx.amount.toLocaleString("es-AR", { maximumFractionDigits: 2 })})
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">

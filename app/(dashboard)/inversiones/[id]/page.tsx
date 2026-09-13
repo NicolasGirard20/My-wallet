@@ -96,7 +96,7 @@ export default function InversionDetallePage() {
             <CardTitle>Valor actual</CardTitle>
           </CardHeader>
           <CardContent>
-            <AmountDisplay value={investment.currentValue} className="text-2xl font-semibold" />
+            <AmountDisplay value={investment.currentValue} from={investment.currency} className="text-2xl font-semibold" />
           </CardContent>
         </Card>
 
@@ -105,7 +105,7 @@ export default function InversionDetallePage() {
             <CardTitle>Invertido</CardTitle>
           </CardHeader>
           <CardContent>
-            <AmountDisplay value={investment.invested} className="text-2xl font-semibold" />
+            <AmountDisplay value={investment.invested} from={investment.currency} className="text-2xl font-semibold" />
           </CardContent>
         </Card>
 
@@ -116,6 +116,7 @@ export default function InversionDetallePage() {
           <CardContent>
             <AmountDisplay
               value={change}
+              from={investment.currency}
               kind={change >= 0 ? "income" : "expense"}
               showSign
               className="text-2xl font-semibold"
@@ -143,6 +144,7 @@ export default function InversionDetallePage() {
                   <div className="flex items-center gap-2">
                     <AmountDisplay
                       value={contribution.amount}
+                      from={contribution.currency}
                       kind={contribution.amount >= 0 ? "income" : "expense"}
                       showSign
                       className="font-medium"

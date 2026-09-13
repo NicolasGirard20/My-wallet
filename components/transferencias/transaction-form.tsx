@@ -6,7 +6,8 @@ import { toast } from "sonner"
 import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
 import { CURRENCY_META, validateDate } from "@/lib/format"
-import type { Transaction, TransactionKind } from "@/lib/types"
+import type { Currency, Transaction, TransactionKind } from "@/lib/types"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -40,13 +41,21 @@ function todayInput() {
 }
 
 export function TransactionForm({ kind, open, onOpenChange, editing }: TransactionFormProps) {
-  const { currency } = useCurrency()
-  const { categoriesByKind, addTransaction, updateTransaction } = useData()
+  const { currency: globalCurrency } = useCurrency()
+  const {
+    categoriesByKind,
+    checkingAccounts,
+    selectedAccountId,
+    addTransaction,
+    updateTransaction,
+  } = useData()
   const categories = categoriesByKind(kind)
 
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState<number | null>(null)
+  const [accountId, setAccountId] = useState<number | null>(null)
+  const [txCurrency, setTxCurrency] = useState<Currency>("ARS")
   const [date, setDate] = useState(todayInput())
 
   useEffect(() => {
@@ -55,17 +64,33 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       setAmount(String(editing.amount))
       setDescription(editing.description)
       setCategoryId(editing.categoryId)
+      setAccountId(editing.checkingAccountId ?? null)
+      setTxCurrency(editing.currency)
       setDate(editing.date.slice(0, 10))
     } else {
       setAmount("")
       setDescription("")
       setCategoryId(categories[0]?.id ?? null)
+      const defaultAcc =
+        selectedAccountId !== "all"
+          ? checkingAccounts.find((a) => a.id === selectedAccountId)
+          : checkingAccounts.find((a) => a.isDefault) ?? checkingAccounts[0]
+      setAccountId(defaultAcc?.id ?? null)
+      setTxCurrency(defaultAcc?.currency ?? globalCurrency)
       setDate(todayInput())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editing])
 
   const noun = kind === "income" ? "ingreso" : "gasto"
+
+  function handleAccountChange(accId: number | null) {
+    setAccountId(accId)
+    if (accId) {
+      const acc = checkingAccounts.find((a) => a.id === accId)
+      if (acc) setTxCurrency(acc.currency)
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -88,6 +113,8 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       amount: parsed,
       description: description.trim() || (kind === "income" ? "Ingreso" : "Gasto"),
       categoryId,
+      currency: txCurrency,
+      checkingAccountId: accountId ?? undefined,
       date: parsedDate.toISOString(),
     }
 
@@ -109,14 +136,52 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
             {editing ? `Editar ${noun}` : `Nuevo ${noun}`}
           </DialogTitle>
           <DialogDescription>
-            Los montos se cargan en {CURRENCY_META[currency].label.toLowerCase()} ({currency}).
+            Registrá la operación indicando la cuenta corriente y monto.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} id="transaction-form">
           <FieldGroup>
+            {/* Cuenta Corriente */}
             <Field>
-              <FieldLabel htmlFor="amount">Monto ({CURRENCY_META[currency].symbol})</FieldLabel>
+              <FieldLabel>Cuenta Corriente</FieldLabel>
+              <select
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={accountId ?? ""}
+                onChange={(e) => handleAccountChange(Number(e.target.value) || null)}
+              >
+                <option value="">Sin cuenta asignada</option>
+                {checkingAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field>
+              <div className="flex items-center justify-between">
+                <FieldLabel htmlFor="amount">
+                  Monto ({CURRENCY_META[txCurrency].symbol})
+                </FieldLabel>
+                <div className="flex items-center gap-1">
+                  {(["ARS", "USD"] as Currency[]).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setTxCurrency(c)}
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                        txCurrency === c
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Input
                 id="amount"
                 type="number"

@@ -13,6 +13,9 @@ function mapTx(tx: {
   categoryId: number
   currency: string
   date: Date
+  savingGoalId?: number | null
+  investmentContributionId?: number | null
+  checkingAccountId?: number | null
   createdAt: Date
   updatedAt: Date
 }): Transaction {
@@ -24,6 +27,9 @@ function mapTx(tx: {
     categoryId: tx.categoryId,
     currency: tx.currency as Currency,
     date: tx.date.toISOString(),
+    savingGoalId: tx.savingGoalId ?? undefined,
+    investmentContributionId: tx.investmentContributionId ?? undefined,
+    checkingAccountId: tx.checkingAccountId ?? undefined,
   }
 }
 
@@ -33,8 +39,8 @@ function isCurrency(value: unknown): value is Currency {
 
 export async function getTransactionsAction() {
   try {
-    await requireSession()
-    const transactions = await service.getTransactions()
+    const session = await requireSession()
+    const transactions = await service.getTransactions({ userId: session.userId })
     return transactions.map(mapTx)
   } catch (error) {
     logger.error("getTransactionsAction failed:", error)
@@ -49,9 +55,10 @@ export async function createTransactionAction(data: {
   categoryId: number
   currency: string
   date: string
+  checkingAccountId?: number | null
 }) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     if (!["income", "expense"].includes(data.kind)) throw new Error("Tipo inválido")
     if (!Number.isFinite(data.amount) || data.amount <= 0) throw new Error("El monto debe ser mayor a 0")
@@ -69,6 +76,8 @@ export async function createTransactionAction(data: {
       categoryId: data.categoryId,
       currency: data.currency,
       date: parsedDate,
+      userId: session.userId,
+      checkingAccountId: data.checkingAccountId ?? undefined,
     })
 
     return mapTx(tx)
@@ -86,10 +95,11 @@ export async function importTransactionsAction(
     categoryId: number
     currency: string
     date: string
+    checkingAccountId?: number | null
   }>,
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const results = []
     for (const tx of txs) {
@@ -107,6 +117,8 @@ export async function importTransactionsAction(
         categoryId: tx.categoryId,
         currency: tx.currency,
         date: parsedDate,
+        userId: session.userId,
+        checkingAccountId: tx.checkingAccountId ?? undefined,
       })
 
       results.push(mapTx(created))
@@ -128,6 +140,7 @@ export async function updateTransactionAction(
     categoryId: number
     currency: string
     date: string
+    checkingAccountId?: number | null
   }>,
 ) {
   try {
@@ -158,6 +171,9 @@ export async function updateTransactionAction(
       const parsedDate = new Date(data.date)
       if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")
       updateData.date = parsedDate
+    }
+    if (data.checkingAccountId !== undefined) {
+      updateData.checkingAccountId = data.checkingAccountId
     }
 
     const tx = await service.updateTransaction(id, updateData)

@@ -172,11 +172,11 @@ export default function AhorrosPage() {
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Ahorrado</span>
-                  <AmountDisplay value={goal.saved} className="font-semibold" />
+                  <AmountDisplay value={goal.saved} from={goal.currency} className="font-semibold" />
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Objetivo</span>
-                  <AmountDisplay value={goal.target} className="font-semibold" />
+                  <AmountDisplay value={goal.target} from={goal.currency} className="font-semibold" />
                 </div>
 
                 <div className={cn(

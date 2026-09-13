@@ -17,6 +17,36 @@ export interface Transaction {
   categoryId: number
   currency: Currency
   date: string // ISO date string
+  savingGoalId?: number
+  investmentContributionId?: number
+  checkingAccountId?: number
+}
+
+export interface CheckingAccount {
+  id: number
+  name: string
+  bankName?: string
+  accountNumber?: string
+  cbuOrAlias?: string
+  currency: Currency
+  initialBalance: number
+  overdraftLimit: number
+  color: string
+  isDefault: boolean
+  isActive: boolean
+  currentBalance?: number // Computado: initialBalance + ingresos - gastos + transferencias
+  createdAt: string
+}
+
+export interface AccountTransfer {
+  id: number
+  sourceAccountId: number
+  targetAccountId: number
+  sourceAmount: number
+  targetAmount: number
+  exchangeRate?: number
+  date: string
+  description?: string
 }
 
 export interface SavingGoal {

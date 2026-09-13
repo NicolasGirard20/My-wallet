@@ -7,15 +7,21 @@ export async function getTransactions(filters?: {
   kind?: string
   categoryId?: number
   currency?: string
+  checkingAccountId?: number
   from?: Date
   to?: Date
+  userId?: number
 }) {
   try {
     const where: Prisma.TransactionWhereInput = {}
 
+    if (filters?.userId) where.userId = filters.userId
     if (filters?.kind) where.kind = filters.kind
     if (filters?.categoryId) where.categoryId = filters.categoryId
     if (filters?.currency) where.currency = filters.currency
+    if (filters?.checkingAccountId !== undefined) {
+      where.checkingAccountId = filters.checkingAccountId
+    }
     if (filters?.from || filters?.to) {
       where.date = {}
       if (filters.from) where.date.gte = filters.from
@@ -48,6 +54,10 @@ export async function createTransaction(data: {
   categoryId: number
   currency: string
   date: Date
+  userId: number
+  checkingAccountId?: number | null
+  savingGoalId?: number | null
+  investmentContributionId?: number | null
 }) {
   try {
     return await prisma.transaction.create({ data })
@@ -66,6 +76,7 @@ export async function updateTransaction(
     categoryId: number
     currency: string
     date: Date
+    checkingAccountId?: number | null
   }>,
 ) {
   try {

@@ -1,9 +1,12 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 
-export async function getCategories() {
+export async function getCategories(userId?: number) {
   try {
-    return await prisma.category.findMany({ orderBy: { name: "asc" } })
+    return await prisma.category.findMany({
+      where: userId ? { userId } : undefined,
+      orderBy: { name: "asc" },
+    })
   } catch (error) {
     logger.error("getCategories failed:", error)
     throw new Error("Error al obtener las categorías")
@@ -19,7 +22,7 @@ export async function getCategoryById(id: number) {
   }
 }
 
-export async function createCategory(data: { name: string; kind: string; color: string }) {
+export async function createCategory(data: { name: string; kind: string; color: string; userId: number }) {
   try {
     return await prisma.category.create({ data })
   } catch (error) {

@@ -44,28 +44,63 @@ function seedError(...args: unknown[]) {
 async function main() {
   seedLog("Starting My Wallet seeding...")
 
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12)
+  const passwordHash: string = await (bcrypt.hash(ADMIN_PASSWORD as string, 12) as Promise<string>)
 
-  await prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: { username: ADMIN_USERNAME },
     update: { passwordHash },
     create: {
       username: ADMIN_USERNAME,
       passwordHash,
       name: "Administrador",
+      email: "admin@mywallet.local",
+      role: "admin",
     },
   })
   seedLog("✓ Admin user ready")
 
-  const existingCategories = await prisma.category.count()
+  const existingCategories = await prisma.category.count({ where: { userId: user.id } })
   if (existingCategories === 0) {
     const allCategories = [...DEFAULT_INCOME_CATEGORIES, ...DEFAULT_EXPENSE_CATEGORIES]
     for (const cat of allCategories) {
-      await prisma.category.create({ data: cat })
+      await prisma.category.create({ data: { ...cat, userId: user.id } })
     }
     seedLog(`✓ Created ${allCategories.length} default categories`)
   } else {
     seedLog(`→ ${existingCategories} categories already exist, skipping`)
+  }
+
+  const existingAccounts = await prisma.checkingAccount.count({ where: { userId: user.id } })
+  if (existingAccounts === 0) {
+    await prisma.checkingAccount.createMany({
+      data: [
+        {
+          name: "Cuenta Corriente (ARS)",
+          bankName: "Banco Principal",
+          currency: "ARS",
+          initialBalance: 0,
+          overdraftLimit: 100000,
+          color: "--chart-1",
+          isDefault: true,
+          isActive: true,
+          userId: user.id,
+        },
+        {
+          name: "Caja de Ahorro (USD)",
+          bankName: "Banco Principal",
+          currency: "USD",
+          initialBalance: 0,
+          overdraftLimit: 0,
+          color: "--chart-2",
+          isDefault: false,
+          isActive: true,
+          userId: user.id,
+        },
+      ],
+    })
+    seedLog("✓ Created default checking accounts for admin")
+  } else {
+    seedLog(`→ ${existingAccounts} checking accounts already exist, skipping`)
   }
 
   seedLog("✅ Seeding completed successfully")

@@ -1,10 +1,14 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 
-export async function getInvestments(currency?: string) {
+export async function getInvestments(userId?: number, currency?: string) {
   try {
+    const where: { userId?: number; currency?: string } = {}
+    if (userId) where.userId = userId
+    if (currency) where.currency = currency
+
     return await prisma.investment.findMany({
-      where: currency ? { currency } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       include: {
         contributions: { orderBy: { date: "asc" } },
       },
@@ -36,6 +40,7 @@ export async function createInvestment(data: {
   invested: number
   currentValue: number
   currency: string
+  userId: number
 }) {
   try {
     return await prisma.investment.create({ data })
@@ -77,6 +82,7 @@ export async function addContribution(investmentId: number, data: {
   amount: number
   currency: string
   note?: string
+  userId: number
 }) {
   try {
     const amount = data.amount

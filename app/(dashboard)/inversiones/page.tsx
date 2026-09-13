@@ -134,15 +134,15 @@ export default function InversionesPage() {
                   <p className="line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Valor actual</span>
-                    <AmountDisplay value={item.currentValue} className="font-semibold" />
+                    <AmountDisplay value={item.currentValue} from={item.currency} className="font-semibold" />
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Invertido</span>
-                    <AmountDisplay value={item.invested} className="font-medium" />
+                    <AmountDisplay value={item.invested} from={item.currency} className="font-medium" />
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Ganancia</span>
-                    <AmountDisplay value={change} kind={change >= 0 ? "income" : "expense"} showSign className="font-medium" />
+                    <AmountDisplay value={change} from={item.currency} kind={change >= 0 ? "income" : "expense"} showSign className="font-medium" />
                   </div>
                 </CardContent>
               </Link>

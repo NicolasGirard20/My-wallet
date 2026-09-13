@@ -33,8 +33,8 @@ function mapGoal(g: {
 
 export async function getSavingGoalsAction() {
   try {
-    await requireSession()
-    const goals = await service.getSavingGoals()
+    const session = await requireSession()
+    const goals = await service.getSavingGoals(session.userId)
     return goals.map(mapGoal)
   } catch (error) {
     logger.error("getSavingGoalsAction failed:", error)
@@ -50,7 +50,7 @@ export async function createSavingGoalAction(data: {
   deadline?: string
 }) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     if (!data.name?.trim()) throw new Error("El nombre es obligatorio")
     if (!Number.isFinite(data.target) || data.target <= 0) throw new Error("La meta debe ser mayor a 0")
@@ -68,6 +68,7 @@ export async function createSavingGoalAction(data: {
       color: data.color,
       currency: data.currency,
       deadline,
+      userId: session.userId,
     })
 
     return mapGoal(goal)

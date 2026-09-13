@@ -1,10 +1,14 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 
-export async function getSavingGoals(currency?: string) {
+export async function getSavingGoals(userId?: number, currency?: string) {
   try {
+    const where: { userId?: number; currency?: string } = {}
+    if (userId) where.userId = userId
+    if (currency) where.currency = currency
+
     return await prisma.savingGoal.findMany({
-      where: currency ? { currency } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: { createdAt: "desc" },
     })
   } catch (error) {
@@ -29,6 +33,7 @@ export async function createSavingGoal(data: {
   color: string
   currency: string
   deadline?: Date
+  userId: number
 }) {
   try {
     return await prisma.savingGoal.create({ data })

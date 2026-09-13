@@ -25,13 +25,23 @@ import {
   addContributionAction,
   deleteContributionAction,
 } from "@/app/actions/investments"
+import {
+  getCheckingAccountsAction,
+  createCheckingAccountAction,
+  updateCheckingAccountAction,
+  deleteCheckingAccountAction,
+  createAccountTransferAction,
+} from "@/app/actions/checking-accounts"
 import type {
   Category,
+  CheckingAccount,
+  AccountTransfer,
   Investment,
   InvestmentContribution,
   SavingGoal,
   Transaction,
   TransactionKind,
+  Currency,
 } from "@/lib/types"
 import { logger } from "@/app/imports/dev"
 
@@ -44,11 +54,53 @@ interface DataContextValue {
   allSavings: SavingGoal[]
   investments: Investment[]
   allInvestments: Investment[]
+  checkingAccounts: CheckingAccount[]
+  selectedAccountId: number | "all"
+  setSelectedAccountId: (id: number | "all") => void
+  activeAccount: CheckingAccount | null
 
-  addTransaction: (tx: Omit<Transaction, "id" | "currency">) => Promise<void>
-  importTransactions: (txs: Omit<Transaction, "id" | "currency">[]) => Promise<void>
-  updateTransaction: (id: number, tx: Partial<Omit<Transaction, "id" | "currency">>) => Promise<void>
+  addTransaction: (tx: Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }) => Promise<void>
+  importTransactions: (txs: Array<Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }>) => Promise<void>
+  updateTransaction: (id: number, tx: Partial<Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }>) => Promise<void>
   deleteTransaction: (id: number) => Promise<void>
+
+  addCheckingAccount: (data: {
+    name: string
+    bankName?: string
+    accountNumber?: string
+    cbuOrAlias?: string
+    currency: Currency
+    initialBalance?: number
+    overdraftLimit?: number
+    color?: string
+    isDefault?: boolean
+  }) => Promise<CheckingAccount>
+  updateCheckingAccount: (
+    id: number,
+    data: Partial<{
+      name: string
+      bankName?: string
+      accountNumber?: string
+      cbuOrAlias?: string
+      currency?: Currency
+      initialBalance?: number
+      overdraftLimit?: number
+      color?: string
+      isDefault?: boolean
+      isActive?: boolean
+    }>,
+  ) => Promise<CheckingAccount>
+  deleteCheckingAccount: (id: number) => Promise<void>
+  createTransfer: (data: {
+    sourceAccountId: number
+    targetAccountId: number
+    sourceAmount: number
+    targetAmount: number
+    exchangeRate?: number
+    date?: string
+    description?: string
+  }) => Promise<AccountTransfer>
+  refreshCheckingAccounts: () => Promise<void>
 
   addCategory: (name: string, kind: TransactionKind, color: string) => Promise<Category>
   updateCategory: (id: number, name: string, color: string) => Promise<void>
@@ -56,14 +108,14 @@ interface DataContextValue {
   categoriesByKind: (kind: TransactionKind) => Category[]
   getCategory: (id: number) => Category | undefined
 
-  addSaving: (goal: Omit<SavingGoal, "id" | "currency">) => Promise<void>
-  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">>) => Promise<void>
+  addSaving: (goal: Omit<SavingGoal, "id" | "currency"> & { currency?: Currency }) => Promise<void>
+  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">> & { currency?: Currency }) => Promise<void>
   deleteSaving: (id: number) => Promise<void>
 
-  addInvestment: (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency">) => Promise<void>
+  addInvestment: (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency"> & { currency?: Currency }) => Promise<void>
   updateInvestment: (id: number, inv: Partial<Pick<Investment, "name" | "description" | "currentValue">>) => Promise<void>
   deleteInvestment: (id: number) => Promise<void>
-  addContribution: (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency">) => Promise<void>
+  addContribution: (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency"> & { currency?: Currency }) => Promise<void>
   deleteContribution: (contributionId: number) => Promise<void>
   getInvestment: (id: number) => Investment | undefined
 }
@@ -77,36 +129,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([])
   const [savings, setSavings] = useState<SavingGoal[]>([])
   const [investments, setInvestments] = useState<Investment[]>([])
+  const [checkingAccounts, setCheckingAccounts] = useState<CheckingAccount[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<number | "all">("all")
   const [loading, setLoading] = useState(false)
   const loadedRef = useRef(false)
 
-  // Views filtered by the active currency. Categories stay global.
-  const visibleTransactions = useMemo(
-    () => transactions.filter((t) => t.currency === currency),
-    [transactions, currency],
-  )
-  const visibleSavings = useMemo(
-    () => savings.filter((s) => s.currency === currency),
-    [savings, currency],
-  )
-  const visibleInvestments = useMemo(
-    () => investments.filter((i) => i.currency === currency),
-    [investments, currency],
-  )
+  // Transactions are filtered by checking account (if one is selected), NOT by currency.
+  // Currency toggle now serves as a global display / conversion lens.
+  const visibleTransactions = useMemo(() => {
+    if (selectedAccountId === "all") return transactions
+    return transactions.filter((t) => t.checkingAccountId === selectedAccountId)
+  }, [transactions, selectedAccountId])
+
+  const activeAccount = useMemo(() => {
+    if (selectedAccountId === "all") return null
+    return checkingAccounts.find((a) => a.id === selectedAccountId) ?? null
+  }, [checkingAccounts, selectedAccountId])
 
   const loadAllData = useCallback(async () => {
     setLoading(true)
     try {
-      const [cats, txs, sav, invs] = await Promise.all([
+      const [cats, txs, sav, invs, accs] = await Promise.all([
         getCategoriesAction(),
         getTransactionsAction(),
         getSavingGoalsAction(),
         getInvestmentsAction(),
+        getCheckingAccountsAction(),
       ])
       setCategories(cats)
       setTransactions(txs)
       setSavings(sav)
       setInvestments(invs)
+      setCheckingAccounts(accs)
     } catch (error) {
       logger.error("loadAllData failed:", error)
     } finally {
@@ -121,35 +175,135 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [authHydrated, isAuthenticated, loadAllData])
 
-  const addTransaction = useCallback(async (tx: Omit<Transaction, "id" | "currency">) => {
-    await createTransactionAction({ ...tx, currency })
-    const txs = await getTransactionsAction()
-    setTransactions(txs)
-  }, [currency])
-
-  const importTransactions = useCallback(async (txs: Omit<Transaction, "id" | "currency">[]) => {
-    await importTransactionsAction(txs.map((tx) => ({ ...tx, currency })))
-    const fresh = await getTransactionsAction()
-    setTransactions(fresh)
-  }, [currency])
-
-  const updateTransaction = useCallback(async (id: number, tx: Partial<Omit<Transaction, "id" | "currency">>) => {
-    const payload: Record<string, unknown> = {}
-    if (tx.kind !== undefined) payload.kind = tx.kind
-    if (tx.amount !== undefined) payload.amount = tx.amount
-    if (tx.description !== undefined) payload.description = tx.description
-    if (tx.categoryId !== undefined) payload.categoryId = tx.categoryId
-    if (tx.date !== undefined) payload.date = tx.date
-    await updateTransactionAction(id, payload)
-    const txs = await getTransactionsAction()
-    setTransactions(txs)
+  const refreshCheckingAccounts = useCallback(async () => {
+    const accs = await getCheckingAccountsAction()
+    setCheckingAccounts(accs)
   }, [])
+
+  const addTransaction = useCallback(
+    async (tx: Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }) => {
+      const targetAccountId =
+        tx.checkingAccountId !== undefined
+          ? tx.checkingAccountId
+          : selectedAccountId !== "all"
+            ? selectedAccountId
+            : checkingAccounts.find((a) => a.isDefault)?.id ?? null
+
+      const acc = checkingAccounts.find((a) => a.id === targetAccountId)
+      const txCurrency = tx.currency ?? acc?.currency ?? currency
+
+      await createTransactionAction({
+        ...tx,
+        currency: txCurrency,
+        checkingAccountId: targetAccountId,
+      })
+
+      const [txs, accs] = await Promise.all([
+        getTransactionsAction(),
+        getCheckingAccountsAction(),
+      ])
+      setTransactions(txs)
+      setCheckingAccounts(accs)
+    },
+    [checkingAccounts, currency, selectedAccountId],
+  )
+
+  const importTransactions = useCallback(
+    async (txs: Array<Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }>) => {
+      await importTransactionsAction(
+        txs.map((tx) => ({
+          ...tx,
+          currency: tx.currency ?? currency,
+          checkingAccountId:
+            tx.checkingAccountId !== undefined
+              ? tx.checkingAccountId
+              : selectedAccountId !== "all"
+                ? selectedAccountId
+                : null,
+        })),
+      )
+      const [freshTxs, freshAccs] = await Promise.all([
+        getTransactionsAction(),
+        getCheckingAccountsAction(),
+      ])
+      setTransactions(freshTxs)
+      setCheckingAccounts(freshAccs)
+    },
+    [currency, selectedAccountId],
+  )
+
+  const updateTransaction = useCallback(
+    async (
+      id: number,
+      tx: Partial<Omit<Transaction, "id" | "currency"> & { currency?: Currency; checkingAccountId?: number | null }>,
+    ) => {
+      const payload: Record<string, unknown> = {}
+      if (tx.kind !== undefined) payload.kind = tx.kind
+      if (tx.amount !== undefined) payload.amount = tx.amount
+      if (tx.description !== undefined) payload.description = tx.description
+      if (tx.categoryId !== undefined) payload.categoryId = tx.categoryId
+      if (tx.currency !== undefined) payload.currency = tx.currency
+      if (tx.date !== undefined) payload.date = tx.date
+      if (tx.checkingAccountId !== undefined) payload.checkingAccountId = tx.checkingAccountId
+
+      await updateTransactionAction(id, payload)
+      const [txs, freshAccs] = await Promise.all([
+        getTransactionsAction(),
+        getCheckingAccountsAction(),
+      ])
+      setTransactions(txs)
+      setCheckingAccounts(freshAccs)
+    },
+    [],
+  )
 
   const deleteTransaction = useCallback(async (id: number) => {
     await deleteTransactionAction(id)
-    const txs = await getTransactionsAction()
+    const [txs, freshAccs] = await Promise.all([
+      getTransactionsAction(),
+      getCheckingAccountsAction(),
+    ])
     setTransactions(txs)
+    setCheckingAccounts(freshAccs)
   }, [])
+
+  const addCheckingAccount = useCallback(
+    async (data: Parameters<typeof createCheckingAccountAction>[0]) => {
+      const created = await createCheckingAccountAction(data)
+      await refreshCheckingAccounts()
+      return created
+    },
+    [refreshCheckingAccounts],
+  )
+
+  const updateCheckingAccount = useCallback(
+    async (id: number, data: Parameters<typeof updateCheckingAccountAction>[1]) => {
+      const updated = await updateCheckingAccountAction(id, data)
+      await refreshCheckingAccounts()
+      return updated
+    },
+    [refreshCheckingAccounts],
+  )
+
+  const deleteCheckingAccount = useCallback(
+    async (id: number) => {
+      await deleteCheckingAccountAction(id)
+      if (selectedAccountId === id) {
+        setSelectedAccountId("all")
+      }
+      await refreshCheckingAccounts()
+    },
+    [refreshCheckingAccounts, selectedAccountId],
+  )
+
+  const createTransfer = useCallback(
+    async (data: Parameters<typeof createAccountTransferAction>[0]) => {
+      const transfer = await createAccountTransferAction(data)
+      await refreshCheckingAccounts()
+      return transfer
+    },
+    [refreshCheckingAccounts],
+  )
 
   const addCategory = useCallback(async (name: string, kind: TransactionKind, color: string) => {
     const created = await createCategoryAction({ name, kind, color })
@@ -179,29 +333,36 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const getCategory = useCallback((id: number) => categories.find((c) => c.id === id), [categories])
 
-  const addSaving = useCallback(async (goal: Omit<SavingGoal, "id" | "currency">) => {
-    await createSavingGoalAction({
-      name: goal.name,
-      target: goal.target,
-      color: goal.color,
-      currency,
-      deadline: goal.deadline,
-    })
-    const sav = await getSavingGoalsAction()
-    setSavings(sav)
-  }, [currency])
+  const addSaving = useCallback(
+    async (goal: Omit<SavingGoal, "id" | "currency"> & { currency?: Currency }) => {
+      await createSavingGoalAction({
+        name: goal.name,
+        target: goal.target,
+        color: goal.color,
+        currency: goal.currency ?? currency,
+        deadline: goal.deadline,
+      })
+      const sav = await getSavingGoalsAction()
+      setSavings(sav)
+    },
+    [currency],
+  )
 
-  const updateSaving = useCallback(async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">>) => {
-    const payload: Record<string, unknown> = {}
-    if (goal.name !== undefined) payload.name = goal.name
-    if (goal.target !== undefined) payload.target = goal.target
-    if (goal.saved !== undefined) payload.saved = goal.saved
-    if (goal.color !== undefined) payload.color = goal.color
-    if (goal.deadline !== undefined) payload.deadline = goal.deadline ?? null
-    await updateSavingGoalAction(id, payload)
-    const sav = await getSavingGoalsAction()
-    setSavings(sav)
-  }, [])
+  const updateSaving = useCallback(
+    async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">> & { currency?: Currency }) => {
+      const payload: Record<string, unknown> = {}
+      if (goal.name !== undefined) payload.name = goal.name
+      if (goal.target !== undefined) payload.target = goal.target
+      if (goal.saved !== undefined) payload.saved = goal.saved
+      if (goal.color !== undefined) payload.color = goal.color
+      if (goal.currency !== undefined) payload.currency = goal.currency
+      if (goal.deadline !== undefined) payload.deadline = goal.deadline ?? null
+      await updateSavingGoalAction(id, payload)
+      const sav = await getSavingGoalsAction()
+      setSavings(sav)
+    },
+    [],
+  )
 
   const deleteSaving = useCallback(async (id: number) => {
     await deleteSavingGoalAction(id)
@@ -210,12 +371,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const addInvestment = useCallback(
-    async (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency">) => {
+    async (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency"> & { currency?: Currency }) => {
       await createInvestmentAction({
         name: inv.name,
         description: inv.description,
         currentValue: inv.currentValue,
-        currency,
+        currency: inv.currency ?? currency,
       })
       const invs = await getInvestmentsAction()
       setInvestments(invs)
@@ -239,11 +400,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const addContribution = useCallback(
-    async (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency">) => {
+    async (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency"> & { currency?: Currency }) => {
       await addContributionAction(investmentId, {
         date: c.date,
         amount: c.amount,
-        currency,
+        currency: c.currency ?? currency,
         note: c.note,
       })
       const invs = await getInvestmentsAction()
@@ -259,8 +420,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const getInvestment = useCallback(
-    (id: number) => visibleInvestments.find((i) => i.id === id),
-    [visibleInvestments],
+    (id: number) => investments.find((i) => i.id === id),
+    [investments],
   )
 
   const value = useMemo<DataContextValue>(
@@ -269,14 +430,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       transactions: visibleTransactions,
       allTransactions: transactions,
       categories,
-      savings: visibleSavings,
+      savings,
       allSavings: savings,
-      investments: visibleInvestments,
+      investments,
       allInvestments: investments,
+      checkingAccounts,
+      selectedAccountId,
+      setSelectedAccountId,
+      activeAccount,
       addTransaction,
       importTransactions,
       updateTransaction,
       deleteTransaction,
+      addCheckingAccount,
+      updateCheckingAccount,
+      deleteCheckingAccount,
+      createTransfer,
+      refreshCheckingAccounts,
       addCategory,
       updateCategory,
       deleteCategory,
@@ -297,14 +467,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       visibleTransactions,
       transactions,
       categories,
-      visibleSavings,
       savings,
-      visibleInvestments,
       investments,
+      checkingAccounts,
+      selectedAccountId,
+      activeAccount,
       addTransaction,
       importTransactions,
       updateTransaction,
       deleteTransaction,
+      addCheckingAccount,
+      updateCheckingAccount,
+      deleteCheckingAccount,
+      createTransfer,
+      refreshCheckingAccounts,
       addCategory,
       updateCategory,
       deleteCategory,

@@ -7,12 +7,21 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  passwordHash String
-  name         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                      Int                      @id @default(autoincrement())
+  username                String                   @unique
+  passwordHash            String
+  name                    String
+  email                   String                   @unique
+  role                    String                   @default("user")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  categories              Category[]
+  transactions            Transaction[]
+  savingGoals             SavingGoal[]
+  investments             Investment[]
+  investmentContributions InvestmentContribution[]
+  checkingAccounts        CheckingAccount[]
+  accountTransfers        AccountTransfer[]
 }
 
 model Category {
@@ -20,55 +29,116 @@ model Category {
   name         String
   kind         String
   color        String
+  userId       Int
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 }
 
 model Transaction {
-  id          Int      @id @default(autoincrement())
-  kind        String
-  amount      Float
-  description String
-  categoryId  Int
-  currency    String   @default("ARS")
-  date        DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id                       Int                     @id @default(autoincrement())
+  kind                     String
+  amount                   Float
+  description              String
+  categoryId               Int
+  currency                 String                  @default("ARS")
+  date                     DateTime
+  userId                   Int
+  savingGoalId             Int?
+  investmentContributionId Int?
+  checkingAccountId        Int?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  category                 Category                @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  savingGoal               SavingGoal?             @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
+  investmentContribution   InvestmentContribution? @relation(fields: [investmentContributionId], references: [id], onDelete: SetNull)
+  checkingAccount          CheckingAccount?        @relation(fields: [checkingAccountId], references: [id], onDelete: SetNull)
+  user                     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SavingGoal {
-  id        Int       @id @default(autoincrement())
-  name      String
-  target    Float
-  saved     Float
-  color     String
-  currency  String    @default("ARS")
-  deadline  DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           Int           @id @default(autoincrement())
+  name         String
+  target       Float
+  saved        Float
+  color        String
+  currency     String        @default("ARS")
+  deadline     DateTime?
+  userId       Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 }
 
 model Investment {
-  id            Int                     @id @default(autoincrement())
+  id            Int                      @id @default(autoincrement())
   name          String
   description   String
   invested      Float
   currentValue  Float
-  currency      String                  @default("ARS")
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  currency      String                   @default("ARS")
+  userId        Int
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
   contributions InvestmentContribution[]
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model InvestmentContribution {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   investmentId Int
   date         DateTime
   amount       Float
   note         String?
-  currency     String     @default("ARS")
-  createdAt    DateTime   @default(now())
-  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  currency     String        @default("ARS")
+  userId       Int
+  createdAt    DateTime      @default(now())
+  investment   Investment    @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model CheckingAccount {
+  id             Int               @id @default(autoincrement())
+  name           String
+  bankName       String?
+  accountNumber  String?
+  cbuOrAlias     String?
+  currency       String            @default("ARS")
+  initialBalance Float             @default(0)
+  overdraftLimit Float             @default(0)
+  color          String            @default("--chart-1")
+  isDefault      Boolean           @default(false)
+  isActive       Boolean           @default(true)
+  userId         Int
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+  transfersFrom  AccountTransfer[] @relation("TransferSource")
+  transfersTo    AccountTransfer[] @relation("TransferTarget")
+
+  @@index([userId])
+}
+
+model AccountTransfer {
+  id              Int             @id @default(autoincrement())
+  sourceAccountId Int
+  targetAccountId Int
+  sourceAmount    Float
+  targetAmount    Float
+  exchangeRate    Float?
+  date            DateTime        @default(now())
+  description     String?
+  userId          Int
+  createdAt       DateTime        @default(now())
+
+  sourceAccount   CheckingAccount @relation("TransferSource", fields: [sourceAccountId], references: [id], onDelete: Cascade)
+  targetAccount   CheckingAccount @relation("TransferTarget", fields: [targetAccountId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

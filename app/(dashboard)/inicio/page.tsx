@@ -28,19 +28,30 @@ import { AmountDisplay } from "@/components/shared/amount-display"
 import { CategoryBadge } from "@/components/shared/category-badge"
 
 export default function InicioPage() {
-  const { allTransactions, categories, allSavings, allInvestments, getCategory } = useData()
+  const {
+    transactions,
+    allTransactions,
+    categories,
+    allSavings,
+    allInvestments,
+    activeAccount,
+    selectedAccountId,
+    getCategory,
+  } = useData()
   const { currency, convert, rate, dollarType } = useCurrency()
 
-  const { income, expense, balance } = totalsCrossCurrency(allTransactions, convert)
-  const monthly = monthlySeriesCrossCurrency(allTransactions, convert, 6)
+  const currentTxs = selectedAccountId === "all" ? allTransactions : transactions
+
+  const { income, expense, balance } = totalsCrossCurrency(currentTxs, convert)
+  const monthly = monthlySeriesCrossCurrency(currentTxs, convert, 6)
   const expenseSlices = categoryBreakdownCrossCurrency(
-    allTransactions, categories, "expense", convert,
+    currentTxs, categories, "expense", convert,
   )
 
   const totalSaved = allSavings.reduce((acc, s) => convert(s.saved, s.currency) + acc, 0)
   const invValue = allInvestments.reduce((acc, i) => convert(i.currentValue, i.currency) + acc, 0)
 
-  const recent = [...allTransactions]
+  const recent = [...currentTxs]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6)
 
@@ -49,11 +60,15 @@ export default function InicioPage() {
     ? `Dólar ${rate.nombre}: C $${rate.compra.toLocaleString("es-AR", { maximumFractionDigits: 0 })} / V $${rate.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
     : `Tipo de dólar: ${dollarType}`
 
+  const headerDescription = activeAccount
+    ? `Mostrando movimientos de ${activeAccount.name} (${activeAccount.currency}) expresados en ${currencyLabel}.`
+    : `Resumen general consolidado de tus finanzas en ${currencyLabel} (USD + ARS convertidos).`
+
   return (
     <>
       <PageHeader
-        title="Inicio"
-        description={`Resumen general de tus finanzas en ${currencyLabel} (USD + ARS convertidos).`}
+        title={activeAccount ? `Inicio — ${activeAccount.name}` : "Inicio"}
+        description={headerDescription}
       />
 
       {/* Stats */}
