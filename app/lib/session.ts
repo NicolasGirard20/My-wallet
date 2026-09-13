@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 export interface SessionData {
   userId: number
   username: string
+  role: string
 }
 //AUTH SECRET is used to encrypt the session cookie. It should be a long, random string that is kept secret. You can generate a secure random string using a tool like openssl or a password manager.
 if (!process.env.AUTH_SECRET) throw new Error("AUTH_SECRET is not set")

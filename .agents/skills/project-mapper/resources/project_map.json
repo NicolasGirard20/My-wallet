@@ -1,8 +1,8 @@
 {
   "project_name": "my-wallet",
-  "generated_at": "2026-08-16T14:41:16.659192Z",
-  "total_files": 87,
-  "total_symbols": 296,
+  "generated_at": "2026-09-13T13:50:16.723671Z",
+  "total_files": 105,
+  "total_symbols": 408,
   "architecture": {
     "entry_points": [
       "(detectar manualmente)"
@@ -28,7 +28,7 @@
     {
       "path": "AGENTS.md",
       "language": "unknown",
-      "size_lines": 381,
+      "size_lines": 386,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
@@ -50,14 +50,15 @@
     {
       "path": "app/(dashboard)/ahorros/page.tsx",
       "language": "tsx",
-      "size_lines": 148,
-      "summary": "Funciones: AhorrosPage, handleSubmit",
+      "size_lines": 266,
+      "summary": "Funciones: AhorrosPage, handleSubmit, handleEdit, handleSaveEdit, handleAdjustSave",
       "imports": [
         "react",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
         "@/components/shared/color-picker",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -72,13 +73,31 @@
       "functions": [
         {
           "name": "AhorrosPage",
-          "line": 16,
+          "line": 18,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 24,
+          "line": 38,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleEdit",
+          "line": 57,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEdit",
+          "line": 65,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleAdjustSave",
+          "line": 78,
           "is_async": false,
           "docstring": null
         }
@@ -88,11 +107,13 @@
     {
       "path": "app/(dashboard)/inicio/page.tsx",
       "language": "tsx",
-      "size_lines": 157,
-      "summary": "Funciones: InicioPage, totalSaved, invValue, recent",
+      "size_lines": 247,
+      "summary": "Funciones: InicioPage, rangedTransactions, totalSaved, invValue, periodContributions",
       "imports": [
+        "react",
         "next/link",
         "lucide-react",
+        "@/context/currency-context",
         "@/context/data-context",
         "@/lib/selectors",
         "@/lib/format",
@@ -101,6 +122,7 @@
         "@/components/ui/separator",
         "@/components/layout/page-header",
         "@/components/dashboard/stat-card",
+        "@/components/dashboard/period-filter",
         "@/components/dashboard/balance-chart",
         "@/components/dashboard/category-chart",
         "@/components/shared/amount-display",
@@ -113,25 +135,37 @@
       "functions": [
         {
           "name": "InicioPage",
-          "line": 19,
+          "line": 32,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "rangedTransactions",
+          "line": 38,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "totalSaved",
-          "line": 26,
+          "line": 56,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "invValue",
-          "line": 27,
+          "line": 57,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "periodContributions",
+          "line": 58,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "recent",
-          "line": 29,
+          "line": 70,
           "is_async": false,
           "docstring": null
         }
@@ -141,14 +175,15 @@
     {
       "path": "app/(dashboard)/inversiones/[id]/page.tsx",
       "language": "tsx",
-      "size_lines": 164,
-      "summary": "Funciones: InversionDetallePage, handleAddContribution, change",
+      "size_lines": 283,
+      "summary": "Funciones: InversionDetallePage, handleAddContribution, handleUpdateValue, handleEditContribution, handleSaveEditContribution",
       "imports": [
         "react",
         "next/navigation",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -162,19 +197,37 @@
       "functions": [
         {
           "name": "InversionDetallePage",
-          "line": 15,
+          "line": 16,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleAddContribution",
-          "line": 42,
+          "line": 55,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleUpdateValue",
+          "line": 74,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleEditContribution",
+          "line": 81,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEditContribution",
+          "line": 90,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "change",
-          "line": 25,
+          "line": 38,
           "is_async": false,
           "docstring": null
         }
@@ -184,14 +237,15 @@
     {
       "path": "app/(dashboard)/inversiones/page.tsx",
       "language": "tsx",
-      "size_lines": 120,
-      "summary": "Funciones: InversionesPage, handleSubmit",
+      "size_lines": 191,
+      "summary": "Funciones: InversionesPage, handleSubmit, handleEdit, handleSaveEdit",
       "imports": [
         "react",
         "next/link",
         "lucide-react",
         "@/components/layout/page-header",
         "@/components/shared/amount-display",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/button",
         "@/components/ui/card",
         "@/components/ui/input",
@@ -205,13 +259,25 @@
       "functions": [
         {
           "name": "InversionesPage",
-          "line": 15,
+          "line": 17,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 22,
+          "line": 31,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleEdit",
+          "line": 47,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEdit",
+          "line": 54,
           "is_async": false,
           "docstring": null
         }
@@ -221,7 +287,7 @@
     {
       "path": "app/(dashboard)/layout.tsx",
       "language": "tsx",
-      "size_lines": 55,
+      "size_lines": 57,
       "summary": "Funciones: DashboardLayout",
       "imports": [
         "react",
@@ -230,7 +296,8 @@
         "@/context/auth-context",
         "@/components/layout/sidebar",
         "@/components/layout/mobile-nav",
-        "@/components/layout/currency-toggle"
+        "@/components/layout/currency-toggle",
+        "@/components/calculator/floating-calculator"
       ],
       "exports": [
         "DashboardLayout"
@@ -239,7 +306,7 @@
       "functions": [
         {
           "name": "DashboardLayout",
-          "line": 12,
+          "line": 13,
           "is_async": false,
           "docstring": null
         }
@@ -339,9 +406,64 @@
       "complexity": "medium"
     },
     {
+      "path": "app/(dashboard)/usuarios/page.tsx",
+      "language": "tsx",
+      "size_lines": 109,
+      "summary": "Funciones: UsuariosPage, handleDelete, openCreateForm, openEditForm, loadUsers",
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "sonner",
+        "@/context/auth-context",
+        "@/components/layout/page-header",
+        "@/components/ui/button",
+        "@/components/usuarios/user-table",
+        "@/components/usuarios/user-form",
+        "@/app/actions/users"
+      ],
+      "exports": [
+        "UsuariosPage"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "UsuariosPage",
+          "line": 16,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleDelete",
+          "line": 53,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "openCreateForm",
+          "line": 63,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "openEditForm",
+          "line": 68,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "loadUsers",
+          "line": 31,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
       "path": "app/actions/auth.ts",
       "language": "typescript",
-      "size_lines": 82,
+      "size_lines": 83,
       "summary": "Funciones: loginAction, logoutAction, getSessionAction, changePasswordAction",
       "imports": [
         "@/app/lib/session",
@@ -364,19 +486,19 @@
         },
         {
           "name": "logoutAction",
-          "line": 34,
+          "line": 35,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getSessionAction",
-          "line": 45,
+          "line": 46,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "changePasswordAction",
-          "line": 56,
+          "line": 57,
           "is_async": true,
           "docstring": null
         }
@@ -386,7 +508,7 @@
     {
       "path": "app/actions/categories.ts",
       "language": "typescript",
-      "size_lines": 61,
+      "size_lines": 65,
       "summary": "Funciones: getCategoriesAction, createCategoryAction, updateCategoryAction, deleteCategoryAction, categories",
       "imports": [
         "@/app/lib/session",
@@ -415,13 +537,13 @@
         },
         {
           "name": "updateCategoryAction",
-          "line": 38,
+          "line": 42,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategoryAction",
-          "line": 53,
+          "line": 57,
           "is_async": true,
           "docstring": null
         },
@@ -435,9 +557,40 @@
       "complexity": "medium"
     },
     {
+      "path": "app/actions/exchange.ts",
+      "language": "typescript",
+      "size_lines": 70,
+      "summary": "Funciones: isDollarRate, getExchangeRatesAction",
+      "imports": [
+        "@/app/lib/session",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "interface",
+        "interface",
+        "getExchangeRatesAction"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "isDollarRate",
+          "line": 24,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "getExchangeRatesAction",
+          "line": 36,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
       "path": "app/actions/investments.ts",
       "language": "typescript",
-      "size_lines": 200,
+      "size_lines": 235,
       "summary": "Funciones: isCurrency, mapInv, getInvestmentsAction, getInvestmentByIdAction, createInvestmentAction",
       "imports": [
         "@/app/lib/session",
@@ -451,7 +604,8 @@
         "updateInvestmentAction",
         "deleteInvestmentAction",
         "addContributionAction",
-        "deleteContributionAction"
+        "deleteContributionAction",
+        "updateContributionAction"
       ],
       "classes": [],
       "functions": [
@@ -487,25 +641,31 @@
         },
         {
           "name": "updateInvestmentAction",
-          "line": 102,
+          "line": 103,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestmentAction",
-          "line": 142,
+          "line": 143,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContributionAction",
-          "line": 152,
+          "line": 153,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContributionAction",
-          "line": 192,
+          "line": 193,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateContributionAction",
+          "line": 203,
           "is_async": true,
           "docstring": null
         }
@@ -515,7 +675,7 @@
     {
       "path": "app/actions/savings.ts",
       "language": "typescript",
-      "size_lines": 139,
+      "size_lines": 142,
       "summary": "Funciones: isCurrency, mapGoal, getSavingGoalsAction, createSavingGoalAction, updateSavingGoalAction",
       "imports": [
         "@/app/lib/session",
@@ -556,13 +716,13 @@
         },
         {
           "name": "updateSavingGoalAction",
-          "line": 80,
+          "line": 83,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSavingGoalAction",
-          "line": 131,
+          "line": 134,
           "is_async": true,
           "docstring": null
         }
@@ -572,7 +732,7 @@
     {
       "path": "app/actions/transactions.ts",
       "language": "typescript",
-      "size_lines": 179,
+      "size_lines": 185,
       "summary": "Funciones: mapTx, isCurrency, getTransactionsAction, createTransactionAction, importTransactionsAction",
       "imports": [
         "@/app/lib/session",
@@ -596,42 +756,107 @@
         },
         {
           "name": "isCurrency",
-          "line": 30,
+          "line": 34,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getTransactionsAction",
-          "line": 34,
+          "line": 38,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createTransactionAction",
-          "line": 45,
+          "line": 49,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "importTransactionsAction",
-          "line": 81,
+          "line": 86,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransactionAction",
-          "line": 122,
+          "line": 128,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransactionAction",
-          "line": 171,
+          "line": 177,
           "is_async": true,
           "docstring": null
         }
       ],
       "complexity": "high"
+    },
+    {
+      "path": "app/actions/users.ts",
+      "language": "typescript",
+      "size_lines": 94,
+      "summary": "Funciones: requireAdmin, getUsersAction, getUserByIdAction, createUserAction, updateUserAction",
+      "imports": [
+        "@/app/lib/session",
+        "@/app/service/user.service",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "getUsersAction",
+        "getUserByIdAction",
+        "createUserAction",
+        "updateUserAction",
+        "deleteUserAction",
+        "getUserDataSizeAction"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "requireAdmin",
+          "line": 8,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUsersAction",
+          "line": 16,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUserByIdAction",
+          "line": 26,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createUserAction",
+          "line": 36,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateUserAction",
+          "line": 54,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteUserAction",
+          "line": 70,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUserDataSizeAction",
+          "line": 86,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
     },
     {
       "path": "app/globals.css",
@@ -701,7 +926,7 @@
     {
       "path": "app/lib/session.ts",
       "language": "typescript",
-      "size_lines": 33,
+      "size_lines": 34,
       "summary": "Funciones: getSession, requireSession",
       "imports": [
         "iron-session",
@@ -716,18 +941,18 @@
       "functions": [
         {
           "name": "getSession",
-          "line": 23,
+          "line": 24,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "requireSession",
-          "line": 27,
+          "line": 28,
           "is_async": true,
           "docstring": null
         }
       ],
-      "complexity": "low"
+      "complexity": "medium"
     },
     {
       "path": "app/login/page.tsx",
@@ -837,7 +1062,7 @@
     {
       "path": "app/service/category.service.ts",
       "language": "typescript",
-      "size_lines": 47,
+      "size_lines": 86,
       "summary": "Lógica de negocio | Funciones: getCategories, getCategoryById, createCategory, updateCategory, deleteCategory",
       "imports": [
         "@/app/service/db",
@@ -848,37 +1073,51 @@
         "getCategoryById",
         "createCategory",
         "updateCategory",
-        "deleteCategory"
+        "deleteCategory",
+        "getOrCreateSavingsCategory",
+        "getOrCreateInvestmentCategory"
       ],
       "classes": [],
       "functions": [
         {
           "name": "getCategories",
-          "line": 4,
+          "line": 6,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getCategoryById",
-          "line": 13,
+          "line": 18,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createCategory",
-          "line": 22,
+          "line": 27,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCategory",
-          "line": 31,
+          "line": 36,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategory",
-          "line": 40,
+          "line": 45,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getOrCreateSavingsCategory",
+          "line": 54,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getOrCreateInvestmentCategory",
+          "line": 71,
           "is_async": true,
           "docstring": null
         }
@@ -905,10 +1144,11 @@
     {
       "path": "app/service/investment.service.ts",
       "language": "typescript",
-      "size_lines": 127,
+      "size_lines": 239,
       "summary": "Lógica de negocio | Funciones: getInvestments, getInvestmentById, createInvestment, updateInvestment, deleteInvestment",
       "imports": [
         "@/app/service/db",
+        "@/app/service/category.service",
         "@/app/imports/dev"
       ],
       "exports": [
@@ -918,49 +1158,74 @@
         "updateInvestment",
         "deleteInvestment",
         "addContribution",
-        "deleteContribution"
+        "deleteContribution",
+        "updateContribution"
       ],
       "classes": [],
       "functions": [
         {
           "name": "getInvestments",
-          "line": 4,
+          "line": 5,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestmentById",
-          "line": 19,
+          "line": 20,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createInvestment",
-          "line": 33,
+          "line": 34,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestment",
-          "line": 48,
+          "line": 69,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 66,
+          "line": 88,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 75,
+          "line": 97,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContribution",
+          "line": 148,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateContribution",
+          "line": 178,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "amount",
           "line": 104,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "cat",
+          "line": 126,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "amount",
+          "line": 156,
           "is_async": true,
           "docstring": null
         }
@@ -970,10 +1235,11 @@
     {
       "path": "app/service/saving-goal.service.ts",
       "language": "typescript",
-      "size_lines": 67,
+      "size_lines": 120,
       "summary": "Lógica de negocio | Funciones: getSavingGoals, getSavingGoalById, createSavingGoal, updateSavingGoal, deleteSavingGoal",
       "imports": [
         "@/app/service/db",
+        "@/app/service/category.service",
         "@/app/imports/dev"
       ],
       "exports": [
@@ -987,41 +1253,47 @@
       "functions": [
         {
           "name": "getSavingGoals",
-          "line": 4,
+          "line": 5,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getSavingGoalById",
-          "line": 16,
+          "line": 17,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createSavingGoal",
-          "line": 25,
+          "line": 26,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSavingGoal",
-          "line": 41,
+          "line": 63,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSavingGoal",
-          "line": 60,
+          "line": 113,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "cat",
+          "line": 40,
           "is_async": true,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "app/service/transaction.service.ts",
       "language": "typescript",
-      "size_lines": 86,
+      "size_lines": 174,
       "summary": "Lógica de negocio | Funciones: getTransactions, getTransactionById, createTransaction, updateTransaction, deleteTransaction",
       "imports": [
         "@/app/service/db",
@@ -1056,18 +1328,108 @@
         },
         {
           "name": "updateTransaction",
-          "line": 60,
+          "line": 61,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 79,
+          "line": 127,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "newInvested",
+          "line": 104,
           "is_async": true,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
+    },
+    {
+      "path": "app/service/user.service.ts",
+      "language": "typescript",
+      "size_lines": 159,
+      "summary": "Lógica de negocio | Funciones: formatBytes, hashPassword, getUsers, getUserById, createUser",
+      "imports": [
+        "@/app/service/db",
+        "@/app/imports/dev",
+        "bcryptjs"
+      ],
+      "exports": [
+        "hashPassword",
+        "getUsers",
+        "getUserById",
+        "createUser",
+        "updateUser",
+        "deleteUser",
+        "getUserDataSize"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "formatBytes",
+          "line": 25,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "hashPassword",
+          "line": 31,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUsers",
+          "line": 35,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUserById",
+          "line": 46,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createUser",
+          "line": 53,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateUser",
+          "line": 99,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteUser",
+          "line": 127,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getUserDataSize",
+          "line": 139,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "users",
+          "line": 36,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "allDefaults",
+          "line": 90,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
     },
     {
       "path": "components.json",
@@ -1079,6 +1441,250 @@
       "classes": [],
       "functions": [],
       "complexity": "low"
+    },
+    {
+      "path": "components/calculator/calculator-panel.tsx",
+      "language": "tsx",
+      "size_lines": 305,
+      "summary": "Funciones: calcCopy, HistoryItem, CalculatorPanel, CalculatorButton, OperatorButton",
+      "imports": [
+        "react",
+        "lucide-react",
+        "sonner",
+        "@/components/ui/button",
+        "@/context/currency-context",
+        "@/lib/format",
+        "@/lib/utils",
+        "./use-calculator"
+      ],
+      "exports": [
+        "CalculatorPanel"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "calcCopy",
+          "line": 19,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "HistoryItem",
+          "line": 26,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "CalculatorPanel",
+          "line": 77,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "CalculatorButton",
+          "line": 266,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "OperatorButton",
+          "line": 284,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleCopy",
+          "line": 35,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "convertedValue",
+          "line": 83,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleCopy",
+          "line": 97,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleConversionClick",
+          "line": 99,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
+      "path": "components/calculator/floating-calculator.tsx",
+      "language": "tsx",
+      "size_lines": 45,
+      "summary": "Funciones: FloatingCalculator",
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button",
+        "@/components/ui/popover",
+        "./calculator-panel",
+        "./use-calculator"
+      ],
+      "exports": [
+        "FloatingCalculator"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "FloatingCalculator",
+          "line": 16,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
+      "path": "components/calculator/use-calculator.ts",
+      "language": "typescript",
+      "size_lines": 296,
+      "summary": "Funciones: round, operate, buildExpression, formatCalcValue, loadHistory",
+      "imports": [
+        "react",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "interface",
+        "formatCalcValue",
+        "interface",
+        "useCalculator"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "round",
+          "line": 44,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "operate",
+          "line": 48,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "buildExpression",
+          "line": 61,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "formatCalcValue",
+          "line": 72,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "loadHistory",
+          "line": 78,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "saveHistory",
+          "line": 87,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "useCalculator",
+          "line": 113,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "stored",
+          "line": 80,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "displayValue",
+          "line": 117,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "formattedDisplay",
+          "line": 123,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "inputDigit",
+          "line": 135,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "inputDot",
+          "line": 149,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "setOperation",
+          "line": 160,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "calculate",
+          "line": 191,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "clearAll",
+          "line": 231,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "backspace",
+          "line": 233,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "toggleSign",
+          "line": 242,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "percent",
+          "line": 251,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "applyValue",
+          "line": 260,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "clearHistory",
+          "line": 270,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
     },
     {
       "path": "components/dashboard/balance-chart.tsx",
@@ -1129,6 +1735,55 @@
       "complexity": "medium"
     },
     {
+      "path": "components/dashboard/period-filter.tsx",
+      "language": "tsx",
+      "size_lines": 98,
+      "summary": "Funciones: PeriodFilter, handleModeChange, handleFromChange, handleToChange, todayInput",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/input",
+        "@/components/ui/select"
+      ],
+      "exports": [
+        "type",
+        "PeriodFilter"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "PeriodFilter",
+          "line": 22,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleModeChange",
+          "line": 23,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleFromChange",
+          "line": 32,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleToChange",
+          "line": 38,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "todayInput",
+          "line": 93,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
       "path": "components/dashboard/stat-card.tsx",
       "language": "tsx",
       "size_lines": 39,
@@ -1155,7 +1810,7 @@
     {
       "path": "components/layout/account-menu.tsx",
       "language": "tsx",
-      "size_lines": 180,
+      "size_lines": 187,
       "summary": "Funciones: AccountMenu, handleLogout, openPasswordDialog, handleChangePassword",
       "imports": [
         "react",
@@ -1205,12 +1860,16 @@
     {
       "path": "components/layout/currency-toggle.tsx",
       "language": "tsx",
-      "size_lines": 46,
+      "size_lines": 163,
       "summary": "Funciones: CurrencyToggle",
       "imports": [
+        "lucide-react",
+        "lucide-react",
         "@/context/currency-context",
         "@/lib/format",
-        "@/lib/utils"
+        "@/lib/utils",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/tooltip"
       ],
       "exports": [
         "CurrencyToggle"
@@ -1219,12 +1878,12 @@
       "functions": [
         {
           "name": "CurrencyToggle",
-          "line": 10,
+          "line": 25,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "components/layout/mobile-nav.tsx",
@@ -1345,7 +2004,7 @@
     {
       "path": "components/shared/amount-display.tsx",
       "language": "tsx",
-      "size_lines": 36,
+      "size_lines": 41,
       "summary": "Funciones: AmountDisplay",
       "imports": [
         "@/context/currency-context",
@@ -1358,7 +2017,7 @@
       "functions": [
         {
           "name": "AmountDisplay",
-          "line": 14,
+          "line": 16,
           "is_async": false,
           "docstring": null
         }
@@ -1421,7 +2080,7 @@
     {
       "path": "components/shared/confirm-dialog.tsx",
       "language": "tsx",
-      "size_lines": 54,
+      "size_lines": 59,
       "summary": "Funciones: ConfirmDialog",
       "imports": [
         "@/components/ui/dialog",
@@ -1434,7 +2093,7 @@
       "functions": [
         {
           "name": "ConfirmDialog",
-          "line": 23,
+          "line": 25,
           "is_async": false,
           "docstring": null
         }
@@ -1590,8 +2249,8 @@
     {
       "path": "components/transferencias/transaction-form.tsx",
       "language": "tsx",
-      "size_lines": 184,
-      "summary": "Funciones: todayInput, TransactionForm, handleSubmit",
+      "size_lines": 263,
+      "summary": "Funciones: todayInput, TransactionForm, handleSubmit, confirmDescription, goal",
       "imports": [
         "react",
         "sonner",
@@ -1601,6 +2260,7 @@
         "@/components/ui/button",
         "@/components/ui/input",
         "@/components/ui/dialog",
+        "@/components/shared/confirm-dialog",
         "@/components/ui/field",
         "@/components/ui/select"
       ],
@@ -1611,19 +2271,37 @@
       "functions": [
         {
           "name": "todayInput",
-          "line": 38,
+          "line": 39,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "TransactionForm",
-          "line": 42,
+          "line": 46,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 70,
+          "line": 81,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "confirmDescription",
+          "line": 120,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "goal",
+          "line": 131,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "confirmTitle",
+          "line": 159,
           "is_async": false,
           "docstring": null
         }
@@ -1633,15 +2311,15 @@
     {
       "path": "components/transferencias/transaction-table.tsx",
       "language": "tsx",
-      "size_lines": 251,
-      "summary": "Funciones: TransactionTable, toggleSort, catMap, m, kindCategories",
+      "size_lines": 325,
+      "summary": "Funciones: TransactionTable, toggleCategory, clearCategories, toggleSort, catMap",
       "imports": [
         "react",
         "lucide-react",
         "@/components/ui/table",
         "@/components/ui/button",
         "@/components/ui/input",
-        "@/components/ui/select",
+        "@/components/ui/dropdown-menu",
         "@/components/ui/empty",
         "@/components/shared/category-badge",
         "@/components/shared/amount-display",
@@ -1656,43 +2334,73 @@
       "functions": [
         {
           "name": "TransactionTable",
-          "line": 34,
+          "line": 35,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "toggleCategory",
+          "line": 59,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "clearCategories",
+          "line": 68,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "toggleSort",
-          "line": 93,
+          "line": 120,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "catMap",
-          "line": 49,
+          "line": 51,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "m",
-          "line": 50,
+          "line": 52,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "kindCategories",
-          "line": 55,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "rows",
           "line": 57,
           "is_async": false,
           "docstring": null
         },
         {
+          "name": "categoryLabel",
+          "line": 72,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "rows",
+          "line": 81,
+          "is_async": false,
+          "docstring": null
+        },
+        {
           "name": "list",
-          "line": 58,
+          "line": 82,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "deleteDescription",
+          "line": 129,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "goal",
+          "line": 132,
           "is_async": false,
           "docstring": null
         }
@@ -2301,6 +3009,51 @@
       "complexity": "low"
     },
     {
+      "path": "components/ui/popover.tsx",
+      "language": "tsx",
+      "size_lines": 70,
+      "summary": "Funciones: Popover, PopoverTrigger, PopoverPortal, PopoverClose, PopoverContent",
+      "imports": [
+        "@base-ui/react/popover",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "classes": [],
+      "functions": [
+        {
+          "name": "Popover",
+          "line": 7,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "PopoverTrigger",
+          "line": 11,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "PopoverPortal",
+          "line": 15,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "PopoverClose",
+          "line": 19,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "PopoverContent",
+          "line": 23,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
       "path": "components/ui/progress.tsx",
       "language": "tsx",
       "size_lines": 84,
@@ -2680,9 +3433,113 @@
       "complexity": "medium"
     },
     {
+      "path": "components/usuarios/user-form.tsx",
+      "language": "tsx",
+      "size_lines": 201,
+      "summary": "Funciones: UserForm, resetForm, handleSubmit",
+      "imports": [
+        "react",
+        "sonner",
+        "lucide-react",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/dialog",
+        "@/components/ui/field",
+        "@/app/actions/users"
+      ],
+      "exports": [
+        "UserForm"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "UserForm",
+          "line": 29,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "resetForm",
+          "line": 38,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSubmit",
+          "line": 46,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
+      "path": "components/usuarios/user-size-display.tsx",
+      "language": "tsx",
+      "size_lines": 3,
+      "summary": "Funciones: UserSizeDisplay",
+      "imports": [],
+      "exports": [
+        "UserSizeDisplay"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "UserSizeDisplay",
+          "line": 1,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "low"
+    },
+    {
+      "path": "components/usuarios/user-table.tsx",
+      "language": "tsx",
+      "size_lines": 147,
+      "summary": "Funciones: UserTable, filtered, q",
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/table",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/badge",
+        "@/components/ui/empty",
+        "@/components/shared/confirm-dialog",
+        "@/components/usuarios/user-size-display",
+        "@/lib/format"
+      ],
+      "exports": [
+        "UserTable"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "UserTable",
+          "line": 30,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "filtered",
+          "line": 34,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "q",
+          "line": 36,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
       "path": "context/auth-context.tsx",
       "language": "tsx",
-      "size_lines": 66,
+      "size_lines": 71,
       "summary": "Funciones: AuthProvider, useAuth, login, logout, changePassword",
       "imports": [
         "react",
@@ -2696,31 +3553,31 @@
       "functions": [
         {
           "name": "AuthProvider",
-          "line": 17,
+          "line": 18,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useAuth",
-          "line": 62,
+          "line": 67,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "login",
-          "line": 28,
+          "line": 33,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "logout",
-          "line": 37,
+          "line": 42,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "changePassword",
-          "line": 42,
+          "line": 47,
           "is_async": true,
           "docstring": null
         }
@@ -2730,13 +3587,16 @@
     {
       "path": "context/currency-context.tsx",
       "language": "tsx",
-      "size_lines": 63,
-      "summary": "Funciones: CurrencyProvider, useCurrency, STORAGE_KEY, setCurrency, toggleCurrency",
+      "size_lines": 166,
+      "summary": "Funciones: CurrencyProvider, useCurrency, DEFAULT_DOLLAR_TYPE, setCurrency, setDollarType",
       "imports": [
         "react",
-        "@/lib/format"
+        "@/lib/format",
+        "@/app/actions/exchange",
+        "@/app/imports/dev"
       ],
       "exports": [
+        "DEFAULT_DOLLAR_TYPE",
         "CurrencyProvider",
         "useCurrency"
       ],
@@ -2744,53 +3604,83 @@
       "functions": [
         {
           "name": "CurrencyProvider",
-          "line": 19,
+          "line": 34,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useCurrency",
-          "line": 58,
+          "line": 161,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "STORAGE_KEY",
-          "line": 8,
+          "name": "DEFAULT_DOLLAR_TYPE",
+          "line": 13,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "setCurrency",
-          "line": 31,
+          "line": 53,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "setDollarType",
+          "line": 62,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "toggleCurrency",
-          "line": 40,
+          "line": 71,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "snapshot",
+          "line": 79,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "rate",
+          "line": 94,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "convert",
+          "line": 99,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "convertToActive",
+          "line": 112,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "format",
-          "line": 44,
+          "line": 117,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 50,
+          "line": 123,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "context/data-context.tsx",
       "language": "tsx",
-      "size_lines": 314,
+      "size_lines": 374,
       "summary": "Funciones: DataProvider, useData, visibleTransactions, visibleSavings, visibleInvestments",
       "imports": [
         "react",
@@ -2810,145 +3700,157 @@
       "functions": [
         {
           "name": "DataProvider",
-          "line": 69,
+          "line": 75,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useData",
-          "line": 310,
+          "line": 370,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleTransactions",
-          "line": 80,
+          "line": 87,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleSavings",
-          "line": 84,
+          "line": 91,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleInvestments",
-          "line": 88,
+          "line": 95,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "loadAllData",
-          "line": 93,
+          "line": 100,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addTransaction",
-          "line": 120,
+          "line": 143,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "importTransactions",
-          "line": 126,
+          "line": 149,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 132,
+          "line": 155,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 144,
+          "line": 169,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCategory",
-          "line": 150,
+          "line": 177,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCategory",
-          "line": 157,
+          "line": 184,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategory",
-          "line": 163,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "categoriesByKind",
-          "line": 171,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "getCategory",
-          "line": 176,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "addSaving",
-          "line": 178,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "updateSaving",
           "line": 190,
           "is_async": true,
           "docstring": null
         },
         {
+          "name": "categoriesByKind",
+          "line": 198,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "getCategory",
+          "line": 203,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "addSaving",
+          "line": 205,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateSaving",
+          "line": 219,
+          "is_async": true,
+          "docstring": null
+        },
+        {
           "name": "deleteSaving",
-          "line": 202,
+          "line": 232,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addInvestment",
-          "line": 208,
+          "line": 239,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestment",
-          "line": 222,
+          "line": 253,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 231,
+          "line": 262,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 237,
+          "line": 269,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteContribution",
+          "line": 284,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateContribution",
+          "line": 291,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestment",
-          "line": 251,
+          "line": 301,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 256,
+          "line": 306,
           "is_async": false,
           "docstring": null
         }
@@ -3036,7 +3938,7 @@
     {
       "path": "lib/format.ts",
       "language": "typescript",
-      "size_lines": 52,
+      "size_lines": 53,
       "summary": "Funciones: formatCurrency, formatDate, formatMonth, validateDate",
       "imports": [],
       "exports": [
@@ -3050,25 +3952,25 @@
       "functions": [
         {
           "name": "formatCurrency",
-          "line": 13,
+          "line": 14,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "formatDate",
-          "line": 34,
+          "line": 35,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "formatMonth",
-          "line": 42,
+          "line": 43,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "validateDate",
-          "line": 46,
+          "line": 47,
           "is_async": false,
           "docstring": null
         }
@@ -3124,44 +4026,78 @@
     {
       "path": "lib/selectors.ts",
       "language": "typescript",
-      "size_lines": 74,
-      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, index",
+      "size_lines": 162,
+      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, totalsCrossCurrency, monthlySeriesCrossCurrency",
       "imports": [],
       "exports": [
+        "type",
         "totals",
         "interface",
         "monthlySeries",
         "interface",
-        "categoryBreakdown"
+        "categoryBreakdown",
+        "totalsCrossCurrency",
+        "monthlySeriesCrossCurrency",
+        "categoryBreakdownCrossCurrency"
       ],
       "classes": [],
       "functions": [
         {
           "name": "totals",
-          "line": 3,
+          "line": 5,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "monthlySeries",
-          "line": 21,
+          "line": 22,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "categoryBreakdown",
-          "line": 53,
+          "line": 54,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "totalsCrossCurrency",
+          "line": 76,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "monthlySeriesCrossCurrency",
+          "line": 87,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "categoryBreakdownCrossCurrency",
+          "line": 140,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "index",
-          "line": 34,
+          "line": 35,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "index",
+          "line": 127,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "converted",
+          "line": 149,
           "is_async": false,
           "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "lib/theme.ts",
@@ -3186,12 +4122,14 @@
     {
       "path": "lib/types.ts",
       "language": "typescript",
-      "size_lines": 50,
+      "size_lines": 63,
       "summary": "Archivo .ts",
       "imports": [],
       "exports": [
         "type",
         "type",
+        "type",
+        "interface",
         "interface",
         "interface",
         "interface",
@@ -3325,9 +4263,64 @@
       "complexity": "low"
     },
     {
+      "path": "prisma/migrations/20260817210801_add_user_role_and_email/migration.sql",
+      "language": "unknown",
+      "size_lines": 95,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "medium"
+    },
+    {
+      "path": "prisma/migrations/20260817212743_add_user_id_to_entities/migration.sql",
+      "language": "unknown",
+      "size_lines": 40,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "low"
+    },
+    {
+      "path": "prisma/migrations/20260830155931_add_saving_goal_id_to_transaction/migration.sql",
+      "language": "unknown",
+      "size_lines": 6,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "low"
+    },
+    {
+      "path": "prisma/migrations/20260831225002_add_investment_contribution_link/migration.sql",
+      "language": "unknown",
+      "size_lines": 6,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "low"
+    },
+    {
+      "path": "prisma/migrations/migration_lock.toml",
+      "language": "unknown",
+      "size_lines": 4,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "low"
+    },
+    {
       "path": "prisma/schema.prisma",
       "language": "unknown",
-      "size_lines": 74,
+      "size_lines": 97,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
@@ -3338,7 +4331,7 @@
     {
       "path": "prisma/seed.ts",
       "language": "typescript",
-      "size_lines": 82,
+      "size_lines": 94,
       "summary": "Funciones: seedLog, seedError, main, allCategories",
       "imports": [
         "dotenv/config",
@@ -3353,25 +4346,55 @@
       "functions": [
         {
           "name": "seedLog",
-          "line": 36,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "seedError",
           "line": 40,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "main",
+          "name": "seedError",
           "line": 44,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "main",
+          "line": 48,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "allCategories",
-          "line": 62,
+          "line": 74,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
+      "path": "proxy.ts",
+      "language": "typescript",
+      "size_lines": 57,
+      "summary": "Funciones: proxy, isDashboardRoute",
+      "imports": [
+        "iron-session",
+        "next/server"
+      ],
+      "exports": [
+        "proxy",
+        "config"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "proxy",
+          "line": 25,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "isDashboardRoute",
+          "line": 32,
           "is_async": false,
           "docstring": null
         }
@@ -3411,6 +4434,7 @@
     "tsconfig.json": [],
     "AGENTS.md": [],
     "next-env.d.ts": [],
+    "proxy.ts": [],
     "pnpm-lock.yaml": [],
     "next.config.mjs": [],
     "package-lock.json": [],
@@ -3422,6 +4446,7 @@
     "app/(dashboard)/layout.tsx": [],
     "app/(dashboard)/inversiones/page.tsx": [],
     "app/(dashboard)/inversiones/[id]/page.tsx": [],
+    "app/(dashboard)/usuarios/page.tsx": [],
     "app/(dashboard)/inicio/page.tsx": [],
     "app/(dashboard)/ahorros/page.tsx": [],
     "app/(dashboard)/transferencias/layout.tsx": [],
@@ -3432,8 +4457,11 @@
     "app/actions/auth.ts": [],
     "app/actions/investments.ts": [],
     "app/actions/savings.ts": [],
+    "app/actions/exchange.ts": [],
+    "app/actions/users.ts": [],
     "app/actions/transactions.ts": [],
     "app/service/investment.service.ts": [],
+    "app/service/user.service.ts": [],
     "app/service/db.ts": [],
     "app/service/category.service.ts": [],
     "app/service/auth.service.ts": [],
@@ -3450,6 +4478,11 @@
     "lib/excel.ts": [],
     "prisma/seed.ts": [],
     "prisma/schema.prisma": [],
+    "prisma/migrations/migration_lock.toml": [],
+    "prisma/migrations/20260830155931_add_saving_goal_id_to_transaction/migration.sql": [],
+    "prisma/migrations/20260817212743_add_user_id_to_entities/migration.sql": [],
+    "prisma/migrations/20260817210801_add_user_role_and_email/migration.sql": [],
+    "prisma/migrations/20260831225002_add_investment_contribution_link/migration.sql": [],
     "context/currency-context.tsx": [],
     "context/auth-context.tsx": [],
     "context/data-context.tsx": [],
@@ -3469,6 +4502,7 @@
     "components/ui/dropdown-menu.tsx": [],
     "components/ui/sonner.tsx": [],
     "components/ui/chart.tsx": [],
+    "components/ui/popover.tsx": [],
     "components/ui/tooltip.tsx": [],
     "components/ui/progress.tsx": [],
     "components/ui/table.tsx": [],
@@ -3476,10 +4510,17 @@
     "components/dashboard/stat-card.tsx": [],
     "components/dashboard/balance-chart.tsx": [],
     "components/dashboard/category-chart.tsx": [],
+    "components/dashboard/period-filter.tsx": [],
     "components/shared/confirm-dialog.tsx": [],
     "components/shared/color-picker.tsx": [],
     "components/shared/category-badge.tsx": [],
     "components/shared/amount-display.tsx": [],
+    "components/calculator/use-calculator.ts": [],
+    "components/calculator/floating-calculator.tsx": [],
+    "components/calculator/calculator-panel.tsx": [],
+    "components/usuarios/user-form.tsx": [],
+    "components/usuarios/user-size-display.tsx": [],
+    "components/usuarios/user-table.tsx": [],
     "components/layout/mobile-nav.tsx": [],
     "components/layout/currency-toggle.tsx": [],
     "components/layout/account-menu.tsx": [],
@@ -3497,6 +4538,6 @@
       "typescript",
       "unknown"
     ],
-    "compression_ratio_estimate": "94.9%"
+    "compression_ratio_estimate": "94.6%"
   }
 }

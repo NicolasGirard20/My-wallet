@@ -16,19 +16,23 @@ const ADMIN_PASSWORD = process.env.ADMIN_INIT_PASSWORD
 
 if (!ADMIN_PASSWORD) throw new Error("ADMIN_INIT_PASSWORD is not set")
 
-const DEFAULT_INCOME_CATEGORIES = [
-  { name: "Sueldo", kind: "income", color: "--chart-1" },
-  { name: "Freelance", kind: "income", color: "--chart-2" },
-  { name: "Dividendos", kind: "income", color: "--chart-3" },
-  { name: "Regalos", kind: "income", color: "--chart-4" },
-]
-
 const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Comida", kind: "expense", color: "--chart-1" },
   { name: "Alquiler", kind: "expense", color: "--chart-2" },
   { name: "Transporte", kind: "expense", color: "--chart-3" },
   { name: "Ocio", kind: "expense", color: "--chart-4" },
   { name: "Servicios", kind: "expense", color: "--chart-5" },
+  { name: "Ahorros", kind: "expense", color: "--chart-5" },
+  { name: "Inversiones", kind: "expense", color: "--chart-3" },
+]
+
+const DEFAULT_INCOME_CATEGORIES = [
+  { name: "Sueldo", kind: "income", color: "--chart-1" },
+  { name: "Freelance", kind: "income", color: "--chart-2" },
+  { name: "Dividendos", kind: "income", color: "--chart-3" },
+  { name: "Regalos", kind: "income", color: "--chart-4" },
+  { name: "Ahorros", kind: "income", color: "--chart-5" },
+  { name: "Inversiones", kind: "income", color: "--chart-3" },
 ]
 
 const SEED = !process.env.NODE_ENV || process.env.NODE_ENV !== "production"
@@ -44,16 +48,19 @@ function seedError(...args: unknown[]) {
 async function main() {
   seedLog("Starting My Wallet seeding...")
 
-  const passwordHash: string = await (bcrypt.hash(ADMIN_PASSWORD as string, 12) as Promise<string>)
+  const password = ADMIN_PASSWORD
+  if (!password) throw new Error("ADMIN_INIT_PASSWORD is not set")
+
+  const passwordHash = await bcrypt.hash(password, 12)
 
   const user = await prisma.user.upsert({
     where: { username: ADMIN_USERNAME },
-    update: { passwordHash },
+    update: { passwordHash, email: "adminWalletNic@gmail.com", role: "admin" },
     create: {
       username: ADMIN_USERNAME,
       passwordHash,
       name: "Administrador",
-      email: "admin@mywallet.local",
+      email: "adminWalletNic@gmail.com",
       role: "admin",
     },
   })
@@ -65,9 +72,9 @@ async function main() {
     for (const cat of allCategories) {
       await prisma.category.create({ data: { ...cat, userId: user.id } })
     }
-    seedLog(`✓ Created ${allCategories.length} default categories`)
+    seedLog(`✓ Created ${allCategories.length} default categories for admin`)
   } else {
-    seedLog(`→ ${existingCategories} categories already exist, skipping`)
+    seedLog(`→ ${existingCategories} categories already exist for admin, skipping`)
   }
 
   const existingAccounts = await prisma.checkingAccount.count({ where: { userId: user.id } })

@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
-import { CURRENCY_META, validateDate } from "@/lib/format"
+import { CURRENCY_META, formatCurrency, validateDate } from "@/lib/format"
 import type { Currency, Transaction, TransactionKind } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
@@ -37,7 +38,10 @@ interface TransactionFormProps {
 }
 
 function todayInput() {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${d.getFullYear()}-${month}-${day}`
 }
 
 export function TransactionForm({ kind, open, onOpenChange, editing }: TransactionFormProps) {
@@ -46,6 +50,8 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     categoriesByKind,
     checkingAccounts,
     selectedAccountId,
+    savings,
+    investments,
     addTransaction,
     updateTransaction,
   } = useData()
@@ -57,6 +63,13 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
   const [accountId, setAccountId] = useState<number | null>(null)
   const [txCurrency, setTxCurrency] = useState<Currency>("ARS")
   const [date, setDate] = useState(todayInput())
+  const [pendingPayload, setPendingPayload] = useState<{
+    kind: TransactionKind
+    amount: number
+    description: string
+    categoryId: number
+    date: string
+  } | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -118,6 +131,11 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       date: parsedDate.toISOString(),
     }
 
+    if (editing && (editing.savingGoalId || editing.investmentContributionId) && parsed !== editing.amount) {
+      setPendingPayload(payload)
+      return
+    }
+
     if (editing) {
       updateTransaction(editing.id, payload)
       toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
@@ -127,6 +145,52 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     }
     onOpenChange(false)
   }
+
+  const confirmDescription = useMemo(() => {
+    if (!pendingPayload || !editing) return ""
+    const oldAmount = editing.amount
+    const newAmount = pendingPayload.amount
+    const delta = newAmount - oldAmount
+    const absDelta = Math.abs(delta)
+    const oldText = formatCurrency(oldAmount, editing.currency)
+    const newText = formatCurrency(newAmount, editing.currency)
+    const deltaText = formatCurrency(absDelta, editing.currency)
+
+    if (editing.savingGoalId) {
+      const goal = savings.find((s) => s.id === editing.savingGoalId)
+      const goalName = goal?.name ?? "una meta de ahorro"
+      const impact =
+        kind === "expense"
+          ? delta > 0
+            ? `aumentará en ${deltaText}`
+            : `se reducirá en ${deltaText}`
+          : delta > 0
+            ? `se reducirá en ${deltaText}`
+            : `aumentará en ${deltaText}`
+      return `Esta transferencia está vinculada a la meta "${goalName}". Al cambiar el monto de ${oldText} a ${newText}, el ahorro ${impact}. ¿Continuar?`
+    }
+
+    if (editing.investmentContributionId) {
+      const impact =
+        kind === "expense"
+          ? delta > 0
+            ? `aumentará en ${deltaText}`
+            : `se reducirá en ${deltaText}`
+          : delta > 0
+            ? `se reducirá en ${deltaText}`
+            : `aumentará en ${deltaText}`
+      return `Esta transferencia está vinculada a una inversión. Al cambiar el monto de ${oldText} a ${newText}, el valor invertido ${impact}. ¿Continuar?`
+    }
+
+    return ""
+  }, [pendingPayload, editing, savings, kind])
+
+  const confirmTitle = useMemo(() => {
+    if (!editing) return "Editar transferencia vinculada"
+    if (editing.savingGoalId) return "Editar transferencia vinculada a ahorro"
+    if (editing.investmentContributionId) return "Editar transferencia vinculada a inversión"
+    return "Editar transferencia vinculada"
+  }, [editing])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -243,6 +307,23 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmDialog
+        open={pendingPayload !== null}
+        onOpenChange={(open) => { if (!open) setPendingPayload(null) }}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmLabel="Confirmar"
+        confirmVariant="default"
+        onConfirm={() => {
+          if (editing && pendingPayload) {
+            updateTransaction(editing.id, pendingPayload)
+            toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
+            setPendingPayload(null)
+            onOpenChange(false)
+          }
+        }}
+      />
     </Dialog>
   )
 }

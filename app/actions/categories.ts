@@ -41,12 +41,12 @@ export async function createCategoryAction(data: { name: string; kind: string; c
 
 export async function updateCategoryAction(id: number, data: { name?: string; color?: string }) {
   try {
-    await requireSession()
+    const session = await requireSession()
     const sanitized: { name?: string; color?: string } = {}
     if (data.name?.trim()) sanitized.name = data.name.trim()
     if (data.color) sanitized.color = data.color
 
-    const category = await service.updateCategory(id, sanitized)
+    const category = await service.updateCategory(id, session.userId, sanitized)
     return { id: category.id, name: category.name, kind: category.kind as TransactionKind, color: category.color }
   } catch (error) {
     logger.error("updateCategoryAction failed:", error)
@@ -56,8 +56,8 @@ export async function updateCategoryAction(id: number, data: { name?: string; co
 
 export async function deleteCategoryAction(id: number) {
   try {
-    await requireSession()
-    await service.deleteCategory(id)
+    const session = await requireSession()
+    await service.deleteCategory(id, session.userId)
   } catch (error) {
     logger.error("deleteCategoryAction failed:", error)
     throw error

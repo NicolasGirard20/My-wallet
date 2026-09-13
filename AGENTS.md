@@ -33,7 +33,7 @@ Antes de leer la carpeta `node_modules` o el archivo `pnpm-lock.yaml`, el agente
 Ejecutar siempre al inicio si no hay mapa reciente:
 
 ```bash
-python3 .agents/project-mapper/scripts/generate_map.py --project . --output .agents/project-mapper/resources/project_map.json --force
+python3 .agents/skills/project-mapper/scripts/generate_map.py --project . --output .agents/skills/project-mapper/resources/project_map.json --force
 ```
 
 #### Paso 2: Inyectar contexto relevante
@@ -41,7 +41,7 @@ python3 .agents/project-mapper/scripts/generate_map.py --project . --output .age
 Ejecutar automáticamente después del paso 1 y antes de cada tarea concreta para filtrar solo los archivos necesarios:
 
 ```bash
-python3 .agents/project-mapper/scripts/inject_relevant.py --map .agents/project-mapper/resources/project_map.json --query "descripción de tu tarea aquí" --output .agents/project-mapper/resources/context_task.json
+python3 .agents/skills/project-mapper/scripts/inject_relevant.py --map .agents/skills/project-mapper/resources/project_map.json --query "descripción de tu tarea aquí" --output .agents/project-mapper/resources/context_task.json
 ```
 
 Se puede limitar la cantidad de archivos con flags como `--max-files 10` o `--dep-depth 2` cuando sea necesario.
@@ -51,7 +51,7 @@ Se puede limitar la cantidad de archivos con flags como `--max-files 10` o `--de
 Ejecutar solo si el mapa o el contexto inyectado son demasiado grandes (>4000 tokens estimados) o si el contexto se volvió demasiado largo:
 
 ```bash
-python3 .agents/project-mapper/scripts/compress_context.py --input .agents/project-mapper/resources/project_map.json --output .agents/project-mapper/resources/project_map_compressed.json --ratio 0.4
+python3 .agents/skills/project-mapper/scripts/compress_context.py --input .agents/skills/project-mapper/resources/project_map.json --output .agents/project-mapper/resources/project_map_compressed.json --ratio 0.4
 ```
 
 Se puede ajustar a `0.3` para compresión más agresiva o `0.6` para ser más conservador.
@@ -124,6 +124,11 @@ components/
     stat-card.tsx             # Tarjeta de métrica con ícono y monto formateado
     balance-chart.tsx         # Gráfico de área (ingresos vs gastos en el tiempo)
     category-chart.tsx        # Gráfico de torta (desglose por categoría)
+    period-filter.tsx         # Selector de período: Total o rango personalizado
+  calculator/
+    use-calculator.ts         # Hook: state machine de la calculadora flotante
+    calculator-panel.tsx      # UI: display + keypad + conversión USD/ARS + historial
+    floating-calculator.tsx   # FAB flotante abajo-derecha + Popover contenedor
   transferencias/
     transaction-form.tsx      # Formulario (Dialog) para crear/editar transacciones
     transaction-table.tsx     # Tabla con búsqueda, filtro, ordenamiento, editar, eliminar
@@ -137,7 +142,7 @@ components/
   ui/                         # Primitivas shadcn/ui (basadas en Base UI)
     avatar.tsx, badge.tsx, button.tsx, card.tsx, chart.tsx
     dialog.tsx, dropdown-menu.tsx, empty.tsx, field.tsx
-    input.tsx, label.tsx, progress.tsx, select.tsx
+    input.tsx, label.tsx, popover.tsx, progress.tsx, select.tsx
     separator.tsx, sheet.tsx, sonner.tsx, table.tsx
     tabs.tsx, tooltip.tsx
 

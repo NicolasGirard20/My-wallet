@@ -23,11 +23,11 @@ export function monthlySeries(transactions: Transaction[], count = 6): MonthlyPo
   const now = new Date()
   const points: MonthlyPoint[] = []
   for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     points.push({
       key,
-      month: d.toLocaleDateString("es-AR", { month: "short" }).replace(".", ""),
+      month: d.toLocaleDateString("es-AR", { month: "short", timeZone: "UTC" }).replace(".", ""),
       income: 0,
       expense: 0,
     })
@@ -35,7 +35,7 @@ export function monthlySeries(transactions: Transaction[], count = 6): MonthlyPo
   const index = new Map(points.map((p) => [p.key, p]))
   for (const t of transactions) {
     const d = new Date(t.date)
-    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     const point = index.get(key)
     if (!point) continue
     if (t.kind === "income") point.income += t.amount
@@ -84,23 +84,50 @@ export function totalsCrossCurrency(transactions: Transaction[], convert: Conver
   return { income, expense, balance: income - expense }
 }
 
-export function monthlySeriesCrossCurrency(transactions: Transaction[], convert: ConvertFn, count = 6): MonthlyPoint[] {
+export function monthlySeriesCrossCurrency(
+  transactions: Transaction[],
+  convert: ConvertFn,
+  options: { count?: number; from?: string; to?: string } = {},
+): MonthlyPoint[] {
   const now = new Date()
   const points: MonthlyPoint[] = []
-  for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const key = `${d.getFullYear()}-${d.getMonth()}`
-    points.push({
-      key,
-      month: d.toLocaleDateString("es-AR", { month: "short" }).replace(".", ""),
-      income: 0,
-      expense: 0,
-    })
+
+  if (options.from && options.to) {
+    const [fy, fm] = options.from.slice(0, 10).split("-").map(Number)
+    const [ty, tm] = options.to.slice(0, 10).split("-").map(Number)
+    let y = fy
+    let m = fm
+    while (y < ty || (y === ty && m <= tm)) {
+      const d = new Date(Date.UTC(y, m - 1, 1))
+      points.push({
+        key: `${d.getUTCFullYear()}-${d.getUTCMonth()}`,
+        month: d.toLocaleDateString("es-AR", { month: "short", timeZone: "UTC" }).replace(".", ""),
+        income: 0,
+        expense: 0,
+      })
+      m++
+      if (m > 12) {
+        m = 1
+        y++
+      }
+    }
+  } else {
+    const count = options.count ?? 6
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))
+      points.push({
+        key: `${d.getUTCFullYear()}-${d.getUTCMonth()}`,
+        month: d.toLocaleDateString("es-AR", { month: "short", timeZone: "UTC" }).replace(".", ""),
+        income: 0,
+        expense: 0,
+      })
+    }
   }
+
   const index = new Map(points.map((p) => [p.key, p]))
   for (const t of transactions) {
     const d = new Date(t.date)
-    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     const point = index.get(key)
     if (!point) continue
     const converted = convert(t.amount, t.currency)

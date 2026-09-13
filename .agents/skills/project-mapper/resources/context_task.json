@@ -1,0 +1,205 @@
+{
+  "query": "estructura del proyecto, arquitectura, rutas, capas, dependencias, patrones de diseño y convenciones del repositorio",
+  "generated_at": "2026-08-23T20:51:38.898585Z",
+  "project_name": "Proyecto-Laboratorio-Dental",
+  "relevant_architecture": {
+    "entry_points": [
+      "src/app/App.tsx",
+      "src/app/components/ClinicsTable.tsx",
+      "src/app/components/ClinicsKPICards.tsx",
+      "src/app/components/ClinicFormModal.tsx",
+      "src/app/components/DeleteClinicDialog.tsx",
+      "src/services/clinics/clinic.ts",
+      "src/services/clinicOdont/clinicOdont.ts",
+      "src/helpers/validators/clinicValidator.ts",
+      "src/global/models/index.ts"
+    ],
+    "core_modules": [
+      "src"
+    ]
+  },
+  "files": [
+    {
+      "path": "src/app/clinicas/page.tsx",
+      "summary": "Funciones: activeClinics, uniqueDentistIds, handleNewClinic, handleEdit, handleDelete",
+      "exports": [
+        "withAuth"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/DashboardHeader.tsx",
+      "summary": "Funciones: DashboardHeader, handleClickOutside, router, handleLogout",
+      "exports": [
+        "DashboardHeader"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/DeleteClinicDialog.tsx",
+      "summary": "Punto de entrada | Funciones: DeleteClinicDialog, handleDelete, handleOpenChange",
+      "exports": [
+        "DeleteClinicDialog"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/DeleteDentistDialog.tsx",
+      "summary": "Funciones: DeleteDentistDialog, handleDelete, handleOpenChange",
+      "exports": [
+        "DeleteDentistDialog"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/DentistFormModal.tsx",
+      "summary": "Funciones: DentistFormModal, handleSubmit, validationErrors, payload",
+      "exports": [
+        "DentistFormModal"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/NewWorkOrderForm.tsx",
+      "summary": "Funciones: NewWorkOrderForm, producto, toggleTooth, getOffset, handleSubmit",
+      "exports": [
+        "NewWorkOrderForm"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/PaymentForm.tsx",
+      "summary": "Funciones: toInputDate, PaymentForm, resetForm, handleSubmit",
+      "exports": [
+        "PaymentForm"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/PaymentsTable.tsx",
+      "summary": "Funciones: PaymentsTable, clearFilters, handleDelete, handleEditSuccess, loadPayments",
+      "exports": [
+        "PaymentsTable"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/components/ui/sidebar.tsx",
+      "summary": "Funciones: useSidebar, SidebarProvider, Sidebar, SidebarTrigger, SidebarRail",
+      "exports": [],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/app/odontologos/page.tsx",
+      "summary": "Funciones: d, handleNewDentist, handleEditDentist, handleDeleteDentist, handleDentistSaved",
+      "exports": [
+        "withAuth"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "src/helpers/jwt.ts",
+      "summary": "Funciones: encrypt, decrypt, getUserFromCookie, verifyJWT",
+      "exports": [
+        "encrypt",
+        "decrypt",
+        "verifyJWT",
+        "getUserFromCookie"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "typescript"
+    },
+    {
+      "path": "src/services/clinics/clinic.ts",
+      "summary": "Punto de entrada | Funciones: getClinics, getClinicById, getClinicsWithDetails, getClinicWithDetailsById, createClinic",
+      "exports": [
+        "getClinics",
+        "getClinicById",
+        "getClinicsWithDetails",
+        "getClinicWithDetailsById",
+        "createClinic",
+        "updateClinic",
+        "deleteClinic"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "src/services/dentists/dentists.ts",
+      "summary": "Funciones: getDentists, getDentistsByClinicId, getDentistById, getDentistsWithDetails, getDentistWithDetailsById",
+      "exports": [
+        "getDentists",
+        "getDentistsByClinicId",
+        "getDentistById",
+        "getDentistsWithDetails",
+        "getDentistWithDetailsById",
+        "createDentist",
+        "updateDentist",
+        "deleteDentist"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "src/services/payments/payments.ts",
+      "summary": "Funciones: getPayments, getPaymentById, getPaymentsDetails, getPaymentDetailsById, createPayment",
+      "exports": [
+        "getPayments",
+        "getPaymentById",
+        "getPaymentsDetails",
+        "getPaymentDetailsById",
+        "createPayment",
+        "updatePayment",
+        "deletePayment",
+        "deleteChequeByPaymentId"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "src/services/users/user.ts",
+      "summary": "Funciones: getUsers, getUserByEmail, getUserById, createUser, authenticateUser",
+      "exports": [
+        "getUsers",
+        "getUserByEmail",
+        "getUserById",
+        "createUser",
+        "authenticateUser",
+        "updateUser",
+        "deleteUser",
+        "logoutUser"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    }
+  ],
+  "total_relevant_files": 15,
+  "direct_matches": 15,
+  "dependency_includes": 0,
+  "injection_strategy": "selective"
+}

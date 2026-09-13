@@ -45,6 +45,7 @@ export async function getSavingGoalsAction() {
 export async function createSavingGoalAction(data: {
   name: string
   target: number
+  saved: number
   color: string
   currency: string
   deadline?: string
@@ -54,6 +55,7 @@ export async function createSavingGoalAction(data: {
 
     if (!data.name?.trim()) throw new Error("El nombre es obligatorio")
     if (!Number.isFinite(data.target) || data.target <= 0) throw new Error("La meta debe ser mayor a 0")
+    if (!Number.isFinite(data.saved) || data.saved < 0) throw new Error("El ahorro inicial debe ser un número válido")
     if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
 
     const deadline = data.deadline ? new Date(data.deadline) : undefined
@@ -64,7 +66,7 @@ export async function createSavingGoalAction(data: {
     const goal = await service.createSavingGoal({
       name: data.name.trim(),
       target: data.target,
-      saved: 0,
+      saved: data.saved,
       color: data.color,
       currency: data.currency,
       deadline,
@@ -90,7 +92,7 @@ export async function updateSavingGoalAction(
   }>,
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const updateData: Record<string, unknown> = {}
 
@@ -121,7 +123,7 @@ export async function updateSavingGoalAction(
       }
     }
 
-    const goal = await service.updateSavingGoal(id, updateData)
+    const goal = await service.updateSavingGoal(id, session.userId, updateData)
     return mapGoal(goal)
   } catch (error) {
     logger.error("updateSavingGoalAction failed:", error)
@@ -131,8 +133,8 @@ export async function updateSavingGoalAction(
 
 export async function deleteSavingGoalAction(id: number) {
   try {
-    await requireSession()
-    await service.deleteSavingGoal(id)
+    const session = await requireSession()
+    await service.deleteSavingGoal(id, session.userId)
   } catch (error) {
     logger.error("deleteSavingGoalAction failed:", error)
     throw error

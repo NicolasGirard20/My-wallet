@@ -1,0 +1,53 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "typescript": {
+    "strict": true,
+    "forbid_any": true,
+    "forbid_deep_relative_imports": true,
+    "prefer_path_alias": true
+  },
+  "nomenclature": {
+    "components": "PascalCase.tsx",
+    "services": "camelCase.ts",
+    "pages": "page.tsx | layout.tsx | error.tsx",
+    "folders": "kebab-case",
+    "code_language": "en",
+    "ui_language": "es"
+  },
+  "styling": {
+    "framework": "tailwindcss",
+    "forbid_css_in_js": true,
+    "forbid_inline_styles": true,
+    "ui_library": "shadcn/ui",
+    "icon_library": "lucide-react",
+    "chart_library": "recharts"
+  },
+  "architecture": {
+    "prisma_only_in_services": true,
+    "services_path": "src/services/<dominio>/",
+    "models_path": "src/global/models/index.ts",
+    "validators_path": "src/helpers/validators/",
+    "global_state": "DataContext.tsx",
+    "forbid_new_state_libs": true
+  },
+  "react": {
+    "server_components_by_default": true,
+    "use_client_minimal": true,
+    "forms_library": "react-hook-form",
+    "modals_library": "radix-ui",
+    "notifications_library": "sonner"
+  },
+  "security": {
+    "forbid_secrets_in_code": true,
+    "forbid_passwords_in_logs": true,
+    "auth_required_pages": true,
+    "jwt_cookie_name": "user",
+    "prisma_prevents_sql_injection": true,
+    "validate_inputs_before_persist": true
+  },
+  "code_quality": {
+    "lint_before_finish": true,
+    "lint_command": "npm run lint",
+    "no_new_deps_without_justification": true
+  }
+}

@@ -24,6 +24,7 @@ import {
   deleteInvestmentAction,
   addContributionAction,
   deleteContributionAction,
+  updateContributionAction,
 } from "@/app/actions/investments"
 import {
   getCheckingAccountsAction,
@@ -109,7 +110,7 @@ interface DataContextValue {
   getCategory: (id: number) => Category | undefined
 
   addSaving: (goal: Omit<SavingGoal, "id" | "currency"> & { currency?: Currency }) => Promise<void>
-  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">> & { currency?: Currency }) => Promise<void>
+  updateSaving: (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency" | "deadline">> & { currency?: Currency; deadline?: string | null }) => Promise<void>
   deleteSaving: (id: number) => Promise<void>
 
   addInvestment: (inv: Omit<Investment, "id" | "invested" | "contributions" | "createdAt" | "currency"> & { currency?: Currency }) => Promise<void>
@@ -117,13 +118,14 @@ interface DataContextValue {
   deleteInvestment: (id: number) => Promise<void>
   addContribution: (investmentId: number, c: Omit<InvestmentContribution, "id" | "currency"> & { currency?: Currency }) => Promise<void>
   deleteContribution: (contributionId: number) => Promise<void>
+  updateContribution: (contributionId: number, data: { amount: number; date: string; note?: string }) => Promise<void>
   getInvestment: (id: number) => Investment | undefined
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, hydrated: authHydrated } = useAuth()
+  const { isAuthenticated, hydrated: authHydrated, username } = useAuth()
   const { currency } = useCurrency()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -133,6 +135,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [selectedAccountId, setSelectedAccountId] = useState<number | "all">("all")
   const [loading, setLoading] = useState(false)
   const loadedRef = useRef(false)
+  const previousUsername = useRef<string | null>(null)
 
   // Transactions are filtered by checking account (if one is selected), NOT by currency.
   // Currency toggle now serves as a global display / conversion lens.
@@ -169,11 +172,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (authHydrated && isAuthenticated && !loadedRef.current) {
+    if (!authHydrated) return
+
+    if (!isAuthenticated) {
+      setTransactions([])
+      setCategories([])
+      setSavings([])
+      setInvestments([])
+      loadedRef.current = false
+      return
+    }
+
+    if (username && username !== previousUsername.current) {
+      previousUsername.current = username
+      loadedRef.current = false
+    }
+
+    if (!loadedRef.current) {
       loadedRef.current = true
       loadAllData()
     }
-  }, [authHydrated, isAuthenticated, loadAllData])
+  }, [authHydrated, isAuthenticated, loadAllData, username])
 
   const refreshCheckingAccounts = useCallback(async () => {
     const accs = await getCheckingAccountsAction()
@@ -247,24 +266,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (tx.checkingAccountId !== undefined) payload.checkingAccountId = tx.checkingAccountId
 
       await updateTransactionAction(id, payload)
-      const [txs, freshAccs] = await Promise.all([
+      const [txs, freshAccs, sav, invs] = await Promise.all([
         getTransactionsAction(),
         getCheckingAccountsAction(),
+        getSavingGoalsAction(),
+        getInvestmentsAction(),
       ])
       setTransactions(txs)
       setCheckingAccounts(freshAccs)
+      setSavings(sav)
+      setInvestments(invs)
     },
     [],
   )
 
   const deleteTransaction = useCallback(async (id: number) => {
     await deleteTransactionAction(id)
-    const [txs, freshAccs] = await Promise.all([
+    const [txs, freshAccs, sav, invs] = await Promise.all([
       getTransactionsAction(),
       getCheckingAccountsAction(),
+      getSavingGoalsAction(),
+      getInvestmentsAction(),
     ])
     setTransactions(txs)
     setCheckingAccounts(freshAccs)
+    setSavings(sav)
+    setInvestments(invs)
   }, [])
 
   const addCheckingAccount = useCallback(
@@ -338,18 +365,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await createSavingGoalAction({
         name: goal.name,
         target: goal.target,
+        saved: goal.saved,
         color: goal.color,
         currency: goal.currency ?? currency,
-        deadline: goal.deadline,
+        deadline: goal.deadline ?? undefined,
       })
-      const sav = await getSavingGoalsAction()
+      const [sav, txs, accs] = await Promise.all([
+        getSavingGoalsAction(),
+        getTransactionsAction(),
+        getCheckingAccountsAction(),
+      ])
       setSavings(sav)
+      setTransactions(txs)
+      setCheckingAccounts(accs)
     },
     [currency],
   )
 
   const updateSaving = useCallback(
-    async (id: number, goal: Partial<Omit<SavingGoal, "id" | "currency">> & { currency?: Currency }) => {
+    async (
+      id: number,
+      goal: Partial<Omit<SavingGoal, "id" | "currency" | "deadline">> & { currency?: Currency; deadline?: string | null },
+    ) => {
       const payload: Record<string, unknown> = {}
       if (goal.name !== undefined) payload.name = goal.name
       if (goal.target !== undefined) payload.target = goal.target
@@ -358,16 +395,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (goal.currency !== undefined) payload.currency = goal.currency
       if (goal.deadline !== undefined) payload.deadline = goal.deadline ?? null
       await updateSavingGoalAction(id, payload)
-      const sav = await getSavingGoalsAction()
+      const [sav, txs, accs] = await Promise.all([
+        getSavingGoalsAction(),
+        getTransactionsAction(),
+        getCheckingAccountsAction(),
+      ])
       setSavings(sav)
+      setTransactions(txs)
+      setCheckingAccounts(accs)
     },
     [],
   )
 
   const deleteSaving = useCallback(async (id: number) => {
     await deleteSavingGoalAction(id)
-    const sav = await getSavingGoalsAction()
+    const [sav, txs] = await Promise.all([getSavingGoalsAction(), getTransactionsAction()])
     setSavings(sav)
+    setTransactions(txs)
   }, [])
 
   const addInvestment = useCallback(
@@ -395,8 +439,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteInvestment = useCallback(async (id: number) => {
     await deleteInvestmentAction(id)
-    const invs = await getInvestmentsAction()
+    const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
     setInvestments(invs)
+    setTransactions(txs)
   }, [])
 
   const addContribution = useCallback(
@@ -407,17 +452,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         currency: c.currency ?? currency,
         note: c.note,
       })
-      const invs = await getInvestmentsAction()
+      const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
       setInvestments(invs)
+      setTransactions(txs)
     },
     [currency],
   )
 
   const deleteContribution = useCallback(async (contributionId: number) => {
     await deleteContributionAction(contributionId)
-    const invs = await getInvestmentsAction()
+    const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
     setInvestments(invs)
+    setTransactions(txs)
   }, [])
+
+  const updateContribution = useCallback(
+    async (contributionId: number, data: { amount: number; date: string; note?: string }) => {
+      await updateContributionAction(contributionId, data)
+      const [invs, txs] = await Promise.all([getInvestmentsAction(), getTransactionsAction()])
+      setInvestments(invs)
+      setTransactions(txs)
+    },
+    [],
+  )
 
   const getInvestment = useCallback(
     (id: number) => investments.find((i) => i.id === id),
@@ -460,6 +517,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteInvestment,
       addContribution,
       deleteContribution,
+      updateContribution,
       getInvestment,
     }),
     [
@@ -494,6 +552,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteInvestment,
       addContribution,
       deleteContribution,
+      updateContribution,
       getInvestment,
     ],
   )

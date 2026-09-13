@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { KeyRound, LogOut, Settings } from "lucide-react"
+import { KeyRound, LogOut, Settings, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { useAuth } from "@/context/auth-context"
@@ -36,7 +36,7 @@ interface AccountMenuProps {
 
 export function AccountMenu({ align = "end", onNavigate }: AccountMenuProps) {
   const router = useRouter()
-  const { username, logout, changePassword } = useAuth()
+  const { username, isAdmin, logout, changePassword } = useAuth()
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -110,6 +110,13 @@ export function AccountMenu({ align = "end", onNavigate }: AccountMenuProps) {
             <KeyRound />
             Cambiar contraseña
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {isAdmin && (
+            <DropdownMenuItem onClick={() => { router.push("/usuarios"); onNavigate?.() }}>
+              <Users />
+              Gestionar usuarios
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={handleLogout}>
             <LogOut />

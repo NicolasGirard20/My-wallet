@@ -59,8 +59,8 @@ export async function getInvestmentsAction() {
 
 export async function getInvestmentByIdAction(id: number) {
   try {
-    await requireSession()
-    const inv = await service.getInvestmentById(id)
+    const session = await requireSession()
+    const inv = await service.getInvestmentById(id, session.userId)
     if (!inv) return null
     return mapInv(inv)
   } catch (error) {
@@ -110,7 +110,7 @@ export async function updateInvestmentAction(
   }>,
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const updateData: Record<string, unknown> = {}
 
@@ -130,8 +130,8 @@ export async function updateInvestmentAction(
       updateData.currency = data.currency
     }
 
-    const inv = await service.updateInvestment(id, updateData)
-    const full = await service.getInvestmentById(id)
+    const inv = await service.updateInvestment(id, session.userId, updateData)
+    const full = await service.getInvestmentById(id, session.userId)
     if (!full) throw new Error("Inversión no encontrada")
     return mapInv(full)
   } catch (error) {
@@ -142,8 +142,8 @@ export async function updateInvestmentAction(
 
 export async function deleteInvestmentAction(id: number) {
   try {
-    await requireSession()
-    await service.deleteInvestment(id)
+    const session = await requireSession()
+    await service.deleteInvestment(id, session.userId)
   } catch (error) {
     logger.error("deleteInvestmentAction failed:", error)
     throw error
@@ -162,7 +162,7 @@ export async function addContributionAction(
   try {
     const session = await requireSession()
 
-    const investment = await service.getInvestmentById(investmentId)
+    const investment = await service.getInvestmentById(investmentId, session.userId)
     if (!investment) throw new Error("Inversión no encontrada")
 
     if (!Number.isFinite(data.amount) || data.amount === 0) throw new Error("El monto no puede ser 0")
@@ -170,7 +170,7 @@ export async function addContributionAction(
     const parsedDate = new Date(data.date)
     if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")
 
-    const contribution = await service.addContribution(investmentId, {
+    const contribution = await service.addContribution(investmentId, session.userId, {
       date: parsedDate,
       amount: data.amount,
       currency: data.currency,
@@ -193,10 +193,44 @@ export async function addContributionAction(
 
 export async function deleteContributionAction(contributionId: number) {
   try {
-    await requireSession()
-    await service.deleteContribution(contributionId)
+    const session = await requireSession()
+    await service.deleteContribution(contributionId, session.userId)
   } catch (error) {
     logger.error("deleteContributionAction failed:", error)
+    throw error
+  }
+}
+
+export async function updateContributionAction(
+  contributionId: number,
+  data: {
+    amount: number
+    date: string
+    note?: string
+  },
+) {
+  try {
+    const session = await requireSession()
+
+    if (!Number.isFinite(data.amount) || data.amount === 0) throw new Error("El monto no puede ser 0")
+    const parsedDate = new Date(data.date)
+    if (isNaN(parsedDate.getTime())) throw new Error("Fecha inválida")
+
+    const contribution = await service.updateContribution(contributionId, session.userId, {
+      amount: data.amount,
+      date: parsedDate,
+      note: data.note?.trim() || undefined,
+    })
+
+    return {
+      ...contribution,
+      date: contribution.date.toISOString(),
+      createdAt: contribution.createdAt.toISOString(),
+      currency: contribution.currency as Currency,
+      note: contribution.note ?? undefined,
+    }
+  } catch (error) {
+    logger.error("updateContributionAction failed:", error)
     throw error
   }
 }

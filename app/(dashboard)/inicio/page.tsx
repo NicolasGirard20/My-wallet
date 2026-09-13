@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
   ArrowDownLeft,
@@ -22,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/dashboard/stat-card"
+import { PeriodFilter, type PeriodFilter as PeriodFilterValue } from "@/components/dashboard/period-filter"
 import { BalanceChart } from "@/components/dashboard/balance-chart"
 import { CategoryChart } from "@/components/dashboard/category-chart"
 import { AmountDisplay } from "@/components/shared/amount-display"
@@ -39,19 +41,44 @@ export default function InicioPage() {
     getCategory,
   } = useData()
   const { currency, convert, rate, dollarType } = useCurrency()
+  const [period, setPeriod] = useState<PeriodFilterValue>({ mode: "total" })
 
   const currentTxs = selectedAccountId === "all" ? allTransactions : transactions
 
-  const { income, expense, balance } = totalsCrossCurrency(currentTxs, convert)
-  const monthly = monthlySeriesCrossCurrency(currentTxs, convert, 6)
+  const inRange = period.mode === "range"
+  const rangedTransactions = useMemo(() => {
+    if (period.mode !== "range") return currentTxs
+    return currentTxs.filter((t) => {
+      const d = t.date.slice(0, 10)
+      return d >= period.from && d <= period.to
+    })
+  }, [currentTxs, period])
+
+  const { income, expense, balance } = totalsCrossCurrency(rangedTransactions, convert)
+  const monthly = monthlySeriesCrossCurrency(
+    rangedTransactions,
+    convert,
+    inRange ? { from: period.from, to: period.to } : { count: 6 },
+  )
   const expenseSlices = categoryBreakdownCrossCurrency(
-    currentTxs, categories, "expense", convert,
+    rangedTransactions, categories, "expense", convert,
   )
 
   const totalSaved = allSavings.reduce((acc, s) => convert(s.saved, s.currency) + acc, 0)
   const invValue = allInvestments.reduce((acc, i) => convert(i.currentValue, i.currency) + acc, 0)
+  const periodContributions = useMemo(() => {
+    if (period.mode !== "range") return 0
+    let sum = 0
+    for (const inv of allInvestments) {
+      for (const c of inv.contributions) {
+        const d = c.date.slice(0, 10)
+        if (d >= period.from && d <= period.to) sum += convert(c.amount, c.currency)
+      }
+    }
+    return sum
+  }, [allInvestments, period, convert])
 
-  const recent = [...currentTxs]
+  const recent = [...rangedTransactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6)
 
@@ -59,6 +86,10 @@ export default function InicioPage() {
   const rateHint = rate
     ? `Dólar ${rate.nombre}: C $${rate.compra.toLocaleString("es-AR", { maximumFractionDigits: 0 })} / V $${rate.venta.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
     : `Tipo de dólar: ${dollarType}`
+
+  const periodLabel = inRange
+    ? `Período: ${formatDate(period.from, "long")} – ${formatDate(period.to, "long")}`
+    : "Todo el historial"
 
   const headerDescription = activeAccount
     ? `Mostrando movimientos de ${activeAccount.name} (${activeAccount.currency}) expresados en ${currencyLabel}.`
@@ -69,6 +100,7 @@ export default function InicioPage() {
       <PageHeader
         title={activeAccount ? `Inicio — ${activeAccount.name}` : "Inicio"}
         description={headerDescription}
+        actions={<PeriodFilter value={period} onChange={setPeriod} />}
       />
 
       {/* Stats */}
@@ -78,27 +110,27 @@ export default function InicioPage() {
           value={balance}
           icon={Wallet}
           accent
-          hint="USD + ARS convertidos a la moneda activa"
+          hint={inRange ? `Balance en el período · ${periodLabel}` : "USD + ARS convertidos"}
         />
         <StatCard
           title="Ingresos"
           value={income}
           kind="income"
           icon={ArrowUpRight}
-          hint="USD + ARS convertidos"
+          hint={inRange ? `Ingresos en el período · ${periodLabel}` : "USD + ARS convertidos"}
         />
         <StatCard
           title="Gastos"
           value={expense}
           kind="expense"
           icon={ArrowDownLeft}
-          hint="USD + ARS convertidos"
+          hint={inRange ? `Gastos en el período · ${periodLabel}` : "USD + ARS convertidos"}
         />
         <StatCard
-          title="Ahorros + Inversiones"
-          value={totalSaved + invValue}
+          title={inRange ? "Aportes en el período" : "Ahorros + Inversiones"}
+          value={inRange ? periodContributions : totalSaved + invValue}
           icon={PiggyBank}
-          hint="USD + ARS convertidos"
+          hint={inRange ? "Contribuciones netas de inversiones · USD + ARS convertidos" : "USD + ARS convertidos"}
         />
       </div>
 
@@ -108,7 +140,9 @@ export default function InicioPage() {
           <CardHeader>
             <CardTitle>Ingresos vs Gastos</CardTitle>
             <CardDescription>
-              Evolución de los últimos 6 meses · USD + ARS convertidos a {currencyLabel}
+              {inRange
+                ? `Evolución mensual del período · ${periodLabel}`
+                : "Evolución de los últimos 6 meses"} · USD + ARS convertidos a {currencyLabel}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -119,7 +153,9 @@ export default function InicioPage() {
         <Card>
           <CardHeader>
             <CardTitle>Gastos por categoría</CardTitle>
-            <CardDescription>Distribución histórica · USD + ARS convertidos</CardDescription>
+            <CardDescription>
+              {inRange ? `Distribución del período · ${periodLabel}` : "Distribución histórica"} · USD + ARS convertidos
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <CategoryChart data={expenseSlices} />
@@ -141,7 +177,9 @@ export default function InicioPage() {
           <CardHeader>
             <CardTitle>Movimientos recientes</CardTitle>
             <CardDescription>
-              Últimas transacciones de todas las monedas · USD + ARS convertidos a {currencyLabel}
+              {inRange
+                ? `Últimas transacciones del período · ${periodLabel}`
+                : "Últimas transacciones de todas las monedas"} · USD + ARS convertidos a {currencyLabel}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col">

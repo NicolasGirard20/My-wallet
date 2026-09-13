@@ -40,7 +40,7 @@ function isCurrency(value: unknown): value is Currency {
 export async function getTransactionsAction() {
   try {
     const session = await requireSession()
-    const transactions = await service.getTransactions({ userId: session.userId })
+    const transactions = await service.getTransactions(session.userId)
     return transactions.map(mapTx)
   } catch (error) {
     logger.error("getTransactionsAction failed:", error)
@@ -144,7 +144,7 @@ export async function updateTransactionAction(
   }>,
 ) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const updateData: Record<string, unknown> = {}
 
@@ -176,7 +176,7 @@ export async function updateTransactionAction(
       updateData.checkingAccountId = data.checkingAccountId
     }
 
-    const tx = await service.updateTransaction(id, updateData)
+    const tx = await service.updateTransaction(id, session.userId, updateData)
     return mapTx(tx)
   } catch (error) {
     logger.error("updateTransactionAction failed:", error)
@@ -186,8 +186,8 @@ export async function updateTransactionAction(
 
 export async function deleteTransactionAction(id: number) {
   try {
-    await requireSession()
-    await service.deleteTransaction(id)
+    const session = await requireSession()
+    await service.deleteTransaction(id, session.userId)
   } catch (error) {
     logger.error("deleteTransactionAction failed:", error)
     throw error

@@ -1,0 +1,45 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "typescript": {
+    "strict": true,
+    "forbid_any": true,
+    "forbid_deep_relative_imports": true,
+    "prefer_path_alias": true
+  },
+  "nomenclature": {
+    "components": "PascalCase.tsx",
+    "services": "camelCase.ts",
+    "pages": "camelCase.tsx",
+    "folders": "kebab-case",
+    "code_language": "en",
+    "ui_language": "es"
+  },
+  "styling": {
+    "framework": "tailwindcss",
+    "forbid_css_in_js": true,
+    "forbid_inline_styles": true,
+    "ui_library": "unknown",
+    "icon_library": "lucide-react",
+    "chart_library": "recharts"
+  },
+  "architecture": {
+    "services_path": "src/services/",
+    "models_path": "src/types/",
+    "global_state": "Context API",
+    "forbid_new_state_libs": true
+  },
+  "react": {
+    "forms_library": "react-hook-form",
+    "notifications_library": "sonner"
+  },
+  "security": {
+    "forbid_secrets_in_code": true,
+    "forbid_passwords_in_logs": true,
+    "validate_inputs_before_persist": true
+  },
+  "code_quality": {
+    "lint_before_finish": true,
+    "lint_command": "npm run lint",
+    "no_new_deps_without_justification": true
+  }
+}

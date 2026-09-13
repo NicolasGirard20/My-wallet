@@ -35,13 +35,13 @@ export function formatCurrency(
 export function formatDate(iso: string, style: "short" | "long" = "short"): string {
   const date = new Date(iso)
   if (style === "long") {
-    return date.toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })
+    return date.toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" })
   }
-  return date.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })
+  return date.toLocaleDateString("es-AR", { day: "2-digit", month: "short", timeZone: "UTC" })
 }
 
 export function formatMonth(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-AR", { month: "short" }).replace(".", "")
+  return new Date(iso).toLocaleDateString("es-AR", { month: "short", timeZone: "UTC" }).replace(".", "")
 }
 
 export function validateDate(iso: string): Date | null {

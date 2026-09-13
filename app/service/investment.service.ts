@@ -1,14 +1,11 @@
 import { prisma } from "@/app/service/db"
+import { getOrCreateInvestmentCategory } from "@/app/service/category.service"
 import { logger } from "@/app/imports/dev"
 
-export async function getInvestments(userId?: number, currency?: string) {
+export async function getInvestments(userId: number, currency?: string) {
   try {
-    const where: { userId?: number; currency?: string } = {}
-    if (userId) where.userId = userId
-    if (currency) where.currency = currency
-
     return await prisma.investment.findMany({
-      where: Object.keys(where).length > 0 ? where : undefined,
+      where: { userId, ...(currency ? { currency } : {}) },
       include: {
         contributions: { orderBy: { date: "asc" } },
       },
@@ -20,10 +17,10 @@ export async function getInvestments(userId?: number, currency?: string) {
   }
 }
 
-export async function getInvestmentById(id: number) {
+export async function getInvestmentById(id: number, userId: number) {
   try {
     return await prisma.investment.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
         contributions: { orderBy: { date: "asc" } },
       },
@@ -43,7 +40,26 @@ export async function createInvestment(data: {
   userId: number
 }) {
   try {
-    return await prisma.investment.create({ data })
+    return await prisma.$transaction(async (tx) => {
+      const investment = await tx.investment.create({ data })
+
+      if (data.invested > 0) {
+        const cat = await getOrCreateInvestmentCategory(data.userId, "expense", tx)
+        await tx.transaction.create({
+          data: {
+            kind: "expense",
+            amount: data.invested,
+            description: `Inversión inicial en ${data.name}`,
+            categoryId: cat.id,
+            currency: data.currency,
+            date: new Date(),
+            userId: data.userId,
+          },
+        })
+      }
+
+      return investment
+    })
   } catch (error) {
     logger.error("createInvestment failed:", error)
     throw new Error("Error al crear la inversión")
@@ -52,6 +68,7 @@ export async function createInvestment(data: {
 
 export async function updateInvestment(
   id: number,
+  userId: number,
   data: Partial<{
     name: string
     description: string
@@ -61,23 +78,23 @@ export async function updateInvestment(
   }>,
 ) {
   try {
-    return await prisma.investment.update({ where: { id }, data })
+    return await prisma.investment.update({ where: { id, userId }, data })
   } catch (error) {
     logger.error("updateInvestment failed:", error)
     throw new Error("Error al actualizar la inversión")
   }
 }
 
-export async function deleteInvestment(id: number) {
+export async function deleteInvestment(id: number, userId: number) {
   try {
-    await prisma.investment.delete({ where: { id } })
+    await prisma.investment.delete({ where: { id, userId } })
   } catch (error) {
     logger.error("deleteInvestment failed:", error)
     throw new Error("Error al eliminar la inversión")
   }
 }
 
-export async function addContribution(investmentId: number, data: {
+export async function addContribution(investmentId: number, userId: number, data: {
   date: Date
   amount: number
   currency: string
@@ -87,47 +104,137 @@ export async function addContribution(investmentId: number, data: {
   try {
     const amount = data.amount
 
-    const [contribution] = await prisma.$transaction([
-      prisma.investmentContribution.create({
-        data: { ...data, amount, investmentId },
-      }),
-      prisma.investment.update({
-        where: { id: investmentId },
+    return await prisma.$transaction(async (tx) => {
+      const investment = await tx.investment.findUnique({
+        where: { id: investmentId, userId },
+        select: { name: true },
+      })
+      if (!investment) throw new Error("Inversión no encontrada")
+
+      const contribution = await tx.investmentContribution.create({
+        data: { ...data, amount, investmentId, userId },
+      })
+
+      await tx.investment.update({
+        where: { id: investmentId, userId },
         data: {
           invested: { increment: amount },
-          currentValue: { increment: data.amount },
+          currentValue: { increment: amount },
         },
-      }),
-    ])
+      })
 
-    return contribution
+      const kind = amount > 0 ? "expense" : "income"
+      const cat = await getOrCreateInvestmentCategory(userId, kind, tx)
+      await tx.transaction.create({
+        data: {
+          kind,
+          amount: Math.abs(amount),
+          description: amount > 0 ? `Aporte a ${investment.name}` : `Retiro de ${investment.name}`,
+          categoryId: cat.id,
+          currency: data.currency,
+          date: data.date,
+          userId,
+          investmentContributionId: contribution.id,
+        },
+      })
+
+      return contribution
+    })
   } catch (error) {
     logger.error("addContribution failed:", error)
     throw new Error("Error al agregar el aporte")
   }
 }
 
-export async function deleteContribution(contributionId: number) {
+export async function deleteContribution(contributionId: number, userId: number) {
   try {
-    const contribution = await prisma.investmentContribution.findUnique({
-      where: { id: contributionId },
-    })
-    if (!contribution) throw new Error("Aporte no encontrado")
+    await prisma.$transaction(async (tx) => {
+      const contribution = await tx.investmentContribution.findUnique({
+        where: { id: contributionId, userId },
+      })
+      if (!contribution) throw new Error("Aporte no encontrado")
 
-    const amount = contribution.amount
+      const amount = contribution.amount
 
-    await prisma.$transaction([
-      prisma.investmentContribution.delete({ where: { id: contributionId } }),
-      prisma.investment.update({
-        where: { id: contribution.investmentId },
+      await tx.investment.update({
+        where: { id: contribution.investmentId, userId },
         data: {
           invested: { decrement: amount },
-          currentValue: { decrement: contribution.amount },
+          currentValue: { decrement: amount },
         },
-      }),
-    ])
+      })
+
+      await tx.transaction.deleteMany({
+        where: { investmentContributionId: contributionId, userId },
+      })
+
+      await tx.investmentContribution.delete({ where: { id: contributionId } })
+    })
   } catch (error) {
     logger.error("deleteContribution failed:", error)
     throw new Error("Error al eliminar el aporte")
+  }
+}
+
+export async function updateContribution(
+  contributionId: number,
+  userId: number,
+  data: {
+    amount: number
+    date: Date
+    note?: string
+  },
+) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const previous = await tx.investmentContribution.findUnique({
+        where: { id: contributionId, userId },
+      })
+      if (!previous) throw new Error("Aporte no encontrado")
+
+      const investment = await tx.investment.findUnique({
+        where: { id: previous.investmentId, userId },
+        select: { name: true },
+      })
+      if (!investment) throw new Error("Inversión no encontrada")
+
+      const contribution = await tx.investmentContribution.update({
+        where: { id: contributionId },
+        data: { amount: data.amount, date: data.date, note: data.note },
+      })
+
+      const delta = data.amount - previous.amount
+      if (delta !== 0) {
+        await tx.investment.update({
+          where: { id: previous.investmentId, userId },
+          data: {
+            invested: { increment: delta },
+            currentValue: { increment: delta },
+          },
+        })
+
+        const linkedTx = await tx.transaction.findFirst({
+          where: { investmentContributionId: contributionId, userId },
+        })
+        if (linkedTx) {
+          const kind = data.amount > 0 ? "expense" : "income"
+          await tx.transaction.update({
+            where: { id: linkedTx.id },
+            data: {
+              kind,
+              amount: Math.abs(data.amount),
+              description: data.amount > 0
+                ? `Aporte a ${investment.name}`
+                : `Retiro de ${investment.name}`,
+            },
+          })
+        }
+      }
+
+      return contribution
+    })
+  } catch (error) {
+    logger.error("updateContribution failed:", error)
+    throw new Error("Error al actualizar el aporte")
   }
 }
