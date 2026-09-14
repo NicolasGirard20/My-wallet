@@ -1,197 +1,204 @@
 {
-  "query": "estructura del proyecto, arquitectura, rutas, capas, dependencias, patrones de diseño y convenciones del repositorio",
-  "generated_at": "2026-08-23T20:51:38.898585Z",
-  "project_name": "Proyecto-Laboratorio-Dental",
+  "query": "Agrandar botón user y quitar transferir entre cuentas en menu de cuentas corrientes",
+  "generated_at": "2026-09-14T22:51:16.550506Z",
+  "project_name": "my-wallet",
   "relevant_architecture": {
-    "entry_points": [
-      "src/app/App.tsx",
-      "src/app/components/ClinicsTable.tsx",
-      "src/app/components/ClinicsKPICards.tsx",
-      "src/app/components/ClinicFormModal.tsx",
-      "src/app/components/DeleteClinicDialog.tsx",
-      "src/services/clinics/clinic.ts",
-      "src/services/clinicOdont/clinicOdont.ts",
-      "src/helpers/validators/clinicValidator.ts",
-      "src/global/models/index.ts"
-    ],
+    "entry_points": [],
     "core_modules": [
-      "src"
+      "app",
+      "components",
+      "lib"
     ]
   },
   "files": [
     {
-      "path": "src/app/clinicas/page.tsx",
-      "summary": "Funciones: activeClinics, uniqueDentistIds, handleNewClinic, handleEdit, handleDelete",
+      "path": "app/actions/investments.ts",
+      "summary": "Funciones: isCurrency, mapInv, getInvestmentsAction, getInvestmentByIdAction, createInvestmentAction",
       "exports": [
-        "withAuth"
+        "getInvestmentsAction",
+        "getInvestmentByIdAction",
+        "createInvestmentAction",
+        "updateInvestmentAction",
+        "deleteInvestmentAction",
+        "addContributionAction",
+        "deleteContributionAction",
+        "updateContributionAction"
       ],
       "dependencies": [],
       "complexity": "high",
-      "language": "tsx"
+      "language": "typescript"
     },
     {
-      "path": "src/app/components/DashboardHeader.tsx",
-      "summary": "Funciones: DashboardHeader, handleClickOutside, router, handleLogout",
+      "path": "app/actions/users.ts",
+      "summary": "Funciones: requireAdmin, getUsersAction, getUserByIdAction, createUserAction, updateUserAction",
       "exports": [
-        "DashboardHeader"
+        "getUsersAction",
+        "getUserByIdAction",
+        "createUserAction",
+        "updateUserAction",
+        "deleteUserAction",
+        "getUserDataSizeAction"
       ],
       "dependencies": [],
       "complexity": "medium",
-      "language": "tsx"
+      "language": "typescript"
     },
     {
-      "path": "src/app/components/DeleteClinicDialog.tsx",
-      "summary": "Punto de entrada | Funciones: DeleteClinicDialog, handleDelete, handleOpenChange",
+      "path": "app/service/category.service.ts",
+      "summary": "Lógica de negocio | Funciones: getCategories, getCategoryById, createCategory, updateCategory, deleteCategory",
       "exports": [
-        "DeleteClinicDialog"
+        "getCategories",
+        "getCategoryById",
+        "createCategory",
+        "updateCategory",
+        "deleteCategory",
+        "getOrCreateSavingsCategory",
+        "getOrCreateInvestmentCategory"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/investment.service.ts",
+      "summary": "Lógica de negocio | Funciones: getInvestments, getInvestmentById, createInvestment, updateInvestment, deleteInvestment",
+      "exports": [
+        "getInvestments",
+        "getInvestmentById",
+        "createInvestment",
+        "updateInvestment",
+        "deleteInvestment",
+        "addContribution",
+        "deleteContribution",
+        "updateContribution"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/user.service.ts",
+      "summary": "Lógica de negocio | Funciones: formatBytes, hashPassword, getUsers, getUserById, createUser",
+      "exports": [
+        "hashPassword",
+        "getUsers",
+        "getUserById",
+        "createUser",
+        "updateUser",
+        "deleteUser",
+        "getUserDataSize"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "components/calculator/use-calculator.ts",
+      "summary": "Funciones: round, operate, buildExpression, formatCalcValue, loadHistory",
+      "exports": [
+        "interface",
+        "formatCalcValue",
+        "interface",
+        "useCalculator"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "components/layout/account-menu.tsx",
+      "summary": "Funciones: AccountMenu, handleLogout, openPasswordDialog, handleChangePassword",
+      "exports": [
+        "AccountMenu"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/app/components/DeleteDentistDialog.tsx",
-      "summary": "Funciones: DeleteDentistDialog, handleDelete, handleOpenChange",
+      "path": "components/transferencias/category-manager.tsx",
+      "summary": "Funciones: CategoryManager, handleAdd, startEdit, saveEdit, confirmDelete",
       "exports": [
-        "DeleteDentistDialog"
+        "CategoryManager"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/app/components/DentistFormModal.tsx",
-      "summary": "Funciones: DentistFormModal, handleSubmit, validationErrors, payload",
+      "path": "components/transferencias/import-dialog.tsx",
+      "summary": "Funciones: errorCountByReason, ImportDialog, handleClose, handleFile, handleDrop",
       "exports": [
-        "DentistFormModal"
+        "ImportDialog"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/app/components/NewWorkOrderForm.tsx",
-      "summary": "Funciones: NewWorkOrderForm, producto, toggleTooth, getOffset, handleSubmit",
+      "path": "components/transferencias/transaction-table.tsx",
+      "summary": "Funciones: TransactionTable, toggleCategory, clearCategories, toggleSort, catMap",
       "exports": [
-        "NewWorkOrderForm"
+        "TransactionTable"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/app/components/PaymentForm.tsx",
-      "summary": "Funciones: toInputDate, PaymentForm, resetForm, handleSubmit",
-      "exports": [
-        "PaymentForm"
-      ],
-      "dependencies": [],
-      "complexity": "high",
-      "language": "tsx"
-    },
-    {
-      "path": "src/app/components/PaymentsTable.tsx",
-      "summary": "Funciones: PaymentsTable, clearFilters, handleDelete, handleEditSuccess, loadPayments",
-      "exports": [
-        "PaymentsTable"
-      ],
-      "dependencies": [],
-      "complexity": "high",
-      "language": "tsx"
-    },
-    {
-      "path": "src/app/components/ui/sidebar.tsx",
-      "summary": "Funciones: useSidebar, SidebarProvider, Sidebar, SidebarTrigger, SidebarRail",
+      "path": "components/ui/dropdown-menu.tsx",
+      "summary": "Funciones: DropdownMenu, DropdownMenuPortal, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuGroup",
       "exports": [],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/app/odontologos/page.tsx",
-      "summary": "Funciones: d, handleNewDentist, handleEditDentist, handleDeleteDentist, handleDentistSaved",
+      "path": "components/usuarios/user-table.tsx",
+      "summary": "Funciones: UserTable, filtered, q",
       "exports": [
-        "withAuth"
+        "UserTable"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
     },
     {
-      "path": "src/helpers/jwt.ts",
-      "summary": "Funciones: encrypt, decrypt, getUserFromCookie, verifyJWT",
+      "path": "context/currency-context.tsx",
+      "summary": "Funciones: CurrencyProvider, useCurrency, DEFAULT_DOLLAR_TYPE, setCurrency, setDollarType",
       "exports": [
-        "encrypt",
-        "decrypt",
-        "verifyJWT",
-        "getUserFromCookie"
-      ],
-      "dependencies": [],
-      "complexity": "medium",
-      "language": "typescript"
-    },
-    {
-      "path": "src/services/clinics/clinic.ts",
-      "summary": "Punto de entrada | Funciones: getClinics, getClinicById, getClinicsWithDetails, getClinicWithDetailsById, createClinic",
-      "exports": [
-        "getClinics",
-        "getClinicById",
-        "getClinicsWithDetails",
-        "getClinicWithDetailsById",
-        "createClinic",
-        "updateClinic",
-        "deleteClinic"
+        "DEFAULT_DOLLAR_TYPE",
+        "CurrencyProvider",
+        "useCurrency"
       ],
       "dependencies": [],
       "complexity": "high",
-      "language": "typescript"
+      "language": "tsx"
     },
     {
-      "path": "src/services/dentists/dentists.ts",
-      "summary": "Funciones: getDentists, getDentistsByClinicId, getDentistById, getDentistsWithDetails, getDentistWithDetailsById",
+      "path": "context/data-context.tsx",
+      "summary": "Funciones: DataProvider, useData, visibleTransactions, activeAccount, loadAllData",
       "exports": [
-        "getDentists",
-        "getDentistsByClinicId",
-        "getDentistById",
-        "getDentistsWithDetails",
-        "getDentistWithDetailsById",
-        "createDentist",
-        "updateDentist",
-        "deleteDentist"
+        "DataProvider",
+        "useData"
       ],
       "dependencies": [],
       "complexity": "high",
-      "language": "typescript"
+      "language": "tsx"
     },
     {
-      "path": "src/services/payments/payments.ts",
-      "summary": "Funciones: getPayments, getPaymentById, getPaymentsDetails, getPaymentDetailsById, createPayment",
+      "path": "lib/selectors.ts",
+      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, totalsCrossCurrency, monthlySeriesCrossCurrency",
       "exports": [
-        "getPayments",
-        "getPaymentById",
-        "getPaymentsDetails",
-        "getPaymentDetailsById",
-        "createPayment",
-        "updatePayment",
-        "deletePayment",
-        "deleteChequeByPaymentId"
-      ],
-      "dependencies": [],
-      "complexity": "high",
-      "language": "typescript"
-    },
-    {
-      "path": "src/services/users/user.ts",
-      "summary": "Funciones: getUsers, getUserByEmail, getUserById, createUser, authenticateUser",
-      "exports": [
-        "getUsers",
-        "getUserByEmail",
-        "getUserById",
-        "createUser",
-        "authenticateUser",
-        "updateUser",
-        "deleteUser",
-        "logoutUser"
+        "type",
+        "totals",
+        "interface",
+        "monthlySeries",
+        "interface",
+        "categoryBreakdown",
+        "totalsCrossCurrency",
+        "monthlySeriesCrossCurrency",
+        "categoryBreakdownCrossCurrency"
       ],
       "dependencies": [],
       "complexity": "high",

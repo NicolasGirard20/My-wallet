@@ -6,7 +6,6 @@ import {
   Check,
   ChevronDown,
   Landmark,
-  Plus,
   Settings,
   Wallet,
 } from "lucide-react"
@@ -233,17 +232,6 @@ export function CheckingAccountSelector({ className }: { className?: string }) {
           >
             <Settings className="size-3.5" />
             Gestionar cuentas corrientes
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            onClick={() => {
-              setManagerTab("transfer")
-              setManagerOpen(true)
-            }}
-            className="cursor-pointer gap-2 py-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="size-3.5" />
-            Transferir entre cuentas
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, Wallet } from "lucide-react"
 
-import { useAuth } from "@/context/auth-context"
 import { navItems } from "@/lib/nav"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,7 +23,6 @@ import { AccountMenu } from "@/components/layout/account-menu"
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-  const { username } = useAuth()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -78,10 +76,7 @@ export function MobileNav() {
             <CurrencyToggle className="w-full justify-between" />
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
-            <span className="truncate text-sm font-medium">{username ?? "Usuario"}</span>
-            <AccountMenu align="end" onNavigate={() => setOpen(false)} />
-          </div>
+          <AccountMenu align="end" showUserInfo onNavigate={() => setOpen(false)} className="w-full" />
         </div>
       </SheetContent>
     </Sheet>

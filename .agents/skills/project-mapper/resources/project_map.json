@@ -1,8 +1,8 @@
 {
   "project_name": "my-wallet",
-  "generated_at": "2026-09-13T13:50:16.723671Z",
-  "total_files": 105,
-  "total_symbols": 408,
+  "generated_at": "2026-09-14T22:51:16.550506Z",
+  "total_files": 109,
+  "total_symbols": 447,
   "architecture": {
     "entry_points": [
       "(detectar manualmente)"
@@ -107,7 +107,7 @@
     {
       "path": "app/(dashboard)/inicio/page.tsx",
       "language": "tsx",
-      "size_lines": 247,
+      "size_lines": 262,
       "summary": "Funciones: InicioPage, rangedTransactions, totalSaved, invValue, periodContributions",
       "imports": [
         "react",
@@ -141,31 +141,31 @@
         },
         {
           "name": "rangedTransactions",
-          "line": 38,
+          "line": 49,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "totalSaved",
-          "line": 56,
+          "line": 67,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "invValue",
-          "line": 57,
+          "line": 68,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "periodContributions",
-          "line": 58,
+          "line": 69,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "recent",
-          "line": 70,
+          "line": 81,
           "is_async": false,
           "docstring": null
         }
@@ -175,7 +175,7 @@
     {
       "path": "app/(dashboard)/inversiones/[id]/page.tsx",
       "language": "tsx",
-      "size_lines": 283,
+      "size_lines": 285,
       "summary": "Funciones: InversionDetallePage, handleAddContribution, handleUpdateValue, handleEditContribution, handleSaveEditContribution",
       "imports": [
         "react",
@@ -287,7 +287,7 @@
     {
       "path": "app/(dashboard)/layout.tsx",
       "language": "tsx",
-      "size_lines": 57,
+      "size_lines": 62,
       "summary": "Funciones: DashboardLayout",
       "imports": [
         "react",
@@ -296,7 +296,7 @@
         "@/context/auth-context",
         "@/components/layout/sidebar",
         "@/components/layout/mobile-nav",
-        "@/components/layout/currency-toggle",
+        "@/components/layout/checking-account-selector",
         "@/components/calculator/floating-calculator"
       ],
       "exports": [
@@ -557,6 +557,83 @@
       "complexity": "medium"
     },
     {
+      "path": "app/actions/checking-accounts.ts",
+      "language": "typescript",
+      "size_lines": 237,
+      "summary": "Funciones: isCurrency, mapAccount, mapTransfer, getCheckingAccountsAction, createCheckingAccountAction",
+      "imports": [
+        "@/app/lib/session",
+        "@/app/service/checking-account.service",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "getCheckingAccountsAction",
+        "createCheckingAccountAction",
+        "updateCheckingAccountAction",
+        "deleteCheckingAccountAction",
+        "createAccountTransferAction",
+        "getAccountTransfersAction"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "isCurrency",
+          "line": 8,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "mapAccount",
+          "line": 12,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "mapTransfer",
+          "line": 44,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "getCheckingAccountsAction",
+          "line": 66,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createCheckingAccountAction",
+          "line": 77,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateCheckingAccountAction",
+          "line": 119,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteCheckingAccountAction",
+          "line": 172,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createAccountTransferAction",
+          "line": 183,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getAccountTransfersAction",
+          "line": 227,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
       "path": "app/actions/exchange.ts",
       "language": "typescript",
       "size_lines": 70,
@@ -590,7 +667,7 @@
     {
       "path": "app/actions/investments.ts",
       "language": "typescript",
-      "size_lines": 235,
+      "size_lines": 236,
       "summary": "Funciones: isCurrency, mapInv, getInvestmentsAction, getInvestmentByIdAction, createInvestmentAction",
       "imports": [
         "@/app/lib/session",
@@ -659,13 +736,13 @@
         },
         {
           "name": "deleteContributionAction",
-          "line": 193,
+          "line": 194,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContributionAction",
-          "line": 203,
+          "line": 204,
           "is_async": true,
           "docstring": null
         }
@@ -732,7 +809,7 @@
     {
       "path": "app/actions/transactions.ts",
       "language": "typescript",
-      "size_lines": 185,
+      "size_lines": 195,
       "summary": "Funciones: mapTx, isCurrency, getTransactionsAction, createTransactionAction, importTransactionsAction",
       "imports": [
         "@/app/lib/session",
@@ -756,37 +833,37 @@
         },
         {
           "name": "isCurrency",
-          "line": 34,
+          "line": 36,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getTransactionsAction",
-          "line": 38,
+          "line": 40,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createTransactionAction",
-          "line": 49,
+          "line": 51,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "importTransactionsAction",
-          "line": 86,
+          "line": 90,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransactionAction",
-          "line": 128,
+          "line": 134,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransactionAction",
-          "line": 177,
+          "line": 187,
           "is_async": true,
           "docstring": null
         }
@@ -1125,6 +1202,77 @@
       "complexity": "medium"
     },
     {
+      "path": "app/service/checking-account.service.ts",
+      "language": "typescript",
+      "size_lines": 243,
+      "summary": "Lógica de negocio | Funciones: getCheckingAccounts, getCheckingAccountById, createCheckingAccount, updateCheckingAccount, deleteCheckingAccount",
+      "imports": [
+        "@/app/service/db",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "getCheckingAccounts",
+        "getCheckingAccountById",
+        "createCheckingAccount",
+        "updateCheckingAccount",
+        "deleteCheckingAccount",
+        "createAccountTransfer",
+        "getAccountTransfers"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "getCheckingAccounts",
+          "line": 4,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getCheckingAccountById",
+          "line": 83,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createCheckingAccount",
+          "line": 94,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateCheckingAccount",
+          "line": 139,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteCheckingAccount",
+          "line": 175,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createAccountTransfer",
+          "line": 188,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "getAccountTransfers",
+          "line": 232,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "accountIds",
+          "line": 15,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
       "path": "app/service/db.ts",
       "language": "typescript",
       "size_lines": 24,
@@ -1144,7 +1292,7 @@
     {
       "path": "app/service/investment.service.ts",
       "language": "typescript",
-      "size_lines": 239,
+      "size_lines": 240,
       "summary": "Lógica de negocio | Funciones: getInvestments, getInvestmentById, createInvestment, updateInvestment, deleteInvestment",
       "imports": [
         "@/app/service/db",
@@ -1201,31 +1349,31 @@
         },
         {
           "name": "deleteContribution",
-          "line": 148,
+          "line": 149,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContribution",
-          "line": 178,
+          "line": 179,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "amount",
-          "line": 104,
+          "line": 105,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "cat",
-          "line": 126,
+          "line": 127,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "amount",
-          "line": 156,
+          "line": 157,
           "is_async": true,
           "docstring": null
         }
@@ -1293,7 +1441,7 @@
     {
       "path": "app/service/transaction.service.ts",
       "language": "typescript",
-      "size_lines": 174,
+      "size_lines": 184,
       "summary": "Lógica de negocio | Funciones: getTransactions, getTransactionById, createTransaction, updateTransaction, deleteTransaction",
       "imports": [
         "@/app/service/db",
@@ -1316,31 +1464,31 @@
         },
         {
           "name": "getTransactionById",
-          "line": 35,
+          "line": 41,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createTransaction",
-          "line": 44,
+          "line": 50,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 61,
+          "line": 70,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 127,
+          "line": 137,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "newInvested",
-          "line": 104,
+          "line": 114,
           "is_async": true,
           "docstring": null
         }
@@ -1858,9 +2006,146 @@
       "complexity": "high"
     },
     {
+      "path": "components/layout/checking-account-manager.tsx",
+      "language": "tsx",
+      "size_lines": 612,
+      "summary": "Funciones: CheckingAccountManager, resetForm, startCreate, startEdit, handleSaveAccount",
+      "imports": [
+        "react",
+        "lucide-react",
+        "sonner",
+        "@/context/data-context",
+        "@/context/currency-context",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/dialog",
+        "@/components/ui/tabs",
+        "@/components/shared/color-picker",
+        "@/components/shared/confirm-dialog",
+        "@/components/shared/amount-display",
+        "@/components/ui/badge",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "CheckingAccountManager"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "CheckingAccountManager",
+          "line": 41,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "resetForm",
+          "line": 79,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "startCreate",
+          "line": 93,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "startEdit",
+          "line": 98,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveAccount",
+          "line": 112,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "handleDeleteConfirm",
+          "line": 161,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "handleTransfer",
+          "line": 172,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "handleSourceAmountChange",
+          "line": 226,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "sourceAcc",
+          "line": 189,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "targetAcc",
+          "line": 190,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "sourceAcc",
+          "line": 230,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "targetAcc",
+          "line": 231,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
+      "path": "components/layout/checking-account-selector.tsx",
+      "language": "tsx",
+      "size_lines": 259,
+      "summary": "Funciones: CheckingAccountSelector, totalBalanceConverted",
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/context/data-context",
+        "@/context/currency-context",
+        "@/components/ui/button",
+        "@/components/ui/badge",
+        "@/components/ui/dropdown-menu",
+        "@/components/layout/checking-account-manager",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "CheckingAccountSelector"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "CheckingAccountSelector",
+          "line": 30,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "totalBalanceConverted",
+          "line": 42,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
       "path": "components/layout/currency-toggle.tsx",
       "language": "tsx",
-      "size_lines": 163,
+      "size_lines": 180,
       "summary": "Funciones: CurrencyToggle",
       "imports": [
         "lucide-react",
@@ -2249,14 +2534,15 @@
     {
       "path": "components/transferencias/transaction-form.tsx",
       "language": "tsx",
-      "size_lines": 263,
-      "summary": "Funciones: todayInput, TransactionForm, handleSubmit, confirmDescription, goal",
+      "size_lines": 330,
+      "summary": "Funciones: todayInput, TransactionForm, handleAccountChange, handleSubmit, acc",
       "imports": [
         "react",
         "sonner",
         "@/context/currency-context",
         "@/context/data-context",
         "@/lib/format",
+        "@/lib/utils",
         "@/components/ui/button",
         "@/components/ui/input",
         "@/components/ui/dialog",
@@ -2271,37 +2557,49 @@
       "functions": [
         {
           "name": "todayInput",
-          "line": 39,
+          "line": 40,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "TransactionForm",
-          "line": 46,
+          "line": 47,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleAccountChange",
+          "line": 100,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 81,
+          "line": 108,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "acc",
+          "line": 103,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "confirmDescription",
-          "line": 120,
+          "line": 149,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "goal",
-          "line": 131,
+          "line": 160,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "confirmTitle",
-          "line": 159,
+          "line": 188,
           "is_async": false,
           "docstring": null
         }
@@ -2311,7 +2609,7 @@
     {
       "path": "components/transferencias/transaction-table.tsx",
       "language": "tsx",
-      "size_lines": 325,
+      "size_lines": 353,
       "summary": "Funciones: TransactionTable, toggleCategory, clearCategories, toggleSort, catMap",
       "imports": [
         "react",
@@ -2325,6 +2623,7 @@
         "@/components/shared/amount-display",
         "@/components/shared/confirm-dialog",
         "@/context/data-context",
+        "@/context/currency-context",
         "@/lib/format"
       ],
       "exports": [
@@ -2334,73 +2633,85 @@
       "functions": [
         {
           "name": "TransactionTable",
-          "line": 35,
+          "line": 36,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "toggleCategory",
-          "line": 59,
+          "line": 67,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "clearCategories",
-          "line": 68,
+          "line": 76,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "toggleSort",
-          "line": 120,
+          "line": 128,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "catMap",
-          "line": 51,
+          "line": 53,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "m",
-          "line": 52,
+          "line": 54,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "accMap",
+          "line": 59,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "m",
+          "line": 60,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "kindCategories",
-          "line": 57,
+          "line": 65,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "categoryLabel",
-          "line": 72,
+          "line": 80,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "rows",
-          "line": 81,
+          "line": 89,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "list",
-          "line": 82,
+          "line": 90,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "deleteDescription",
-          "line": 129,
+          "line": 137,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "goal",
-          "line": 132,
+          "line": 140,
           "is_async": false,
           "docstring": null
         }
@@ -3680,8 +3991,8 @@
     {
       "path": "context/data-context.tsx",
       "language": "tsx",
-      "size_lines": 374,
-      "summary": "Funciones: DataProvider, useData, visibleTransactions, visibleSavings, visibleInvestments",
+      "size_lines": 567,
+      "summary": "Funciones: DataProvider, useData, visibleTransactions, activeAccount, loadAllData",
       "imports": [
         "react",
         "@/context/auth-context",
@@ -3690,6 +4001,7 @@
         "@/app/actions/transactions",
         "@/app/actions/savings",
         "@/app/actions/investments",
+        "@/app/actions/checking-accounts",
         "@/app/imports/dev"
       ],
       "exports": [
@@ -3700,157 +4012,187 @@
       "functions": [
         {
           "name": "DataProvider",
-          "line": 75,
+          "line": 127,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useData",
-          "line": 370,
+          "line": 563,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleTransactions",
-          "line": 87,
+          "line": 142,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "visibleSavings",
-          "line": 91,
-          "is_async": false,
-          "docstring": null
-        },
-        {
-          "name": "visibleInvestments",
-          "line": 95,
+          "name": "activeAccount",
+          "line": 147,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "loadAllData",
-          "line": 100,
+          "line": 152,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "refreshCheckingAccounts",
+          "line": 197,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addTransaction",
-          "line": 143,
+          "line": 202,
           "is_async": true,
           "docstring": null
         },
         {
+          "name": "acc",
+          "line": 211,
+          "is_async": false,
+          "docstring": null
+        },
+        {
           "name": "importTransactions",
-          "line": 149,
+          "line": 230,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 155,
+          "line": 254,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 169,
+          "line": 283,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "addCheckingAccount",
+          "line": 297,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateCheckingAccount",
+          "line": 306,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteCheckingAccount",
+          "line": 315,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createTransfer",
+          "line": 326,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCategory",
-          "line": 177,
+          "line": 335,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCategory",
-          "line": 184,
+          "line": 342,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategory",
-          "line": 190,
+          "line": 348,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "categoriesByKind",
-          "line": 198,
+          "line": 356,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getCategory",
-          "line": 203,
+          "line": 361,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "addSaving",
-          "line": 205,
+          "line": 363,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSaving",
-          "line": 219,
+          "line": 385,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSaving",
-          "line": 232,
+          "line": 410,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addInvestment",
-          "line": 239,
+          "line": 417,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestment",
-          "line": 253,
+          "line": 431,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 262,
+          "line": 440,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 269,
+          "line": 447,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContribution",
-          "line": 284,
+          "line": 462,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContribution",
-          "line": 291,
+          "line": 469,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestment",
-          "line": 301,
+          "line": 479,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 306,
+          "line": 484,
           "is_async": false,
           "docstring": null
         }
@@ -4122,13 +4464,15 @@
     {
       "path": "lib/types.ts",
       "language": "typescript",
-      "size_lines": 63,
+      "size_lines": 91,
       "summary": "Archivo .ts",
       "imports": [],
       "exports": [
         "type",
         "type",
         "type",
+        "interface",
+        "interface",
         "interface",
         "interface",
         "interface",
@@ -4320,19 +4664,19 @@
     {
       "path": "prisma/schema.prisma",
       "language": "unknown",
-      "size_lines": 97,
+      "size_lines": 144,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
       "classes": [],
       "functions": [],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "prisma/seed.ts",
       "language": "typescript",
-      "size_lines": 94,
-      "summary": "Funciones: seedLog, seedError, main, allCategories",
+      "size_lines": 124,
+      "summary": "Funciones: seedLog, seedError, main",
       "imports": [
         "dotenv/config",
         "pg",
@@ -4361,15 +4705,9 @@
           "line": 48,
           "is_async": true,
           "docstring": null
-        },
-        {
-          "name": "allCategories",
-          "line": 74,
-          "is_async": false,
-          "docstring": null
         }
       ],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "proxy.ts",
@@ -4454,6 +4792,7 @@
     "app/(dashboard)/transferencias/ingresos/page.tsx": [],
     "app/login/page.tsx": [],
     "app/actions/categories.ts": [],
+    "app/actions/checking-accounts.ts": [],
     "app/actions/auth.ts": [],
     "app/actions/investments.ts": [],
     "app/actions/savings.ts": [],
@@ -4464,6 +4803,7 @@
     "app/service/user.service.ts": [],
     "app/service/db.ts": [],
     "app/service/category.service.ts": [],
+    "app/service/checking-account.service.ts": [],
     "app/service/auth.service.ts": [],
     "app/service/saving-goal.service.ts": [],
     "app/service/transaction.service.ts": [],
@@ -4522,10 +4862,12 @@
     "components/usuarios/user-size-display.tsx": [],
     "components/usuarios/user-table.tsx": [],
     "components/layout/mobile-nav.tsx": [],
+    "components/layout/checking-account-selector.tsx": [],
     "components/layout/currency-toggle.tsx": [],
     "components/layout/account-menu.tsx": [],
     "components/layout/page-header.tsx": [],
     "components/layout/sidebar.tsx": [],
+    "components/layout/checking-account-manager.tsx": [],
     "components/transferencias/import-dialog.tsx": [],
     "components/transferencias/category-manager.tsx": [],
     "components/transferencias/transaction-table.tsx": [],
@@ -4538,6 +4880,6 @@
       "typescript",
       "unknown"
     ],
-    "compression_ratio_estimate": "94.6%"
+    "compression_ratio_estimate": "94.8%"
   }
 }

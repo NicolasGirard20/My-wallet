@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { KeyRound, LogOut, Settings, Users } from "lucide-react"
+import { ChevronsUpDown, KeyRound, LogOut, Settings, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { useAuth } from "@/context/auth-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogClose,
@@ -32,9 +33,16 @@ import {
 interface AccountMenuProps {
   align?: "start" | "end"
   onNavigate?: () => void
+  showUserInfo?: boolean
+  className?: string
 }
 
-export function AccountMenu({ align = "end", onNavigate }: AccountMenuProps) {
+export function AccountMenu({
+  align = "end",
+  onNavigate,
+  showUserInfo = false,
+  className,
+}: AccountMenuProps) {
   const router = useRouter()
   const { username, isAdmin, logout, changePassword } = useAuth()
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -89,12 +97,51 @@ export function AccountMenu({ align = "end", onNavigate }: AccountMenuProps) {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon-sm" aria-label="Menú de cuenta" />
+            showUserInfo ? (
+              <Button
+                variant="ghost"
+                className={cn(
+                  "flex h-auto w-full items-center justify-start gap-3 rounded-lg p-2 text-left hover:bg-muted/80 transition-colors",
+                  className
+                )}
+                aria-label="Menú de cuenta"
+              />
+            ) : (
+              <Button
+                variant="ghost"
+                className={cn(
+                  "flex size-10 items-center justify-center rounded-full p-0 hover:bg-muted/80 transition-colors",
+                  className
+                )}
+                aria-label="Menú de cuenta"
+              />
+            )
           }
         >
-          <Avatar className="size-7">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs">{initials}</AvatarFallback>
-          </Avatar>
+          {showUserInfo ? (
+            <>
+              <Avatar className="size-9 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-medium leading-tight">
+                  {username ?? "Usuario"}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  Cuenta personal
+                </span>
+              </div>
+              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+            </>
+          ) : (
+            <Avatar className="size-9">
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} className="w-56">
           <DropdownMenuGroup>

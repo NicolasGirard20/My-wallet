@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Wallet } from "lucide-react"
 
-import { useAuth } from "@/context/auth-context"
 import { navItems } from "@/lib/nav"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
@@ -13,7 +12,6 @@ import { AccountMenu } from "@/components/layout/account-menu"
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { username } = useAuth()
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r bg-sidebar p-4 lg:flex">
@@ -54,13 +52,7 @@ export function Sidebar() {
 
         <Separator />
 
-        <div className="flex items-center gap-3">
-          <AccountMenu align="start" />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-medium">{username ?? "Usuario"}</span>
-            <span className="truncate text-xs text-muted-foreground">Cuenta personal</span>
-          </div>
-        </div>
+        <AccountMenu align="start" showUserInfo className="w-full" />
       </div>
     </aside>
   )

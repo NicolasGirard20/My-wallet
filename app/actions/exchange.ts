@@ -1,6 +1,5 @@
 "use server"
 
-import { requireSession } from "@/app/lib/session"
 import { logger } from "@/app/imports/dev"
 
 export interface DollarRate {
@@ -34,8 +33,6 @@ function isDollarRate(value: unknown): value is DollarRate {
 }
 
 export async function getExchangeRatesAction(force = false): Promise<ExchangeSnapshot> {
-  await requireSession()
-
   const now = Date.now()
   if (!force && cache && cache.expiresAt > now) {
     return cache.snapshot
