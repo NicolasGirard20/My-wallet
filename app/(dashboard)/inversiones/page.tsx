@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Edit3, Plus, TrendingUp, Trash2 } from "lucide-react"
+import { CreditCard, Edit3, Plus, TrendingUp, Trash2 } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AmountDisplay } from "@/components/shared/amount-display"
@@ -11,37 +11,54 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useData } from "@/context/data-context"
+import { useCurrency } from "@/context/currency-context"
 import { formatDate } from "@/lib/format"
 import type { Investment } from "@/lib/types"
 
 export default function InversionesPage() {
-  const { investments, addInvestment, updateInvestment, deleteInvestment } = useData()
+  const { investments, checkingAccounts, selectedAccountId, addInvestment, updateInvestment, deleteInvestment } = useData()
+  const { currency: globalCurrency } = useCurrency()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [currentValue, setCurrentValue] = useState("1000")
+  const [checkingAccountId, setCheckingAccountId] = useState<number | null>(null)
 
   const [editingInv, setEditingInv] = useState<Investment | null>(null)
   const [editName, setEditName] = useState("")
   const [editDescription, setEditDescription] = useState("")
   const [editCurrentValue, setEditCurrentValue] = useState("")
+  const [editCheckingAccountId, setEditCheckingAccountId] = useState<number | null>(null)
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+
+  function handleOpenCreate() {
+    const defaultAcc =
+      selectedAccountId !== "all"
+        ? checkingAccounts.find((a) => a.id === selectedAccountId)
+        : checkingAccounts.find((a) => a.isDefault) ?? checkingAccounts[0]
+    setCheckingAccountId(defaultAcc?.id ?? null)
+    setOpen(true)
+  }
 
   function handleSubmit() {
     const parsed = Number(currentValue)
     if (!name.trim() || !Number.isFinite(parsed) || parsed <= 0) return
+    const acc = checkingAccounts.find((a) => a.id === checkingAccountId)
 
     addInvestment({
       name: name.trim(),
       description: description.trim() || "Inversión personal",
       currentValue: parsed,
+      checkingAccountId: checkingAccountId ?? null,
+      currency: acc?.currency ?? globalCurrency,
     })
 
     setOpen(false)
     setName("")
     setDescription("")
     setCurrentValue("1000")
+    setCheckingAccountId(null)
   }
 
   function handleEdit(inv: Investment) {
@@ -49,6 +66,7 @@ export default function InversionesPage() {
     setEditName(inv.name)
     setEditDescription(inv.description)
     setEditCurrentValue(String(inv.currentValue))
+    setEditCheckingAccountId(inv.checkingAccountId ?? null)
   }
 
   function handleSaveEdit() {
@@ -59,6 +77,7 @@ export default function InversionesPage() {
       name: editName.trim(),
       description: editDescription.trim(),
       currentValue: parsed,
+      checkingAccountId: editCheckingAccountId,
     })
     setEditingInv(null)
   }
@@ -69,7 +88,7 @@ export default function InversionesPage() {
         title="Inversiones"
         description="Monitoreá tus carteras y proyectos de inversión."
         actions={
-          <Button onClick={() => setOpen((prev) => !prev)}>
+          <Button onClick={handleOpenCreate}>
             <Plus className="size-4" data-icon="inline-start" />
             Nueva inversión
           </Button>
@@ -91,9 +110,24 @@ export default function InversionesPage() {
               <label className="text-sm font-medium">Descripción</label>
               <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción breve" />
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium">Valor actual</label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Monto / Valor inicial</label>
               <Input type="number" min="0" value={currentValue} onChange={(e) => setCurrentValue(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Cuenta Corriente de origen</label>
+              <select
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={checkingAccountId ?? ""}
+                onChange={(e) => setCheckingAccountId(Number(e.target.value) || null)}
+              >
+                <option value="">Sin cuenta asignada</option>
+                {checkingAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="md:col-span-2 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
@@ -106,6 +140,8 @@ export default function InversionesPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {investments.map((item) => {
           const change = item.currentValue - item.invested
+          const linkedAccount = checkingAccounts.find((a) => a.id === item.checkingAccountId)
+
           return (
             <Card key={item.id} className="group relative h-full transition-colors hover:border-primary/30">
               <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -132,6 +168,14 @@ export default function InversionesPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
+                  
+                  {linkedAccount && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CreditCard className="size-3.5" />
+                      <span>Cuenta: <strong className="text-foreground font-medium">{linkedAccount.name}</strong> ({linkedAccount.currency})</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Valor actual</span>
                     <AmountDisplay value={item.currentValue} from={item.currency} className="font-semibold" />
@@ -172,6 +216,21 @@ export default function InversionesPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Valor actual</label>
             <Input type="number" min="0" value={editCurrentValue} onChange={(e) => setEditCurrentValue(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Cuenta Corriente asociada</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={editCheckingAccountId ?? ""}
+              onChange={(e) => setEditCheckingAccountId(Number(e.target.value) || null)}
+            >
+              <option value="">Sin cuenta asignada</option>
+              {checkingAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </ConfirmDialog>

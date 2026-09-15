@@ -14,15 +14,17 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r bg-sidebar p-4 lg:flex">
-      <Link href="/inicio" className="flex items-center gap-2 px-2 py-1.5 text-lg font-semibold">
-        <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Wallet className="size-5" />
-        </span>
-        My Wallet
-      </Link>
+    <aside className="sticky top-0 hidden h-dvh max-h-dvh w-64 shrink-0 flex-col border-r bg-sidebar p-4 lg:flex">
+      <div className="shrink-0">
+        <Link href="/inicio" className="flex items-center gap-2 px-2 py-1.5 text-lg font-semibold">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Wallet className="size-5" />
+          </span>
+          My Wallet
+        </Link>
+      </div>
 
-      <nav className="mt-6 flex flex-1 flex-col gap-1">
+      <nav className="my-4 flex flex-1 flex-col gap-1 overflow-y-auto pr-1">
         {navItems.map((item) => {
           const active = item.match(pathname)
           const Icon = item.icon
@@ -44,7 +46,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="flex flex-col gap-4">
+      <div className="shrink-0 flex flex-col gap-4 pt-2">
         <div className="flex flex-col gap-2">
           <span className="px-1 text-xs font-medium text-muted-foreground">Moneda</span>
           <CurrencyToggle className="w-full justify-between" />

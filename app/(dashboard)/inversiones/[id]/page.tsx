@@ -16,12 +16,14 @@ import { formatDate, validateDate } from "@/lib/format"
 export default function InversionDetallePage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
-  const { getInvestment, addContribution, deleteContribution, updateContribution, updateInvestment } = useData()
+  const { investments, checkingAccounts, selectedAccountId, getInvestment, addContribution, deleteContribution, updateContribution, updateInvestment } = useData()
   const investmentId = Number(params.id)
   const investment = Number.isInteger(investmentId) ? getInvestment(investmentId) : undefined
+  const [movementType, setMovementType] = useState<"income" | "expense">("expense") // expense = aporte (sale plata de cuenta corriente a inversión), income = retiro
   const [amount, setAmount] = useState("500")
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState("")
+  const [checkingAccountId, setCheckingAccountId] = useState<number | null>(null)
 
   const [updateValueOpen, setUpdateValueOpen] = useState(false)
   const [newValue, setNewValue] = useState("")
@@ -53,17 +55,26 @@ export default function InversionDetallePage() {
   }
 
   function handleAddContribution() {
-    const parsed = Number(amount)
-    if (!Number.isFinite(parsed) || parsed === 0) return
+    const rawAmount = Number(amount)
+    if (!Number.isFinite(rawAmount) || rawAmount <= 0) return
     if (!investment) return
 
     const parsedDate = validateDate(date)
     if (!parsedDate) return
 
+    const signedAmount = movementType === "expense" ? rawAmount : -rawAmount
+    const defaultAcc =
+      checkingAccountId ??
+      investment.checkingAccountId ??
+      (selectedAccountId !== "all"
+        ? selectedAccountId
+        : checkingAccounts.find((a) => a.isDefault)?.id ?? checkingAccounts[0]?.id ?? null)
+
     addContribution(investment.id, {
-      amount: parsed,
+      amount: signedAmount,
       date: parsedDate.toISOString(),
-      note: note.trim() || (parsed > 0 ? "Aporte" : "Retiro"),
+      note: note.trim() || (movementType === "expense" ? "Aporte" : "Retiro"),
+      checkingAccountId: defaultAcc,
     })
 
     setAmount("500")
@@ -81,7 +92,7 @@ export default function InversionDetallePage() {
   function handleEditContribution(contrib: { id: number; amount: number; date: string; note?: string }) {
     setEditingContrib({
       id: contrib.id,
-      amount: String(contrib.amount),
+      amount: String(Math.abs(contrib.amount)),
       date: contrib.date.slice(0, 10),
       note: contrib.note ?? "",
     })
@@ -90,11 +101,16 @@ export default function InversionDetallePage() {
   function handleSaveEditContribution() {
     if (!editingContrib || !investment) return
     const parsed = Number(editingContrib.amount)
-    if (!Number.isFinite(parsed) || parsed === 0) return
+    if (!Number.isFinite(parsed) || parsed <= 0) return
     const parsedDate = validateDate(editingContrib.date)
     if (!parsedDate) return
+    
+    // Check if previous was negative
+    const prev = investment.contributions.find((c) => c.id === editingContrib.id)
+    const sign = prev && prev.amount < 0 ? -1 : 1
+
     updateContribution(editingContrib.id, {
-      amount: parsed,
+      amount: parsed * sign,
       date: parsedDate.toISOString(),
       note: editingContrib.note.trim() || undefined,
     })
@@ -165,39 +181,45 @@ export default function InversionDetallePage() {
             {investment.contributions.length === 0 ? (
               <p className="text-sm text-muted-foreground">Todavía no registraste movimientos para esta inversión.</p>
             ) : (
-              investment.contributions.map((contribution) => (
-                <div key={contribution.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div className="flex-1">
-                    <p className="font-medium">{contribution.note || (contribution.amount >= 0 ? "Aporte" : "Retiro")}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(contribution.date)}</p>
+              investment.contributions.map((contribution) => {
+                const linkedAcc = checkingAccounts.find((a) => a.id === contribution.checkingAccountId)
+                return (
+                  <div key={contribution.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex-1">
+                      <p className="font-medium">{contribution.note || (contribution.amount >= 0 ? "Aporte" : "Retiro")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(contribution.date)}
+                        {linkedAcc ? ` • ${linkedAcc.name}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AmountDisplay
+                        value={contribution.amount}
+                        from={contribution.currency}
+                        kind={contribution.amount >= 0 ? "income" : "expense"}
+                        showSign
+                        className="font-medium"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleEditContribution(contribution)}
+                        aria-label="Editar movimiento"
+                      >
+                        <Edit3 className="size-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setConfirmDeleteContribId(contribution.id)}
+                        aria-label="Eliminar movimiento"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <AmountDisplay
-                      value={contribution.amount}
-                      from={contribution.currency}
-                      kind={contribution.amount >= 0 ? "income" : "expense"}
-                      showSign
-                      className="font-medium"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleEditContribution(contribution)}
-                      aria-label="Editar movimiento"
-                    >
-                      <Edit3 className="size-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setConfirmDeleteContribId(contribution.id)}
-                      aria-label="Eliminar movimiento"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))
+                )
+              })
             )}
           </CardContent>
         </Card>
@@ -205,13 +227,61 @@ export default function InversionDetallePage() {
         <Card>
           <CardHeader>
             <CardTitle>Agregar movimiento</CardTitle>
-            <CardDescription>Registrá un aporte (positivo) o retiro (negativo).</CardDescription>
+            <CardDescription>Registrá un aporte a la inversión o un retiro de fondos.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Monto</label>
-              <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Positivo para aporte, negativo para retiro" />
+              <label className="text-sm font-medium">Tipo de operación</label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={movementType === "expense" ? "default" : "outline"}
+                  onClick={() => setMovementType("expense")}
+                  className="w-full"
+                >
+                  Aporte (+)
+                </Button>
+                <Button
+                  type="button"
+                  variant={movementType === "income" ? "default" : "outline"}
+                  onClick={() => setMovementType("income")}
+                  className="w-full"
+                >
+                  Retiro (-)
+                </Button>
+              </div>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Monto</label>
+              <Input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Ej: 500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {movementType === "expense" ? "Cuenta corriente de origen" : "Cuenta corriente de destino"}
+              </label>
+              <select
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={checkingAccountId ?? investment.checkingAccountId ?? ""}
+                onChange={(e) => setCheckingAccountId(Number(e.target.value) || null)}
+              >
+                <option value="">Sin cuenta asignada</option>
+                {checkingAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Fecha</label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -222,7 +292,7 @@ export default function InversionDetallePage() {
             </div>
             <Button onClick={handleAddContribution} className="w-full">
               <Plus className="size-4" data-icon="inline-start" />
-              Agregar movimiento
+              {movementType === "expense" ? "Registrar Aporte" : "Registrar Retiro"}
             </Button>
           </CardContent>
         </Card>

@@ -17,6 +17,7 @@ function mapGoal(g: {
   color: string
   currency: string
   deadline: Date | null
+  checkingAccountId?: number | null
   createdAt: Date
   updatedAt: Date
 }): SavingGoal {
@@ -28,6 +29,7 @@ function mapGoal(g: {
     color: g.color,
     currency: g.currency as Currency,
     deadline: g.deadline?.toISOString() ?? undefined,
+    checkingAccountId: g.checkingAccountId ?? null,
   }
 }
 
@@ -49,6 +51,7 @@ export async function createSavingGoalAction(data: {
   color: string
   currency: string
   deadline?: string
+  checkingAccountId?: number | null
 }) {
   try {
     const session = await requireSession()
@@ -70,6 +73,7 @@ export async function createSavingGoalAction(data: {
       color: data.color,
       currency: data.currency,
       deadline,
+      checkingAccountId: data.checkingAccountId ?? null,
       userId: session.userId,
     })
 
@@ -89,7 +93,9 @@ export async function updateSavingGoalAction(
     color: string
     currency: string
     deadline: string | null
+    checkingAccountId: number | null
   }>,
+  explicitCheckingAccountId?: number | null,
 ) {
   try {
     const session = await requireSession()
@@ -113,6 +119,9 @@ export async function updateSavingGoalAction(
       if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
       updateData.currency = data.currency
     }
+    if (data.checkingAccountId !== undefined) {
+      updateData.checkingAccountId = data.checkingAccountId
+    }
     if (data.deadline !== undefined) {
       if (data.deadline === null) {
         updateData.deadline = null
@@ -123,7 +132,7 @@ export async function updateSavingGoalAction(
       }
     }
 
-    const goal = await service.updateSavingGoal(id, session.userId, updateData)
+    const goal = await service.updateSavingGoal(id, session.userId, updateData, explicitCheckingAccountId)
     return mapGoal(goal)
   } catch (error) {
     logger.error("updateSavingGoalAction failed:", error)

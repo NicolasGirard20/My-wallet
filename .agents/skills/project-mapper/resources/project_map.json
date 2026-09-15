@@ -1,8 +1,8 @@
 {
   "project_name": "my-wallet",
-  "generated_at": "2026-09-14T22:51:16.550506Z",
+  "generated_at": "2026-09-15T22:03:35.570163Z",
   "total_files": 109,
-  "total_symbols": 447,
+  "total_symbols": 458,
   "architecture": {
     "entry_points": [
       "(detectar manualmente)"
@@ -50,8 +50,8 @@
     {
       "path": "app/(dashboard)/ahorros/page.tsx",
       "language": "tsx",
-      "size_lines": 266,
-      "summary": "Funciones: AhorrosPage, handleSubmit, handleEdit, handleSaveEdit, handleAdjustSave",
+      "size_lines": 469,
+      "summary": "Funciones: AhorrosPage, handleOpenCreate, handleSubmit, handleEdit, handleSaveEdit",
       "imports": [
         "react",
         "lucide-react",
@@ -63,6 +63,7 @@
         "@/components/ui/card",
         "@/components/ui/input",
         "@/context/data-context",
+        "@/context/currency-context",
         "@/lib/format",
         "@/lib/utils"
       ],
@@ -73,31 +74,67 @@
       "functions": [
         {
           "name": "AhorrosPage",
-          "line": 18,
+          "line": 19,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleOpenCreate",
+          "line": 47,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 38,
+          "line": 56,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleEdit",
-          "line": 57,
+          "line": 79,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSaveEdit",
-          "line": 65,
+          "line": 88,
           "is_async": false,
           "docstring": null
         },
         {
-          "name": "handleAdjustSave",
-          "line": 78,
+          "name": "openDeposit",
+          "line": 102,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleConfirmDeposit",
+          "line": 113,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "openWithdraw",
+          "line": 127,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleConfirmWithdraw",
+          "line": 138,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "acc",
+          "line": 60,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "linkedAccount",
+          "line": 218,
           "is_async": false,
           "docstring": null
         }
@@ -175,7 +212,7 @@
     {
       "path": "app/(dashboard)/inversiones/[id]/page.tsx",
       "language": "tsx",
-      "size_lines": 285,
+      "size_lines": 355,
       "summary": "Funciones: InversionDetallePage, handleAddContribution, handleUpdateValue, handleEditContribution, handleSaveEditContribution",
       "imports": [
         "react",
@@ -203,31 +240,43 @@
         },
         {
           "name": "handleAddContribution",
-          "line": 55,
+          "line": 57,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleUpdateValue",
-          "line": 74,
+          "line": 85,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleEditContribution",
-          "line": 81,
+          "line": 92,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSaveEditContribution",
-          "line": 90,
+          "line": 101,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "change",
-          "line": 38,
+          "line": 40,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "prev",
+          "line": 109,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "linkedAcc",
+          "line": 185,
           "is_async": false,
           "docstring": null
         }
@@ -237,8 +286,8 @@
     {
       "path": "app/(dashboard)/inversiones/page.tsx",
       "language": "tsx",
-      "size_lines": 191,
-      "summary": "Funciones: InversionesPage, handleSubmit, handleEdit, handleSaveEdit",
+      "size_lines": 250,
+      "summary": "Funciones: InversionesPage, handleOpenCreate, handleSubmit, handleEdit, handleSaveEdit",
       "imports": [
         "react",
         "next/link",
@@ -250,6 +299,7 @@
         "@/components/ui/card",
         "@/components/ui/input",
         "@/context/data-context",
+        "@/context/currency-context",
         "@/lib/format"
       ],
       "exports": [
@@ -259,25 +309,43 @@
       "functions": [
         {
           "name": "InversionesPage",
-          "line": 17,
+          "line": 18,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleOpenCreate",
+          "line": 35,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSubmit",
-          "line": 31,
+          "line": 44,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleEdit",
-          "line": 47,
+          "line": 64,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleSaveEdit",
-          "line": 54,
+          "line": 72,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "acc",
+          "line": 47,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "linkedAccount",
+          "line": 143,
           "is_async": false,
           "docstring": null
         }
@@ -636,10 +704,9 @@
     {
       "path": "app/actions/exchange.ts",
       "language": "typescript",
-      "size_lines": 70,
+      "size_lines": 67,
       "summary": "Funciones: isDollarRate, getExchangeRatesAction",
       "imports": [
-        "@/app/lib/session",
         "@/app/imports/dev"
       ],
       "exports": [
@@ -651,13 +718,13 @@
       "functions": [
         {
           "name": "isDollarRate",
-          "line": 24,
+          "line": 23,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getExchangeRatesAction",
-          "line": 36,
+          "line": 35,
           "is_async": true,
           "docstring": null
         }
@@ -667,7 +734,7 @@
     {
       "path": "app/actions/investments.ts",
       "language": "typescript",
-      "size_lines": 236,
+      "size_lines": 249,
       "summary": "Funciones: isCurrency, mapInv, getInvestmentsAction, getInvestmentByIdAction, createInvestmentAction",
       "imports": [
         "@/app/lib/session",
@@ -700,49 +767,49 @@
         },
         {
           "name": "getInvestmentsAction",
-          "line": 49,
+          "line": 53,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestmentByIdAction",
-          "line": 60,
+          "line": 64,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createInvestmentAction",
-          "line": 72,
+          "line": 76,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestmentAction",
-          "line": 103,
+          "line": 109,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestmentAction",
-          "line": 143,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "addContributionAction",
           "line": 153,
           "is_async": true,
           "docstring": null
         },
         {
+          "name": "addContributionAction",
+          "line": 163,
+          "is_async": true,
+          "docstring": null
+        },
+        {
           "name": "deleteContributionAction",
-          "line": 194,
+          "line": 207,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContributionAction",
-          "line": 204,
+          "line": 217,
           "is_async": true,
           "docstring": null
         }
@@ -752,7 +819,7 @@
     {
       "path": "app/actions/savings.ts",
       "language": "typescript",
-      "size_lines": 142,
+      "size_lines": 151,
       "summary": "Funciones: isCurrency, mapGoal, getSavingGoalsAction, createSavingGoalAction, updateSavingGoalAction",
       "imports": [
         "@/app/lib/session",
@@ -781,25 +848,25 @@
         },
         {
           "name": "getSavingGoalsAction",
-          "line": 34,
+          "line": 36,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createSavingGoalAction",
-          "line": 45,
+          "line": 47,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSavingGoalAction",
-          "line": 83,
+          "line": 87,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSavingGoalAction",
-          "line": 134,
+          "line": 143,
           "is_async": true,
           "docstring": null
         }
@@ -1292,7 +1359,7 @@
     {
       "path": "app/service/investment.service.ts",
       "language": "typescript",
-      "size_lines": 240,
+      "size_lines": 247,
       "summary": "Lógica de negocio | Funciones: getInvestments, getInvestmentById, createInvestment, updateInvestment, deleteInvestment",
       "imports": [
         "@/app/service/db",
@@ -1331,49 +1398,49 @@
         },
         {
           "name": "updateInvestment",
-          "line": 69,
+          "line": 71,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 88,
+          "line": 91,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 97,
+          "line": 100,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContribution",
-          "line": 149,
+          "line": 156,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContribution",
-          "line": 179,
+          "line": 186,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "amount",
-          "line": 105,
+          "line": 109,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "cat",
-          "line": 127,
+          "line": 133,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "amount",
-          "line": 157,
+          "line": 164,
           "is_async": true,
           "docstring": null
         }
@@ -1383,7 +1450,7 @@
     {
       "path": "app/service/saving-goal.service.ts",
       "language": "typescript",
-      "size_lines": 120,
+      "size_lines": 126,
       "summary": "Lógica de negocio | Funciones: getSavingGoals, getSavingGoalById, createSavingGoal, updateSavingGoal, deleteSavingGoal",
       "imports": [
         "@/app/service/db",
@@ -1419,19 +1486,19 @@
         },
         {
           "name": "updateSavingGoal",
-          "line": 63,
+          "line": 65,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSavingGoal",
-          "line": 113,
+          "line": 119,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "cat",
-          "line": 40,
+          "line": 41,
           "is_async": true,
           "docstring": null
         }
@@ -1958,7 +2025,7 @@
     {
       "path": "components/layout/account-menu.tsx",
       "language": "tsx",
-      "size_lines": 187,
+      "size_lines": 234,
       "summary": "Funciones: AccountMenu, handleLogout, openPasswordDialog, handleChangePassword",
       "imports": [
         "react",
@@ -1969,6 +2036,7 @@
         "@/components/ui/avatar",
         "@/components/ui/button",
         "@/components/ui/input",
+        "@/lib/utils",
         "@/components/ui/dialog",
         "@/components/ui/field",
         "@/components/ui/dropdown-menu"
@@ -1980,25 +2048,25 @@
       "functions": [
         {
           "name": "AccountMenu",
-          "line": 37,
+          "line": 40,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleLogout",
-          "line": 48,
+          "line": 56,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "openPasswordDialog",
-          "line": 54,
+          "line": 62,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "handleChangePassword",
-          "line": 61,
+          "line": 69,
           "is_async": true,
           "docstring": null
         }
@@ -2109,7 +2177,7 @@
     {
       "path": "components/layout/checking-account-selector.tsx",
       "language": "tsx",
-      "size_lines": 259,
+      "size_lines": 247,
       "summary": "Funciones: CheckingAccountSelector, totalBalanceConverted",
       "imports": [
         "react",
@@ -2129,13 +2197,13 @@
       "functions": [
         {
           "name": "CheckingAccountSelector",
-          "line": 30,
+          "line": 29,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "totalBalanceConverted",
-          "line": 42,
+          "line": 41,
           "is_async": false,
           "docstring": null
         }
@@ -2173,14 +2241,13 @@
     {
       "path": "components/layout/mobile-nav.tsx",
       "language": "tsx",
-      "size_lines": 90,
+      "size_lines": 85,
       "summary": "Funciones: MobileNav",
       "imports": [
         "react",
         "next/link",
         "next/navigation",
         "lucide-react",
-        "@/context/auth-context",
         "@/lib/nav",
         "@/lib/utils",
         "@/components/ui/button",
@@ -2196,7 +2263,7 @@
       "functions": [
         {
           "name": "MobileNav",
-          "line": 24,
+          "line": 23,
           "is_async": false,
           "docstring": null
         }
@@ -2226,13 +2293,12 @@
     {
       "path": "components/layout/sidebar.tsx",
       "language": "tsx",
-      "size_lines": 68,
+      "size_lines": 62,
       "summary": "Funciones: Sidebar",
       "imports": [
         "next/link",
         "next/navigation",
         "lucide-react",
-        "@/context/auth-context",
         "@/lib/nav",
         "@/lib/utils",
         "@/components/ui/separator",
@@ -2246,7 +2312,7 @@
       "functions": [
         {
           "name": "Sidebar",
-          "line": 14,
+          "line": 13,
           "is_async": false,
           "docstring": null
         }
@@ -3991,7 +4057,7 @@
     {
       "path": "context/data-context.tsx",
       "language": "tsx",
-      "size_lines": 567,
+      "size_lines": 603,
       "summary": "Funciones: DataProvider, useData, visibleTransactions, activeAccount, loadAllData",
       "imports": [
         "react",
@@ -4012,187 +4078,187 @@
       "functions": [
         {
           "name": "DataProvider",
-          "line": 127,
+          "line": 131,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useData",
-          "line": 563,
+          "line": 599,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleTransactions",
-          "line": 142,
+          "line": 146,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "activeAccount",
-          "line": 147,
+          "line": 151,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "loadAllData",
-          "line": 152,
+          "line": 156,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "refreshCheckingAccounts",
-          "line": 197,
+          "line": 201,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addTransaction",
-          "line": 202,
+          "line": 206,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "acc",
-          "line": 211,
+          "line": 215,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "importTransactions",
-          "line": 230,
+          "line": 234,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 254,
+          "line": 258,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 283,
+          "line": 287,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCheckingAccount",
-          "line": 297,
+          "line": 301,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCheckingAccount",
-          "line": 306,
+          "line": 310,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCheckingAccount",
-          "line": 315,
+          "line": 319,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createTransfer",
-          "line": 326,
+          "line": 330,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCategory",
-          "line": 335,
+          "line": 339,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCategory",
-          "line": 342,
+          "line": 346,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCategory",
-          "line": 348,
+          "line": 352,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "categoriesByKind",
-          "line": 356,
+          "line": 360,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getCategory",
-          "line": 361,
+          "line": 365,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "addSaving",
-          "line": 363,
+          "line": 367,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSaving",
-          "line": 385,
+          "line": 390,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSaving",
-          "line": 410,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "addInvestment",
           "line": 417,
           "is_async": true,
           "docstring": null
         },
         {
+          "name": "addInvestment",
+          "line": 429,
+          "is_async": true,
+          "docstring": null
+        },
+        {
           "name": "updateInvestment",
-          "line": 431,
+          "line": 450,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 440,
+          "line": 465,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 447,
+          "line": 477,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContribution",
-          "line": 462,
+          "line": 498,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContribution",
-          "line": 469,
+          "line": 505,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestment",
-          "line": 479,
+          "line": 515,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "value",
-          "line": 484,
+          "line": 520,
           "is_async": false,
           "docstring": null
         }
@@ -4464,7 +4530,7 @@
     {
       "path": "lib/types.ts",
       "language": "typescript",
-      "size_lines": 91,
+      "size_lines": 94,
       "summary": "Archivo .ts",
       "imports": [],
       "exports": [
@@ -4513,10 +4579,10 @@
       "size_lines": 8,
       "summary": "Archivo .ts",
       "imports": [
-        "./.next/dev/types/routes.d.ts",
-        "./.next/dev/types/root-params.d.ts",
-        "./.next/dev/types/routes.d.ts",
-        "./.next/dev/types/root-params.d.ts"
+        "./.next/types/routes.d.ts",
+        "./.next/types/root-params.d.ts",
+        "./.next/types/routes.d.ts",
+        "./.next/types/root-params.d.ts"
       ],
       "exports": [],
       "classes": [],
@@ -4664,7 +4730,7 @@
     {
       "path": "prisma/schema.prisma",
       "language": "unknown",
-      "size_lines": 144,
+      "size_lines": 153,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
@@ -4880,6 +4946,6 @@
       "typescript",
       "unknown"
     ],
-    "compression_ratio_estimate": "94.8%"
+    "compression_ratio_estimate": "94.9%"
   }
 }

@@ -58,68 +58,77 @@ model Transaction {
 }
 
 model SavingGoal {
-  id           Int           @id @default(autoincrement())
-  name         String
-  target       Float
-  saved        Float
-  color        String
-  currency     String        @default("ARS")
-  deadline     DateTime?
-  userId       Int
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
+  id                Int              @id @default(autoincrement())
+  name              String
+  target            Float
+  saved             Float
+  color             String
+  currency          String           @default("ARS")
+  deadline          DateTime?
+  userId            Int
+  checkingAccountId Int?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkingAccount   CheckingAccount? @relation(fields: [checkingAccountId], references: [id], onDelete: SetNull)
+  transactions      Transaction[]
 }
 
 model Investment {
-  id            Int                      @id @default(autoincrement())
-  name          String
-  description   String
-  invested      Float
-  currentValue  Float
-  currency      String                   @default("ARS")
-  userId        Int
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @updatedAt
-  contributions InvestmentContribution[]
-  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                Int                      @id @default(autoincrement())
+  name              String
+  description       String
+  invested          Float
+  currentValue      Float
+  currency          String                   @default("ARS")
+  userId            Int
+  checkingAccountId Int?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  contributions     InvestmentContribution[]
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkingAccount   CheckingAccount?         @relation(fields: [checkingAccountId], references: [id], onDelete: SetNull)
 }
 
 model InvestmentContribution {
-  id           Int           @id @default(autoincrement())
-  investmentId Int
-  date         DateTime
-  amount       Float
-  note         String?
-  currency     String        @default("ARS")
-  userId       Int
-  createdAt    DateTime      @default(now())
-  investment   Investment    @relation(fields: [investmentId], references: [id], onDelete: Cascade)
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
+  id                Int              @id @default(autoincrement())
+  investmentId      Int
+  date              DateTime
+  amount            Float
+  note              String?
+  currency          String           @default("ARS")
+  userId            Int
+  checkingAccountId Int?
+  createdAt         DateTime         @default(now())
+  investment        Investment       @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkingAccount   CheckingAccount? @relation(fields: [checkingAccountId], references: [id], onDelete: SetNull)
+  transactions      Transaction[]
 }
 
 model CheckingAccount {
-  id             Int               @id @default(autoincrement())
-  name           String
-  bankName       String?
-  accountNumber  String?
-  cbuOrAlias     String?
-  currency       String            @default("ARS")
-  initialBalance Float             @default(0)
-  overdraftLimit Float             @default(0)
-  color          String            @default("--chart-1")
-  isDefault      Boolean           @default(false)
-  isActive       Boolean           @default(true)
-  userId         Int
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id                      Int                      @id @default(autoincrement())
+  name                    String
+  bankName                String?
+  accountNumber           String?
+  cbuOrAlias              String?
+  currency                String                   @default("ARS")
+  initialBalance          Float                    @default(0)
+  overdraftLimit          Float                    @default(0)
+  color                   String                   @default("--chart-1")
+  isDefault               Boolean                  @default(false)
+  isActive                Boolean                  @default(true)
+  userId                  Int
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
 
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions   Transaction[]
-  transfersFrom  AccountTransfer[] @relation("TransferSource")
-  transfersTo    AccountTransfer[] @relation("TransferTarget")
+  user                    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions            Transaction[]
+  transfersFrom           AccountTransfer[]        @relation("TransferSource")
+  transfersTo             AccountTransfer[]        @relation("TransferTarget")
+  savingGoals             SavingGoal[]
+  investments             Investment[]
+  investmentContributions InvestmentContribution[]
 
   @@index([userId])
 }

@@ -16,6 +16,7 @@ function mapInv(inv: {
   invested: number
   currentValue: number
   currency: string
+  checkingAccountId?: number | null
   createdAt: Date
   updatedAt: Date
   contributions: Array<{
@@ -25,6 +26,7 @@ function mapInv(inv: {
     amount: number
     currency: string
     note: string | null
+    checkingAccountId?: number | null
     createdAt: Date
   }>
 }): Investment {
@@ -35,6 +37,7 @@ function mapInv(inv: {
     invested: inv.invested,
     currentValue: inv.currentValue,
     currency: inv.currency as Currency,
+    checkingAccountId: inv.checkingAccountId ?? null,
     createdAt: inv.createdAt.toISOString(),
     contributions: inv.contributions.map((c) => ({
       id: c.id,
@@ -42,6 +45,7 @@ function mapInv(inv: {
       amount: c.amount,
       currency: c.currency as Currency,
       note: c.note ?? undefined,
+      checkingAccountId: c.checkingAccountId ?? null,
     })),
   }
 }
@@ -74,6 +78,7 @@ export async function createInvestmentAction(data: {
   description: string
   currentValue: number
   currency: string
+  checkingAccountId?: number | null
 }) {
   try {
     const session = await requireSession()
@@ -90,6 +95,7 @@ export async function createInvestmentAction(data: {
       invested: data.currentValue,
       currentValue: data.currentValue,
       currency: data.currency,
+      checkingAccountId: data.checkingAccountId ?? null,
       userId: session.userId,
     })
 
@@ -107,6 +113,7 @@ export async function updateInvestmentAction(
     description: string
     currentValue: number
     currency: string
+    checkingAccountId: number | null
   }>,
 ) {
   try {
@@ -128,6 +135,9 @@ export async function updateInvestmentAction(
     if (data.currency !== undefined) {
       if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
       updateData.currency = data.currency
+    }
+    if (data.checkingAccountId !== undefined) {
+      updateData.checkingAccountId = data.checkingAccountId
     }
 
     const inv = await service.updateInvestment(id, session.userId, updateData)
@@ -157,6 +167,7 @@ export async function addContributionAction(
     amount: number
     currency: string
     note?: string
+    checkingAccountId?: number | null
   },
 ) {
   try {
@@ -175,6 +186,7 @@ export async function addContributionAction(
       amount: data.amount,
       currency: data.currency,
       note: data.note?.trim() || undefined,
+      checkingAccountId: data.checkingAccountId ?? undefined,
       userId: session.userId,
     })
 
@@ -184,6 +196,7 @@ export async function addContributionAction(
       createdAt: contribution.createdAt.toISOString(),
       currency: contribution.currency as Currency,
       note: contribution.note ?? undefined,
+      checkingAccountId: contribution.checkingAccountId ?? null,
     }
   } catch (error) {
     logger.error("addContributionAction failed:", error)

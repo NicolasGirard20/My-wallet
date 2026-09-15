@@ -30,6 +30,7 @@ export async function createSavingGoal(data: {
   color: string
   currency: string
   deadline?: Date
+  checkingAccountId?: number | null
   userId: number
 }) {
   try {
@@ -45,6 +46,7 @@ export async function createSavingGoal(data: {
             description: `Depósito a ${goal.name}`,
             categoryId: cat.id,
             currency: goal.currency,
+            checkingAccountId: goal.checkingAccountId ?? null,
             date: new Date(),
             userId: data.userId,
             savingGoalId: goal.id,
@@ -70,7 +72,9 @@ export async function updateSavingGoal(
     color: string
     currency: string
     deadline: Date | null
+    checkingAccountId: number | null
   }>,
+  explicitCheckingAccountId?: number | null,
 ) {
   try {
     return await prisma.$transaction(async (tx) => {
@@ -84,6 +88,7 @@ export async function updateSavingGoal(
         if (delta !== 0) {
           const kind = delta > 0 ? "expense" : "income"
           const cat = await getOrCreateSavingsCategory(userId, kind, tx)
+          const targetAccountId = explicitCheckingAccountId !== undefined ? explicitCheckingAccountId : goal.checkingAccountId
           await tx.transaction.create({
             data: {
               kind,
@@ -91,6 +96,7 @@ export async function updateSavingGoal(
               description: delta > 0 ? `Depósito a ${goal.name}` : `Extracción de ${goal.name}`,
               categoryId: cat.id,
               currency: goal.currency,
+              checkingAccountId: targetAccountId ?? null,
               date: new Date(),
               userId,
               savingGoalId: goal.id,

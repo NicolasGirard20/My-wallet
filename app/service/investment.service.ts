@@ -37,6 +37,7 @@ export async function createInvestment(data: {
   invested: number
   currentValue: number
   currency: string
+  checkingAccountId?: number | null
   userId: number
 }) {
   try {
@@ -52,6 +53,7 @@ export async function createInvestment(data: {
             description: `Inversión inicial en ${data.name}`,
             categoryId: cat.id,
             currency: data.currency,
+            checkingAccountId: investment.checkingAccountId ?? null,
             date: new Date(),
             userId: data.userId,
           },
@@ -75,6 +77,7 @@ export async function updateInvestment(
     invested: number
     currentValue: number
     currency: string
+    checkingAccountId: number | null
   }>,
 ) {
   try {
@@ -99,6 +102,7 @@ export async function addContribution(investmentId: number, userId: number, data
   amount: number
   currency: string
   note?: string
+  checkingAccountId?: number | null
   userId: number
 }) {
   try {
@@ -107,12 +111,14 @@ export async function addContribution(investmentId: number, userId: number, data
     return await prisma.$transaction(async (tx) => {
       const investment = await tx.investment.findUnique({
         where: { id: investmentId, userId },
-        select: { name: true },
+        select: { name: true, checkingAccountId: true },
       })
       if (!investment) throw new Error("Inversión no encontrada")
 
+      const targetCheckingAccountId = data.checkingAccountId !== undefined ? data.checkingAccountId : investment.checkingAccountId
+
       const contribution = await tx.investmentContribution.create({
-        data: { ...data, amount, investmentId, userId },
+        data: { ...data, checkingAccountId: targetCheckingAccountId ?? null, amount, investmentId, userId },
       })
 
       await tx.investment.update({
@@ -132,6 +138,7 @@ export async function addContribution(investmentId: number, userId: number, data
           description: amount > 0 ? `Aporte a ${investment.name}` : `Retiro de ${investment.name}`,
           categoryId: cat.id,
           currency: data.currency,
+          checkingAccountId: targetCheckingAccountId ?? null,
           date: data.date,
           userId,
           investmentContributionId: contribution.id,

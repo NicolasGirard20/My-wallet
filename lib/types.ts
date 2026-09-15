@@ -68,6 +68,7 @@ export interface SavingGoal {
   color: string
   currency: Currency
   deadline?: string | null
+  checkingAccountId?: number | null
 }
 
 export interface InvestmentContribution {
@@ -76,6 +77,7 @@ export interface InvestmentContribution {
   amount: number // in its own currency, positive = aporte, negative = retiro/retorno registrado
   currency: Currency
   note?: string
+  checkingAccountId?: number | null
 }
 
 export interface Investment {
@@ -86,5 +88,6 @@ export interface Investment {
   currentValue: number // in its own currency current valuation
   currency: Currency
   contributions: InvestmentContribution[]
+  checkingAccountId?: number | null
   createdAt: string
 }

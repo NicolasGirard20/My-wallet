@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Edit3, MinusCircle, PiggyBank, Plus, PlusCircle, Target, Trash2, TrendingUp } from "lucide-react"
+import { CreditCard, MinusCircle, Plus, PlusCircle, Target, Trash2, TrendingUp } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AmountDisplay } from "@/components/shared/amount-display"
@@ -11,40 +11,61 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useData } from "@/context/data-context"
+import { useCurrency } from "@/context/currency-context"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { SavingGoal } from "@/lib/types"
 
 export default function AhorrosPage() {
-  const { savings, addSaving, updateSaving, deleteSaving } = useData()
+  const { savings, checkingAccounts, selectedAccountId, addSaving, updateSaving, deleteSaving } = useData()
+  const { currency: globalCurrency } = useCurrency()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [target, setTarget] = useState("1000")
   const [saved, setSaved] = useState("0")
   const [color, setColor] = useState("--chart-1")
   const [deadline, setDeadline] = useState("")
+  const [checkingAccountId, setCheckingAccountId] = useState<number | null>(null)
 
   const [editingGoal, setEditingGoal] = useState<SavingGoal | null>(null)
   const [editName, setEditName] = useState("")
   const [editTarget, setEditTarget] = useState("")
   const [editColor, setEditColor] = useState("")
   const [editDeadline, setEditDeadline] = useState("")
+  const [editCheckingAccountId, setEditCheckingAccountId] = useState<number | null>(null)
 
-  const [adjustGoal, setAdjustGoal] = useState<SavingGoal | null>(null)
-  const [adjustDelta, setAdjustDelta] = useState("")
+  const [depositGoal, setDepositGoal] = useState<SavingGoal | null>(null)
+  const [depositAmount, setDepositAmount] = useState("")
+  const [depositAccountId, setDepositAccountId] = useState<number | null>(null)
+
+  const [withdrawGoal, setWithdrawGoal] = useState<SavingGoal | null>(null)
+  const [withdrawAmount, setWithdrawAmount] = useState("")
+  const [withdrawAccountId, setWithdrawAccountId] = useState<number | null>(null)
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+
+  function handleOpenCreate() {
+    const defaultAcc =
+      selectedAccountId !== "all"
+        ? checkingAccounts.find((a) => a.id === selectedAccountId)
+        : checkingAccounts.find((a) => a.isDefault) ?? checkingAccounts[0]
+    setCheckingAccountId(defaultAcc?.id ?? null)
+    setOpen(true)
+  }
 
   function handleSubmit() {
     const parsedTarget = Number(target)
     const parsedSaved = Number(saved)
     if (!name.trim() || !Number.isFinite(parsedTarget) || parsedTarget <= 0) return
+    const acc = checkingAccounts.find((a) => a.id === checkingAccountId)
     addSaving({
       name: name.trim(),
       target: parsedTarget,
       saved: Math.max(0, Math.min(parsedSaved, parsedTarget)),
       color,
       deadline: deadline || undefined,
+      checkingAccountId: checkingAccountId ?? null,
+      currency: acc?.currency ?? globalCurrency,
     })
     setOpen(false)
     setName("")
@@ -52,6 +73,7 @@ export default function AhorrosPage() {
     setSaved("0")
     setColor("--chart-1")
     setDeadline("")
+    setCheckingAccountId(null)
   }
 
   function handleEdit(goal: SavingGoal) {
@@ -60,6 +82,7 @@ export default function AhorrosPage() {
     setEditTarget(String(goal.target))
     setEditColor(goal.color)
     setEditDeadline(goal.deadline ? goal.deadline.slice(0, 10) : "")
+    setEditCheckingAccountId(goal.checkingAccountId ?? null)
   }
 
   function handleSaveEdit() {
@@ -71,18 +94,59 @@ export default function AhorrosPage() {
       target: parsedTarget,
       color: editColor,
       deadline: editDeadline || null,
+      checkingAccountId: editCheckingAccountId,
     })
     setEditingGoal(null)
   }
 
-  function handleAdjustSave() {
-    if (!adjustGoal) return
-    const delta = Number(adjustDelta)
-    if (!Number.isFinite(delta) || delta === 0) return
-    const newSaved = Math.max(0, adjustGoal.saved + delta)
-    updateSaving(adjustGoal.id, { saved: newSaved })
-    setAdjustGoal(null)
-    setAdjustDelta("")
+  function openDeposit(goal: SavingGoal) {
+    setDepositGoal(goal)
+    setDepositAmount("")
+    const defaultAcc =
+      goal.checkingAccountId ??
+      (selectedAccountId !== "all"
+        ? selectedAccountId
+        : checkingAccounts.find((a) => a.isDefault)?.id ?? checkingAccounts[0]?.id ?? null)
+    setDepositAccountId(defaultAcc)
+  }
+
+  function handleConfirmDeposit() {
+    if (!depositGoal) return
+    const amount = Number(depositAmount)
+    if (!Number.isFinite(amount) || amount <= 0) return
+    const newSaved = depositGoal.saved + amount
+    updateSaving(
+      depositGoal.id,
+      { saved: newSaved },
+      depositAccountId,
+    )
+    setDepositGoal(null)
+    setDepositAmount("")
+  }
+
+  function openWithdraw(goal: SavingGoal) {
+    setWithdrawGoal(goal)
+    setWithdrawAmount("")
+    const defaultAcc =
+      goal.checkingAccountId ??
+      (selectedAccountId !== "all"
+        ? selectedAccountId
+        : checkingAccounts.find((a) => a.isDefault)?.id ?? checkingAccounts[0]?.id ?? null)
+    setWithdrawAccountId(defaultAcc)
+  }
+
+  function handleConfirmWithdraw() {
+    if (!withdrawGoal) return
+    const amount = Number(withdrawAmount)
+    if (!Number.isFinite(amount) || amount <= 0 || amount > withdrawGoal.saved) return
+    const newSaved = Math.max(0, withdrawGoal.saved - amount)
+    updateSaving(
+      withdrawGoal.id,
+      { saved: newSaved },
+      withdrawAccountId,
+    )
+    setWithdrawGoal(null)
+    setWithdrawAmount("")
   }
 
   return (
@@ -91,7 +155,7 @@ export default function AhorrosPage() {
         title="Ahorros"
         description="Seguimiento de tus metas y fondos de reserva."
         actions={
-          <Button onClick={() => setOpen((prev) => !prev)}>
+          <Button onClick={handleOpenCreate}>
             <Plus className="size-4" data-icon="inline-start" />
             Nueva meta
           </Button>
@@ -114,8 +178,23 @@ export default function AhorrosPage() {
               <Input type="number" min="0" value={target} onChange={(e) => setTarget(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Ahorrado</label>
+              <label className="text-sm font-medium">Ahorrado inicial</label>
               <Input type="number" min="0" value={saved} onChange={(e) => setSaved(e.target.value)} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium">Cuenta Corriente asociada</label>
+              <select
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={checkingAccountId ?? ""}
+                onChange={(e) => setCheckingAccountId(Number(e.target.value) || null)}
+              >
+                <option value="">Sin cuenta asignada</option>
+                {checkingAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium">Color</label>
@@ -136,13 +215,18 @@ export default function AhorrosPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {savings.map((goal) => {
           const progress = Math.min((goal.saved / goal.target) * 100, 100)
+          const linkedAccount = checkingAccounts.find((a) => a.id === goal.checkingAccountId)
 
           return (
-            <Card key={goal.id} className="overflow-hidden">
+            <Card
+              key={goal.id}
+              onClick={() => handleEdit(goal)}
+              className="cursor-pointer overflow-hidden transition-all duration-200 hover:border-primary/50 hover:shadow-md active:scale-[0.99]"
+            >
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="flex size-9 items-center justify-center rounded-md" style={{ backgroundColor: `var(${goal.color})`, color: "white" }}>
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `var(${goal.color})`, color: "white" }}>
                       <Target className="size-4" />
                     </span>
                     <div>
@@ -152,14 +236,35 @@ export default function AhorrosPage() {
                       </CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(goal)} aria-label={`Editar ${goal.name}`}>
-                      <Edit3 className="size-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => setAdjustGoal(goal)} aria-label={`Ajustar ahorro de ${goal.name}`}>
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => openDeposit(goal)}
+                      title="Aportar a este ahorro"
+                      aria-label={`Aportar a ${goal.name}`}
+                      className="text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                    >
                       <PlusCircle className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => setConfirmDeleteId(goal.id)} aria-label={`Eliminar ${goal.name}`}>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => openWithdraw(goal)}
+                      title="Extraer de este ahorro"
+                      aria-label={`Extraer de ${goal.name}`}
+                      className="text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                    >
+                      <MinusCircle className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setConfirmDeleteId(goal.id)}
+                      title="Eliminar meta"
+                      aria-label={`Eliminar ${goal.name}`}
+                      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    >
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
@@ -167,6 +272,13 @@ export default function AhorrosPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
+                {linkedAccount && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CreditCard className="size-3.5" />
+                    <span>Cuenta: <strong className="text-foreground font-medium">{linkedAccount.name}</strong> ({linkedAccount.currency})</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Progreso</span>
                   <span className="font-medium text-foreground">{Math.round(progress)}%</span>
@@ -174,7 +286,7 @@ export default function AhorrosPage() {
 
                 <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full"
+                    className="h-full rounded-full transition-all duration-300"
                     style={{ width: `${progress}%`, backgroundColor: `var(${goal.color})` }}
                   />
                 </div>
@@ -190,7 +302,7 @@ export default function AhorrosPage() {
 
                 <div className={cn(
                   "flex items-center gap-2 rounded-md px-2.5 py-2 text-xs",
-                  progress >= 100 ? "bg-emerald-500/10 text-emerald-700" : "bg-primary/5 text-primary",
+                  progress >= 100 ? "bg-emerald-500/10 text-emerald-700 font-medium" : "bg-primary/5 text-primary",
                 )}>
                   <TrendingUp className="size-3.5" />
                   {progress >= 100 ? "Meta completada" : "Sigue avanzando"}
@@ -201,12 +313,13 @@ export default function AhorrosPage() {
         })}
       </div>
 
+      {/* Modal Editar Meta */}
       <ConfirmDialog
         open={editingGoal !== null}
         onOpenChange={(open) => { if (!open) setEditingGoal(null) }}
         title="Editar meta"
         description="Modificá los datos de esta meta de ahorro."
-        confirmLabel="Guardar"
+        confirmLabel="Guardar cambios"
         confirmVariant="default"
         onConfirm={handleSaveEdit}
       >
@@ -220,6 +333,21 @@ export default function AhorrosPage() {
             <Input type="number" min="0" value={editTarget} onChange={(e) => setEditTarget(e.target.value)} />
           </div>
           <div className="space-y-2">
+            <label className="text-sm font-medium">Cuenta Corriente asociada</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={editCheckingAccountId ?? ""}
+              onChange={(e) => setEditCheckingAccountId(Number(e.target.value) || null)}
+            >
+              <option value="">Sin cuenta asignada</option>
+              {checkingAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
             <label className="text-sm font-medium">Color</label>
             <ColorPicker value={editColor} onChange={setEditColor} />
           </div>
@@ -230,27 +358,101 @@ export default function AhorrosPage() {
         </div>
       </ConfirmDialog>
 
+      {/* Modal Aportar (Positivo) */}
       <ConfirmDialog
-        open={adjustGoal !== null}
-        onOpenChange={(open) => { if (!open) { setAdjustGoal(null); setAdjustDelta("") } }}
-        title="Ajustar ahorro"
+        open={depositGoal !== null}
+        onOpenChange={(open) => { if (!open) { setDepositGoal(null); setDepositAmount("") } }}
+        title={depositGoal ? `Aportar a "${depositGoal.name}"` : "Aportar a ahorro"}
         description={
-          adjustGoal
-            ? `Ahorrado actual: ${adjustGoal.saved.toLocaleString()}. Ingresá un monto positivo para depositar o negativo para retirar.`
+          depositGoal
+            ? `Ahorrado actual: ${depositGoal.saved.toLocaleString("es-AR")} ${depositGoal.currency}. Ingresá el monto a depositar (se debitará de la cuenta corriente seleccionada).`
             : undefined
         }
-        confirmLabel="Aplicar"
+        confirmLabel="Confirmar aporte"
         confirmVariant="default"
-        onConfirm={handleAdjustSave}
+        onConfirm={handleConfirmDeposit}
       >
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Monto a ajustar</label>
-            <Input type="number" value={adjustDelta} onChange={(e) => setAdjustDelta(e.target.value)} placeholder="Ej: 500 o -200" />
+            <label className="text-sm font-medium">Monto a depositar</label>
+            <Input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              placeholder="Ej: 500"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Cuenta corriente de origen</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={depositAccountId ?? ""}
+              onChange={(e) => setDepositAccountId(Number(e.target.value) || null)}
+            >
+              <option value="">Sin cuenta asignada</option>
+              {checkingAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </ConfirmDialog>
 
+      {/* Modal Extraer (Positivo) */}
+      <ConfirmDialog
+        open={withdrawGoal !== null}
+        onOpenChange={(open) => { if (!open) { setWithdrawGoal(null); setWithdrawAmount("") } }}
+        title={withdrawGoal ? `Extraer de "${withdrawGoal.name}"` : "Extraer de ahorro"}
+        description={
+          withdrawGoal
+            ? `Ahorrado actual disponible: ${withdrawGoal.saved.toLocaleString("es-AR")} ${withdrawGoal.currency}. Ingresá el monto a retirar (se acreditará en la cuenta corriente seleccionada).`
+            : undefined
+        }
+        confirmLabel="Confirmar extracción"
+        confirmVariant="default"
+        onConfirm={handleConfirmWithdraw}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monto a retirar</label>
+            <Input
+              type="number"
+              min="0.01"
+              max={withdrawGoal ? withdrawGoal.saved : undefined}
+              step="0.01"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              placeholder="Ej: 200"
+              autoFocus
+            />
+            {withdrawGoal && Number(withdrawAmount) > withdrawGoal.saved && (
+              <p className="text-xs text-destructive">El monto no puede superar lo ahorrado ({withdrawGoal.saved.toLocaleString("es-AR")} {withdrawGoal.currency})</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Cuenta corriente de destino</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={withdrawAccountId ?? ""}
+              onChange={(e) => setWithdrawAccountId(Number(e.target.value) || null)}
+            >
+              <option value="">Sin cuenta asignada</option>
+              {checkingAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.currency}) — Saldo: ${a.currentBalance?.toLocaleString("es-AR")}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </ConfirmDialog>
+
+      {/* Modal Eliminar Meta */}
       <ConfirmDialog
         open={confirmDeleteId !== null}
         onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
@@ -263,3 +465,4 @@ export default function AhorrosPage() {
     </>
   )
 }
+
