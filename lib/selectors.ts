@@ -1,4 +1,4 @@
-import type { Category, Currency, Transaction } from "./types"
+import type { Budget, BudgetConsumption, BudgetStatus, Category, Currency, Transaction } from "./types"
 
 export type ConvertFn = (amount: number, from: Currency) => number
 
@@ -159,4 +159,50 @@ export function categoryBreakdownCrossCurrency(
     }))
     .filter((s) => s.value > 0)
     .sort((a, b) => b.value - a.value)
+}
+
+export function calculateBudgetConsumption(
+  budget: Budget,
+  transactions: Transaction[],
+  convert?: ConvertFn,
+): BudgetConsumption {
+  const start = new Date(budget.startDate)
+  start.setUTCHours(0, 0, 0, 0)
+  const end = new Date(budget.endDate)
+  end.setUTCHours(23, 59, 59, 999)
+
+  let spent = 0
+
+  for (const t of transactions) {
+    if (t.kind !== "expense") continue
+
+    if (budget.categoryId !== null && budget.categoryId !== undefined && t.categoryId !== budget.categoryId) {
+      continue
+    }
+
+    const tDate = new Date(t.date)
+    if (tDate < start || tDate > end) {
+      continue
+    }
+
+    const amount = convert ? convert(t.amount, t.currency) : t.amount
+    spent += amount
+  }
+
+  const percentage = budget.amountLimit > 0 ? (spent / budget.amountLimit) * 100 : 0
+
+  let status: BudgetStatus = "normal"
+  if (percentage >= 100) {
+    status = "danger"
+  } else if (percentage >= 80) {
+    status = "warning"
+  }
+
+  return {
+    budgetId: budget.id,
+    amountLimit: budget.amountLimit,
+    spent,
+    percentage,
+    status,
+  }
 }

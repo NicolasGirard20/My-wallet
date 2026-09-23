@@ -22,6 +22,7 @@ model User {
   investmentContributions InvestmentContribution[]
   checkingAccounts        CheckingAccount[]
   accountTransfers        AccountTransfer[]
+  budgets                 Budget[]
 }
 
 model Category {
@@ -34,6 +35,7 @@ model Category {
   updatedAt    DateTime      @updatedAt
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  budgets      Budget[]
 }
 
 model Transaction {
@@ -148,6 +150,23 @@ model AccountTransfer {
   sourceAccount   CheckingAccount @relation("TransferSource", fields: [sourceAccountId], references: [id], onDelete: Cascade)
   targetAccount   CheckingAccount @relation("TransferTarget", fields: [targetAccountId], references: [id], onDelete: Cascade)
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Budget {
+  id          Int       @id @default(autoincrement())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  amountLimit Float
+  categoryId  Int?
+  userId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }

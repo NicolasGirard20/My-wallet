@@ -33,7 +33,14 @@ import {
   deleteCheckingAccountAction,
   createAccountTransferAction,
 } from "@/app/actions/checking-accounts"
+import {
+  getBudgetsAction,
+  createBudgetAction,
+  updateBudgetAction,
+  deleteBudgetAction,
+} from "@/app/actions/budgets"
 import type {
+  Budget,
   Category,
   CheckingAccount,
   AccountTransfer,
@@ -124,6 +131,11 @@ interface DataContextValue {
   deleteContribution: (contributionId: number) => Promise<void>
   updateContribution: (contributionId: number, data: { amount: number; date: string; note?: string }) => Promise<void>
   getInvestment: (id: number) => Investment | undefined
+
+  budgets: Budget[]
+  addBudget: (data: Omit<Budget, "id">) => Promise<Budget>
+  updateBudget: (id: number, data: Partial<Omit<Budget, "id">>) => Promise<Budget>
+  deleteBudget: (id: number) => Promise<void>
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
@@ -136,6 +148,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [savings, setSavings] = useState<SavingGoal[]>([])
   const [investments, setInvestments] = useState<Investment[]>([])
   const [checkingAccounts, setCheckingAccounts] = useState<CheckingAccount[]>([])
+  const [budgets, setBudgets] = useState<Budget[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<number | "all">("all")
   const [loading, setLoading] = useState(false)
   const loadedRef = useRef(false)
@@ -156,18 +169,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const loadAllData = useCallback(async () => {
     setLoading(true)
     try {
-      const [cats, txs, sav, invs, accs] = await Promise.all([
+      const [cats, txs, sav, invs, accs, bdgs] = await Promise.all([
         getCategoriesAction(),
         getTransactionsAction(),
         getSavingGoalsAction(),
         getInvestmentsAction(),
         getCheckingAccountsAction(),
+        getBudgetsAction(),
       ])
       setCategories(cats)
       setTransactions(txs)
       setSavings(sav)
       setInvestments(invs)
       setCheckingAccounts(accs)
+      setBudgets(bdgs)
     } catch (error) {
       logger.error("loadAllData failed:", error)
     } finally {
@@ -183,6 +198,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setCategories([])
       setSavings([])
       setInvestments([])
+      setBudgets([])
       loadedRef.current = false
       return
     }
@@ -517,6 +533,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [investments],
   )
 
+  const addBudget = useCallback(async (data: Omit<Budget, "id">) => {
+    const created = await createBudgetAction(data)
+    const bdgs = await getBudgetsAction()
+    setBudgets(bdgs)
+    return created
+  }, [])
+
+  const updateBudget = useCallback(
+    async (id: number, data: Partial<Omit<Budget, "id">>) => {
+      const updated = await updateBudgetAction(id, data)
+      const bdgs = await getBudgetsAction()
+      setBudgets(bdgs)
+      return updated
+    },
+    [],
+  )
+
+  const deleteBudget = useCallback(async (id: number) => {
+    await deleteBudgetAction(id)
+    const bdgs = await getBudgetsAction()
+    setBudgets(bdgs)
+  }, [])
+
   const value = useMemo<DataContextValue>(
     () => ({
       loading,
@@ -531,6 +570,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       selectedAccountId,
       setSelectedAccountId,
       activeAccount,
+      budgets,
+      addBudget,
+      updateBudget,
+      deleteBudget,
       addTransaction,
       importTransactions,
       updateTransaction,
@@ -566,6 +609,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       checkingAccounts,
       selectedAccountId,
       activeAccount,
+      budgets,
+      addBudget,
+      updateBudget,
+      deleteBudget,
       addTransaction,
       importTransactions,
       updateTransaction,

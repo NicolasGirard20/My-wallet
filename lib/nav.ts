@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Home, PiggyBank, TrendingUp, type LucideIcon } from "lucide-react"
+import { ArrowLeftRight, Home, PiggyBank, Target, TrendingUp, type LucideIcon } from "lucide-react"
 
 export interface NavItem {
   label: string
@@ -19,6 +19,12 @@ export const navItems: NavItem[] = [
     href: "/transferencias/ingresos",
     icon: ArrowLeftRight,
     match: (p) => p.startsWith("/transferencias"),
+  },
+  {
+    label: "Presupuestos",
+    href: "/presupuestos",
+    icon: Target,
+    match: (p) => p.startsWith("/presupuestos"),
   },
   {
     label: "Ahorros",

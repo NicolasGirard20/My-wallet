@@ -91,3 +91,22 @@ export interface Investment {
   checkingAccountId?: number | null
   createdAt: string
 }
+
+export interface Budget {
+  id: number
+  name: string
+  startDate: string // ISO string date
+  endDate: string // ISO string date
+  amountLimit: number
+  categoryId: number | null
+}
+
+export type BudgetStatus = "normal" | "warning" | "danger"
+
+export interface BudgetConsumption {
+  budgetId: number
+  amountLimit: number
+  spent: number
+  percentage: number
+  status: BudgetStatus
+}
