@@ -180,6 +180,14 @@ export function calculateBudgetConsumption(
       continue
     }
 
+    if (
+      budget.checkingAccountId !== null &&
+      budget.checkingAccountId !== undefined &&
+      t.checkingAccountId !== budget.checkingAccountId
+    ) {
+      continue
+    }
+
     const tDate = new Date(t.date)
     if (tDate < start || tDate > end) {
       continue
@@ -189,7 +197,9 @@ export function calculateBudgetConsumption(
     spent += amount
   }
 
-  const percentage = budget.amountLimit > 0 ? (spent / budget.amountLimit) * 100 : 0
+  const budgetCurrency = budget.currency || "ARS"
+  const limit = convert ? convert(budget.amountLimit, budgetCurrency) : budget.amountLimit
+  const percentage = limit > 0 ? (spent / limit) * 100 : 0
 
   let status: BudgetStatus = "normal"
   if (percentage >= 100) {
@@ -200,7 +210,7 @@ export function calculateBudgetConsumption(
 
   return {
     budgetId: budget.id,
-    amountLimit: budget.amountLimit,
+    amountLimit: limit,
     spent,
     percentage,
     status,

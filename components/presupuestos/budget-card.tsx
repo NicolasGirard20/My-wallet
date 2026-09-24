@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertTriangle, Pencil, Trash2 } from "lucide-react"
+import { AlertTriangle, CreditCard, Pencil, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,12 +20,15 @@ interface BudgetCardProps {
 }
 
 export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
-  const { allTransactions, categories } = useData()
+  const { allTransactions, categories, checkingAccounts } = useData()
   const { convert } = useCurrency()
 
   const consumption = calculateBudgetConsumption(budget, allTransactions, convert)
   const category = budget.categoryId
     ? categories.find((c) => c.id === budget.categoryId)
+    : null
+  const linkedAccount = budget.checkingAccountId
+    ? checkingAccounts.find((a) => a.id === budget.checkingAccountId)
     : null
 
   const formattedStart = formatDate(budget.startDate, "short")
@@ -36,7 +39,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
     <Card className="flex flex-col justify-between overflow-hidden shadow-xs">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <CardTitle className="text-base font-semibold">{budget.name}</CardTitle>
             {category ? (
               <Badge variant="outline" className="text-xs">
@@ -44,7 +47,17 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
               </Badge>
             ) : (
               <Badge variant="secondary" className="text-xs">
-                Global
+                Todas las categorías
+              </Badge>
+            )}
+            {linkedAccount ? (
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <CreditCard className="size-3" />
+                {linkedAccount.name} ({linkedAccount.currency})
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="text-xs">
+                Todas las cuentas
               </Badge>
             )}
           </div>
@@ -126,7 +139,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
           </div>
           <div className="text-right">
             <span className="text-xs text-muted-foreground block">Límite</span>
-            <AmountDisplay value={budget.amountLimit} className="font-semibold" />
+            <AmountDisplay value={budget.amountLimit} from={budget.currency} className="font-semibold" />
           </div>
         </div>
 

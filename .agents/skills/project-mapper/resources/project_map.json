@@ -1,8 +1,8 @@
 {
   "project_name": "my-wallet",
-  "generated_at": "2026-09-15T22:03:35.570163Z",
-  "total_files": 109,
-  "total_symbols": 458,
+  "generated_at": "2026-09-24T14:12:39.956226+00:00",
+  "total_files": 116,
+  "total_symbols": 487,
   "architecture": {
     "entry_points": [
       "(detectar manualmente)"
@@ -28,7 +28,7 @@
     {
       "path": "AGENTS.md",
       "language": "unknown",
-      "size_lines": 386,
+      "size_lines": 396,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
@@ -382,6 +382,41 @@
       "complexity": "medium"
     },
     {
+      "path": "app/(dashboard)/presupuestos/page.tsx",
+      "language": "tsx",
+      "size_lines": 55,
+      "summary": "Funciones: PresupuestosPage, handleCreate",
+      "imports": [
+        "react",
+        "lucide-react",
+        "sonner",
+        "@/components/layout/page-header",
+        "@/components/ui/button",
+        "@/components/presupuestos/budget-list",
+        "@/components/presupuestos/budget-form-dialog",
+        "@/context/data-context"
+      ],
+      "exports": [
+        "PresupuestosPage"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "PresupuestosPage",
+          "line": 14,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleCreate",
+          "line": 18,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
       "path": "app/(dashboard)/transferencias/gastos/page.tsx",
       "language": "tsx",
       "size_lines": 61,
@@ -572,6 +607,63 @@
         }
       ],
       "complexity": "medium"
+    },
+    {
+      "path": "app/actions/budgets.ts",
+      "language": "typescript",
+      "size_lines": 184,
+      "summary": "Funciones: isCurrency, mapBudget, getBudgetsAction, createBudgetAction, updateBudgetAction",
+      "imports": [
+        "@/app/lib/session",
+        "@/app/service/budget.service",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "getBudgetsAction",
+        "createBudgetAction",
+        "updateBudgetAction",
+        "deleteBudgetAction"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "isCurrency",
+          "line": 8,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "mapBudget",
+          "line": 12,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "getBudgetsAction",
+          "line": 34,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createBudgetAction",
+          "line": 45,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateBudgetAction",
+          "line": 99,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteBudgetAction",
+          "line": 169,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
     },
     {
       "path": "app/actions/categories.ts",
@@ -1197,6 +1289,50 @@
         {
           "name": "changeUserPassword",
           "line": 31,
+          "is_async": true,
+          "docstring": null
+        }
+      ],
+      "complexity": "medium"
+    },
+    {
+      "path": "app/service/budget.service.ts",
+      "language": "typescript",
+      "size_lines": 87,
+      "summary": "Lógica de negocio | Funciones: getBudgets, createBudget, updateBudget, deleteBudget",
+      "imports": [
+        "@/app/service/db",
+        "@/app/imports/dev"
+      ],
+      "exports": [
+        "getBudgets",
+        "createBudget",
+        "updateBudget",
+        "deleteBudget"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "getBudgets",
+          "line": 4,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "createBudget",
+          "line": 16,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateBudget",
+          "line": 45,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteBudget",
+          "line": 74,
           "is_async": true,
           "docstring": null
         }
@@ -2320,6 +2456,160 @@
       "complexity": "medium"
     },
     {
+      "path": "components/presupuestos/budget-card.tsx",
+      "language": "tsx",
+      "size_lines": 160,
+      "summary": "Funciones: BudgetCard, category, linkedAccount",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/badge",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/progress",
+        "@/components/shared/amount-display",
+        "@/context/currency-context",
+        "@/context/data-context",
+        "@/lib/selectors",
+        "@/lib/format",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "BudgetCard"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "BudgetCard",
+          "line": 22,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "category",
+          "line": 27,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "linkedAccount",
+          "line": 30,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
+      "path": "components/presupuestos/budget-form-dialog.tsx",
+      "language": "tsx",
+      "size_lines": 273,
+      "summary": "Funciones: getDefaultDates, BudgetFormDialog, handleSubmit, acc",
+      "imports": [
+        "react",
+        "sonner",
+        "@/components/ui/dialog",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/field",
+        "@/context/data-context"
+      ],
+      "exports": [
+        "BudgetFormDialog"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "getDefaultDates",
+          "line": 27,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "BudgetFormDialog",
+          "line": 41,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSubmit",
+          "line": 87,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "acc",
+          "line": 169,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
+      "path": "components/presupuestos/budget-list.tsx",
+      "language": "tsx",
+      "size_lines": 254,
+      "summary": "Funciones: BudgetList, handleSaveEdit, handleConfirmDelete, relevantBudgets, summary",
+      "imports": [
+        "react",
+        "lucide-react",
+        "sonner",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/empty",
+        "@/components/shared/confirm-dialog",
+        "@/components/shared/amount-display",
+        "@/context/data-context",
+        "@/context/currency-context",
+        "@/lib/selectors",
+        "./budget-card",
+        "./budget-form-dialog"
+      ],
+      "exports": [
+        "BudgetList"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "BudgetList",
+          "line": 30,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "handleSaveEdit",
+          "line": 81,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "handleConfirmDelete",
+          "line": 92,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "relevantBudgets",
+          "line": 39,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "summary",
+          "line": 47,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "filteredBudgets",
+          "line": 69,
+          "is_async": false,
+          "docstring": null
+        }
+      ],
+      "complexity": "high"
+    },
+    {
       "path": "components/providers.tsx",
       "language": "tsx",
       "size_lines": 33,
@@ -3433,7 +3723,7 @@
     {
       "path": "components/ui/progress.tsx",
       "language": "tsx",
-      "size_lines": 84,
+      "size_lines": 85,
       "summary": "Funciones: Progress, ProgressTrack, ProgressIndicator, ProgressLabel, ProgressValue",
       "imports": [
         "@base-ui/react/progress",
@@ -3450,25 +3740,25 @@
         },
         {
           "name": "ProgressTrack",
-          "line": 28,
+          "line": 29,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "ProgressIndicator",
-          "line": 41,
+          "line": 42,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "ProgressLabel",
-          "line": 54,
+          "line": 55,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "ProgressValue",
-          "line": 64,
+          "line": 65,
           "is_async": false,
           "docstring": null
         }
@@ -4057,7 +4347,7 @@
     {
       "path": "context/data-context.tsx",
       "language": "tsx",
-      "size_lines": 603,
+      "size_lines": 650,
       "summary": "Funciones: DataProvider, useData, visibleTransactions, activeAccount, loadAllData",
       "imports": [
         "react",
@@ -4068,6 +4358,7 @@
         "@/app/actions/savings",
         "@/app/actions/investments",
         "@/app/actions/checking-accounts",
+        "@/app/actions/budgets",
         "@/app/imports/dev"
       ],
       "exports": [
@@ -4078,187 +4369,205 @@
       "functions": [
         {
           "name": "DataProvider",
-          "line": 131,
+          "line": 143,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "useData",
-          "line": 599,
+          "line": 646,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "visibleTransactions",
-          "line": 146,
+          "line": 159,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "activeAccount",
-          "line": 151,
+          "line": 164,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "loadAllData",
-          "line": 156,
+          "line": 169,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "refreshCheckingAccounts",
-          "line": 201,
+          "line": 217,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addTransaction",
-          "line": 206,
+          "line": 222,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "acc",
-          "line": 215,
+          "line": 231,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "importTransactions",
-          "line": 234,
+          "line": 250,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateTransaction",
-          "line": 258,
+          "line": 274,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteTransaction",
-          "line": 287,
+          "line": 303,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addCheckingAccount",
-          "line": 301,
+          "line": 317,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateCheckingAccount",
-          "line": 310,
+          "line": 326,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteCheckingAccount",
-          "line": 319,
+          "line": 335,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "createTransfer",
-          "line": 330,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "addCategory",
-          "line": 339,
-          "is_async": true,
-          "docstring": null
-        },
-        {
-          "name": "updateCategory",
           "line": 346,
           "is_async": true,
           "docstring": null
         },
         {
+          "name": "addCategory",
+          "line": 355,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateCategory",
+          "line": 362,
+          "is_async": true,
+          "docstring": null
+        },
+        {
           "name": "deleteCategory",
-          "line": 352,
+          "line": 368,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "categoriesByKind",
-          "line": 360,
+          "line": 376,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "getCategory",
-          "line": 365,
+          "line": 381,
           "is_async": false,
           "docstring": null
         },
         {
           "name": "addSaving",
-          "line": 367,
+          "line": 383,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateSaving",
-          "line": 390,
+          "line": 406,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteSaving",
-          "line": 417,
+          "line": 433,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addInvestment",
-          "line": 429,
+          "line": 445,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateInvestment",
-          "line": 450,
+          "line": 466,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteInvestment",
-          "line": 465,
+          "line": 481,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "addContribution",
-          "line": 477,
+          "line": 493,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "deleteContribution",
-          "line": 498,
+          "line": 514,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "updateContribution",
-          "line": 505,
+          "line": 521,
           "is_async": true,
           "docstring": null
         },
         {
           "name": "getInvestment",
-          "line": 515,
+          "line": 531,
           "is_async": false,
           "docstring": null
         },
         {
+          "name": "addBudget",
+          "line": 536,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "updateBudget",
+          "line": 543,
+          "is_async": true,
+          "docstring": null
+        },
+        {
+          "name": "deleteBudget",
+          "line": 553,
+          "is_async": true,
+          "docstring": null
+        },
+        {
           "name": "value",
-          "line": 520,
+          "line": 559,
           "is_async": false,
           "docstring": null
         }
@@ -4418,7 +4727,7 @@
     {
       "path": "lib/nav.ts",
       "language": "typescript",
-      "size_lines": 36,
+      "size_lines": 42,
       "summary": "Archivo .ts",
       "imports": [
         "lucide-react"
@@ -4434,7 +4743,7 @@
     {
       "path": "lib/selectors.ts",
       "language": "typescript",
-      "size_lines": 162,
+      "size_lines": 218,
       "summary": "Funciones: totals, monthlySeries, categoryBreakdown, totalsCrossCurrency, monthlySeriesCrossCurrency",
       "imports": [],
       "exports": [
@@ -4446,7 +4755,8 @@
         "categoryBreakdown",
         "totalsCrossCurrency",
         "monthlySeriesCrossCurrency",
-        "categoryBreakdownCrossCurrency"
+        "categoryBreakdownCrossCurrency",
+        "calculateBudgetConsumption"
       ],
       "classes": [],
       "functions": [
@@ -4483,6 +4793,12 @@
         {
           "name": "categoryBreakdownCrossCurrency",
           "line": 140,
+          "is_async": false,
+          "docstring": null
+        },
+        {
+          "name": "calculateBudgetConsumption",
+          "line": 164,
           "is_async": false,
           "docstring": null
         },
@@ -4530,7 +4846,7 @@
     {
       "path": "lib/types.ts",
       "language": "typescript",
-      "size_lines": 94,
+      "size_lines": 115,
       "summary": "Archivo .ts",
       "imports": [],
       "exports": [
@@ -4544,11 +4860,14 @@
         "interface",
         "interface",
         "interface",
+        "interface",
+        "interface",
+        "type",
         "interface"
       ],
       "classes": [],
       "functions": [],
-      "complexity": "medium"
+      "complexity": "high"
     },
     {
       "path": "lib/utils.ts",
@@ -4579,10 +4898,10 @@
       "size_lines": 8,
       "summary": "Archivo .ts",
       "imports": [
-        "./.next/types/routes.d.ts",
-        "./.next/types/root-params.d.ts",
-        "./.next/types/routes.d.ts",
-        "./.next/types/root-params.d.ts"
+        "./.next/dev/types/routes.d.ts",
+        "./.next/dev/types/root-params.d.ts",
+        "./.next/dev/types/routes.d.ts",
+        "./.next/dev/types/root-params.d.ts"
       ],
       "exports": [],
       "classes": [],
@@ -4621,6 +4940,17 @@
       "classes": [],
       "functions": [],
       "complexity": "medium"
+    },
+    {
+      "path": "plan-migracion-react-native-sqlite.md",
+      "language": "unknown",
+      "size_lines": 389,
+      "summary": "Archivo unknown",
+      "imports": [],
+      "exports": [],
+      "classes": [],
+      "functions": [],
+      "complexity": "high"
     },
     {
       "path": "pnpm-lock.yaml",
@@ -4730,7 +5060,7 @@
     {
       "path": "prisma/schema.prisma",
       "language": "unknown",
-      "size_lines": 153,
+      "size_lines": 176,
       "summary": "Archivo unknown",
       "imports": [],
       "exports": [],
@@ -4842,6 +5172,7 @@
     "pnpm-lock.yaml": [],
     "next.config.mjs": [],
     "package-lock.json": [],
+    "plan-migracion-react-native-sqlite.md": [],
     "components.json": [],
     "app/globals.css": [],
     "app/page.tsx": [],
@@ -4856,15 +5187,18 @@
     "app/(dashboard)/transferencias/layout.tsx": [],
     "app/(dashboard)/transferencias/gastos/page.tsx": [],
     "app/(dashboard)/transferencias/ingresos/page.tsx": [],
+    "app/(dashboard)/presupuestos/page.tsx": [],
     "app/login/page.tsx": [],
     "app/actions/categories.ts": [],
     "app/actions/checking-accounts.ts": [],
     "app/actions/auth.ts": [],
     "app/actions/investments.ts": [],
+    "app/actions/budgets.ts": [],
     "app/actions/savings.ts": [],
     "app/actions/exchange.ts": [],
     "app/actions/users.ts": [],
     "app/actions/transactions.ts": [],
+    "app/service/budget.service.ts": [],
     "app/service/investment.service.ts": [],
     "app/service/user.service.ts": [],
     "app/service/db.ts": [],
@@ -4937,7 +5271,10 @@
     "components/transferencias/import-dialog.tsx": [],
     "components/transferencias/category-manager.tsx": [],
     "components/transferencias/transaction-table.tsx": [],
-    "components/transferencias/transaction-form.tsx": []
+    "components/transferencias/transaction-form.tsx": [],
+    "components/presupuestos/budget-card.tsx": [],
+    "components/presupuestos/budget-form-dialog.tsx": [],
+    "components/presupuestos/budget-list.tsx": []
   },
   "metadata": {
     "mapper_version": "2.0.0",

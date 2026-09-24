@@ -131,6 +131,7 @@ model CheckingAccount {
   savingGoals             SavingGoal[]
   investments             Investment[]
   investmentContributions InvestmentContribution[]
+  budgets                 Budget[]
 
   @@index([userId])
 }
@@ -155,18 +156,21 @@ model AccountTransfer {
 }
 
 model Budget {
-  id          Int       @id @default(autoincrement())
-  name        String
-  startDate   DateTime
-  endDate     DateTime
-  amountLimit Float
-  categoryId  Int?
-  userId      Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                Int              @id @default(autoincrement())
+  name              String
+  startDate         DateTime
+  endDate           DateTime
+  amountLimit       Float
+  categoryId        Int?
+  currency          String           @default("ARS")
+  checkingAccountId Int?
+  userId            Int
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkingAccount   CheckingAccount? @relation(fields: [checkingAccountId], references: [id], onDelete: SetNull)
 
   @@index([userId])
 }

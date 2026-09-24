@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx"
 import { CHART_COLORS } from "@/components/shared/color-picker"
-import type { Category, Currency, Transaction, TransactionKind } from "./types"
+import type { Category, CheckingAccount, Currency, Transaction, TransactionKind } from "./types"
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ interface ExportRow {
   Fecha: string
   Descripción: string
   Categoría: string
+  Cuenta: string
   [monto: string]: string | number
 }
 
@@ -25,11 +26,13 @@ export function exportTransactionsToExcel(
   transactions: Transaction[],
   categories: Category[],
   currency: Currency,
+  checkingAccounts?: CheckingAccount[],
   filename?: string,
 ) {
   const catMap = new Map(categories.map((c) => [c.id, c]))
+  const accountMap = new Map(checkingAccounts?.map((a) => [a.id, a.name]))
   const montoKey = montoHeader(currency)
-  const headers = ["Tipo", "Fecha", "Descripción", "Categoría", montoKey]
+  const headers = ["Tipo", "Fecha", "Descripción", "Categoría", "Cuenta", montoKey]
 
   const rows: ExportRow[] = [...transactions]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -38,13 +41,14 @@ export function exportTransactionsToExcel(
       Fecha: tx.date.slice(0, 10),
       Descripción: tx.description,
       Categoría: catMap.get(tx.categoryId)?.name ?? "—",
+      Cuenta: tx.checkingAccountId ? accountMap.get(tx.checkingAccountId) ?? "—" : "—",
       [montoKey]: Number(tx.amount.toFixed(2)),
     }))
 
   const ws = XLSX.utils.json_to_sheet(rows, { header: headers })
 
   // Column widths
-  ws["!cols"] = [{ wch: 10 }, { wch: 12 }, { wch: 40 }, { wch: 20 }, { wch: 14 }]
+  ws["!cols"] = [{ wch: 10 }, { wch: 12 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 14 }]
 
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, "Movimientos")

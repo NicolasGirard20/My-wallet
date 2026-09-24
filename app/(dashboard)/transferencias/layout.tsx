@@ -3,11 +3,8 @@
 import Link from "next/link"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Download, Upload } from "lucide-react"
+import { Upload } from "lucide-react"
 
-import { useData } from "@/context/data-context"
-import { useCurrency } from "@/context/currency-context"
-import { exportTransactionsToExcel } from "@/lib/excel"
 import { PageHeader } from "@/components/layout/page-header"
 import { ImportDialog } from "@/components/transferencias/import-dialog"
 import { Button } from "@/components/ui/button"
@@ -15,8 +12,6 @@ import { cn } from "@/lib/utils"
 
 export default function TransferenciasLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { transactions, categories } = useData()
-  const { currency } = useCurrency()
   const [importOpen, setImportOpen] = useState(false)
 
   const tabs = [
@@ -24,26 +19,16 @@ export default function TransferenciasLayout({ children }: { children: React.Rea
     { href: "/transferencias/gastos", label: "Gastos" },
   ]
 
-  function handleExport() {
-    exportTransactionsToExcel(transactions, categories, currency)
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
         title="Transferencias"
         description="Registrá y filtrá tus ingresos y gastos de forma rápida."
         actions={
-          <>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="size-4" data-icon="inline-start" />
-              Exportar
-            </Button>
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <Upload className="size-4" data-icon="inline-start" />
-              Importar
-            </Button>
-          </>
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="size-4" data-icon="inline-start" />
+            Importar
+          </Button>
         }
       />
 

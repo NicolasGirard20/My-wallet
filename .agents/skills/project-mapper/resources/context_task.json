@@ -1,47 +1,225 @@
 {
-  "query": "ahorros inversiones cuenta corriente aporte extraccion editar tarjeta",
-  "generated_at": "2026-09-15T21:54:17.009886Z",
+  "query": "unifiques los dos filtros de fecha en un solo botón para cuando se apriete se desplegue la opción de elegir desde hasta, simplemente es una mejora de front. aplicar esto en inicio y transacciones",
+  "generated_at": "2026-09-24T14:12:39.956226+00:00",
   "project_name": "my-wallet",
   "relevant_architecture": {
     "entry_points": [],
     "core_modules": [
-      "app"
+      "app",
+      "components",
+      "lib"
     ]
   },
   "files": [
     {
-      "path": "app/(dashboard)/ahorros/page.tsx",
-      "summary": "Funciones: AhorrosPage, handleSubmit, handleEdit, handleSaveEdit, handleAdjustSave",
-      "exports": [
-        "AhorrosPage"
-      ],
-      "dependencies": [],
-      "complexity": "high",
-      "language": "tsx"
-    },
-    {
-      "path": "app/(dashboard)/inversiones/[id]/page.tsx",
-      "summary": "Funciones: InversionDetallePage, handleAddContribution, handleUpdateValue, handleEditContribution, handleSaveEditContribution",
-      "exports": [
-        "InversionDetallePage"
-      ],
-      "dependencies": [],
-      "complexity": "high",
-      "language": "tsx"
-    },
-    {
       "path": "app/(dashboard)/inversiones/page.tsx",
-      "summary": "Funciones: InversionesPage, handleSubmit, handleEdit, handleSaveEdit",
+      "summary": "Funciones: InversionesPage, handleOpenCreate, handleSubmit, handleEdit, handleSaveEdit",
       "exports": [
         "InversionesPage"
       ],
       "dependencies": [],
       "complexity": "high",
       "language": "tsx"
+    },
+    {
+      "path": "app/actions/categories.ts",
+      "summary": "Funciones: getCategoriesAction, createCategoryAction, updateCategoryAction, deleteCategoryAction, categories",
+      "exports": [
+        "getCategoriesAction",
+        "createCategoryAction",
+        "updateCategoryAction",
+        "deleteCategoryAction"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "typescript"
+    },
+    {
+      "path": "app/actions/checking-accounts.ts",
+      "summary": "Funciones: isCurrency, mapAccount, mapTransfer, getCheckingAccountsAction, createCheckingAccountAction",
+      "exports": [
+        "getCheckingAccountsAction",
+        "createCheckingAccountAction",
+        "updateCheckingAccountAction",
+        "deleteCheckingAccountAction",
+        "createAccountTransferAction",
+        "getAccountTransfersAction"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "app/actions/investments.ts",
+      "summary": "Funciones: isCurrency, mapInv, getInvestmentsAction, getInvestmentByIdAction, createInvestmentAction",
+      "exports": [
+        "getInvestmentsAction",
+        "getInvestmentByIdAction",
+        "createInvestmentAction",
+        "updateInvestmentAction",
+        "deleteInvestmentAction",
+        "addContributionAction",
+        "deleteContributionAction",
+        "updateContributionAction"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "app/actions/users.ts",
+      "summary": "Funciones: requireAdmin, getUsersAction, getUserByIdAction, createUserAction, updateUserAction",
+      "exports": [
+        "getUsersAction",
+        "getUserByIdAction",
+        "createUserAction",
+        "updateUserAction",
+        "deleteUserAction",
+        "getUserDataSizeAction"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/category.service.ts",
+      "summary": "Lógica de negocio | Funciones: getCategories, getCategoryById, createCategory, updateCategory, deleteCategory",
+      "exports": [
+        "getCategories",
+        "getCategoryById",
+        "createCategory",
+        "updateCategory",
+        "deleteCategory",
+        "getOrCreateSavingsCategory",
+        "getOrCreateInvestmentCategory"
+      ],
+      "dependencies": [],
+      "complexity": "medium",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/checking-account.service.ts",
+      "summary": "Lógica de negocio | Funciones: getCheckingAccounts, getCheckingAccountById, createCheckingAccount, updateCheckingAccount, deleteCheckingAccount",
+      "exports": [
+        "getCheckingAccounts",
+        "getCheckingAccountById",
+        "createCheckingAccount",
+        "updateCheckingAccount",
+        "deleteCheckingAccount",
+        "createAccountTransfer",
+        "getAccountTransfers"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/investment.service.ts",
+      "summary": "Lógica de negocio | Funciones: getInvestments, getInvestmentById, createInvestment, updateInvestment, deleteInvestment",
+      "exports": [
+        "getInvestments",
+        "getInvestmentById",
+        "createInvestment",
+        "updateInvestment",
+        "deleteInvestment",
+        "addContribution",
+        "deleteContribution",
+        "updateContribution"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "app/service/user.service.ts",
+      "summary": "Lógica de negocio | Funciones: formatBytes, hashPassword, getUsers, getUserById, createUser",
+      "exports": [
+        "hashPassword",
+        "getUsers",
+        "getUserById",
+        "createUser",
+        "updateUser",
+        "deleteUser",
+        "getUserDataSize"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "components/calculator/use-calculator.ts",
+      "summary": "Funciones: round, operate, buildExpression, formatCalcValue, loadHistory",
+      "exports": [
+        "interface",
+        "formatCalcValue",
+        "interface",
+        "useCalculator"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
+    },
+    {
+      "path": "components/layout/checking-account-manager.tsx",
+      "summary": "Funciones: CheckingAccountManager, resetForm, startCreate, startEdit, handleSaveAccount",
+      "exports": [
+        "CheckingAccountManager"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "components/transferencias/transaction-table.tsx",
+      "summary": "Funciones: TransactionTable, toggleCategory, clearCategories, toggleSort, catMap",
+      "exports": [
+        "TransactionTable"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "components/ui/dropdown-menu.tsx",
+      "summary": "Funciones: DropdownMenu, DropdownMenuPortal, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuGroup",
+      "exports": [],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "context/data-context.tsx",
+      "summary": "Funciones: DataProvider, useData, visibleTransactions, activeAccount, loadAllData",
+      "exports": [
+        "DataProvider",
+        "useData"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "tsx"
+    },
+    {
+      "path": "lib/selectors.ts",
+      "summary": "Funciones: totals, monthlySeries, categoryBreakdown, totalsCrossCurrency, monthlySeriesCrossCurrency",
+      "exports": [
+        "type",
+        "totals",
+        "interface",
+        "monthlySeries",
+        "interface",
+        "categoryBreakdown",
+        "totalsCrossCurrency",
+        "monthlySeriesCrossCurrency",
+        "categoryBreakdownCrossCurrency",
+        "calculateBudgetConsumption"
+      ],
+      "dependencies": [],
+      "complexity": "high",
+      "language": "typescript"
     }
   ],
-  "total_relevant_files": 3,
-  "direct_matches": 3,
+  "total_relevant_files": 15,
+  "direct_matches": 15,
   "dependency_includes": 0,
   "injection_strategy": "selective"
 }

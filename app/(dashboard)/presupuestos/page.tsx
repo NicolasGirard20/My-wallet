@@ -12,7 +12,7 @@ import { useData } from "@/context/data-context"
 import type { Budget } from "@/lib/types"
 
 export default function PresupuestosPage() {
-  const { addBudget } = useData()
+  const { addBudget, activeAccount } = useData()
   const [createOpen, setCreateOpen] = useState(false)
 
   async function handleCreate(data: Omit<Budget, "id">) {
@@ -28,8 +28,12 @@ export default function PresupuestosPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Presupuestos"
-        description="Establecé metas de gasto y monitoreá el consumo de tus finanzas en tiempo real."
+        title={activeAccount ? `Presupuestos — ${activeAccount.name}` : "Presupuestos"}
+        description={
+          activeAccount
+            ? `Metas de gasto para ${activeAccount.name} (${activeAccount.currency}) y presupuestos globales.`
+            : "Establecé metas de gasto y monitoreá el consumo de tus finanzas en tiempo real."
+        }
         actions={
           <Button onClick={() => setCreateOpen(true)} className="gap-2">
             <Plus className="size-4" />

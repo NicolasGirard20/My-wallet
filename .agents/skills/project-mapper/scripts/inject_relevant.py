@@ -11,6 +11,13 @@ import argparse
 from pathlib import Path
 from typing import List, Dict, Any, Set
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 
 class RelevantContextInjector:
     """Inyecta solo el contexto relevante para una tarea dada."""

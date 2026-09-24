@@ -99,6 +99,8 @@ export interface Budget {
   endDate: string // ISO string date
   amountLimit: number
   categoryId: number | null
+  currency: Currency
+  checkingAccountId?: number | null
 }
 
 export type BudgetStatus = "normal" | "warning" | "danger"

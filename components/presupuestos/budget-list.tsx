@@ -28,22 +28,30 @@ interface BudgetListProps {
 }
 
 export function BudgetList({ onCreateNew }: BudgetListProps) {
-  const { budgets, allTransactions, updateBudget, deleteBudget } = useData()
+  const { budgets, allTransactions, updateBudget, deleteBudget, selectedAccountId } = useData()
   const { convert } = useCurrency()
 
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [filter, setFilter] = useState<"all" | "alert" | "ok">("all")
 
-  // Resumen global de presupuestos
+  // Presupuestos relevantes según la cuenta seleccionada en el sidebar
+  const relevantBudgets = useMemo(() => {
+    if (selectedAccountId === "all") return budgets
+    return budgets.filter(
+      (b) => b.checkingAccountId === selectedAccountId || b.checkingAccountId === null
+    )
+  }, [budgets, selectedAccountId])
+
+  // Resumen de presupuestos con conversión adecuada de monedas
   const summary = useMemo(() => {
     let totalLimit = 0
     let totalSpent = 0
     let alertCount = 0
 
-    for (const b of budgets) {
+    for (const b of relevantBudgets) {
       const consumption = calculateBudgetConsumption(b, allTransactions, convert)
-      totalLimit += b.amountLimit
+      totalLimit += convert ? convert(b.amountLimit, b.currency || "ARS") : b.amountLimit
       totalSpent += consumption.spent
       if (consumption.status === "warning" || consumption.status === "danger") {
         alertCount++
@@ -54,21 +62,21 @@ export function BudgetList({ onCreateNew }: BudgetListProps) {
       totalLimit,
       totalSpent,
       alertCount,
-      count: budgets.length,
+      count: relevantBudgets.length,
     }
-  }, [budgets, allTransactions, convert])
+  }, [relevantBudgets, allTransactions, convert])
 
   const filteredBudgets = useMemo(() => {
-    if (filter === "all") return budgets
+    if (filter === "all") return relevantBudgets
 
-    return budgets.filter((b) => {
+    return relevantBudgets.filter((b) => {
       const consumption = calculateBudgetConsumption(b, allTransactions, convert)
       if (filter === "alert") {
         return consumption.status === "warning" || consumption.status === "danger"
       }
       return consumption.status === "normal"
     })
-  }, [budgets, filter, allTransactions, convert])
+  }, [relevantBudgets, filter, allTransactions, convert])
 
   async function handleSaveEdit(data: Omit<Budget, "id">) {
     if (!editingBudget) return
@@ -179,7 +187,7 @@ export function BudgetList({ onCreateNew }: BudgetListProps) {
             onClick={() => setFilter("all")}
             className="text-xs h-8"
           >
-            Todos ({budgets.length})
+            Todos ({relevantBudgets.length})
           </Button>
           <Button
             size="sm"
@@ -195,7 +203,7 @@ export function BudgetList({ onCreateNew }: BudgetListProps) {
             onClick={() => setFilter("ok")}
             className="text-xs h-8"
           >
-            Normales ({budgets.length - summary.alertCount})
+            Normales ({relevantBudgets.length - summary.alertCount})
           </Button>
         </div>
       </div>

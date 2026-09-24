@@ -5,16 +5,79 @@ import json
 import os
 import sys
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 
 def read_json(path):
-    with open(path) as f:
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
         return json.load(f)
 
 
+def detect_dotnet(project_root):
+    try:
+        files = os.listdir(project_root)
+    except Exception:
+        files = []
+        
+    has_csproj = any(f.endswith(".csproj") for f in files)
+    has_sln = any(f.endswith(".sln") for f in files)
+    has_web_config = "Web.config" in files
+    has_packages_config = "packages.config" in files
+    
+    if not (has_csproj or has_sln or has_web_config or has_packages_config):
+        return None
+        
+    project_name = os.path.basename(os.path.abspath(project_root))
+    for f in files:
+        if f.endswith(".csproj"):
+            project_name = os.path.splitext(f)[0]
+            break
+            
+    stack = {
+        "project_name": project_name,
+        "language": "csharp",
+        "framework": "dotnet-mvc",
+        "runtime": ".NET Framework 4.8",
+        "orm": "entity-framework",
+        "styling": "bootstrap",
+        "ui_library": "bootstrap",
+        "icon_library": "bootstrap-icons",
+        "view_engine": "razor",
+        "auth": "aspnet-identity",
+        "testing": None,
+    }
+    
+    if has_packages_config:
+        try:
+            with open(os.path.join(project_root, "packages.config"), "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+                if "Microsoft.AspNet.Mvc" in content:
+                    stack["framework"] = "dotnet-mvc"
+                if "EntityFramework" in content:
+                    stack["orm"] = "entity-framework"
+                if "bootstrap" in content:
+                    stack["styling"] = "bootstrap"
+                if "Microsoft.AspNet.Identity" in content:
+                    stack["auth"] = "aspnet-identity"
+        except Exception:
+            pass
+            
+    return stack
+
+
 def detect_stack(project_root):
+    dotnet_stack = detect_dotnet(project_root)
+    if dotnet_stack:
+        return dotnet_stack
+
     pkg_path = os.path.join(project_root, "package.json")
     if not os.path.exists(pkg_path):
-        return {"error": "package.json no encontrado", "framework": "unknown"}
+        return {"error": "package.json o archivo de proyecto no encontrado", "framework": "unknown"}
 
     pkg = read_json(pkg_path)
     deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
@@ -41,7 +104,7 @@ def detect_stack(project_root):
                 pass
         except Exception:
             pass
-        if os.path.exists(os.path.join(project_root, "src", "app")):
+        if os.path.exists(os.path.join(project_root, "src", "app")) or os.path.exists(os.path.join(project_root, "app")):
             stack["has_app_router"] = True
         if os.path.exists(os.path.join(project_root, "src", "pages")) or os.path.exists(os.path.join(project_root, "pages")):
             stack["has_pages_router"] = True

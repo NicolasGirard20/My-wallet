@@ -97,12 +97,16 @@ app/                          # Next.js App Router (páginas y layouts)
     inversiones/
       page.tsx                # Listado de inversiones
       [id]/page.tsx           # Detalle de inversión + contribuciones
+    presupuestos/
+      page.tsx                # Gestión y monitoreo de presupuestos y topes de gasto
   actions/                    # Server Actions — validación + auth guard + mapping
     auth.ts                   # loginAction, logoutAction, getSessionAction, changePasswordAction
     transactions.ts           # CRUD + import transacciones
     categories.ts             # CRUD categorías
     savings.ts                # CRUD metas de ahorro
     investments.ts            # CRUD inversiones + contribuciones
+    checking-accounts.ts      # CRUD cuentas corrientes + transferencias internas
+    budgets.ts                # CRUD presupuestos + control de consumo
   service/                    # Capa de datos — queries Prisma
     db.ts                     # Singleton PrismaClient con adapter-pg
     auth.service.ts           # validación y hashing de contraseñas (bcryptjs)
@@ -110,6 +114,8 @@ app/                          # Next.js App Router (páginas y layouts)
     category.service.ts       # CRUD categorías
     saving-goal.service.ts    # CRUD metas de ahorro
     investment.service.ts     # CRUD inversiones + transacciones atómicas
+    checking-account.service.ts # CRUD cuentas corrientes y transferencias
+    budget.service.ts         # CRUD presupuestos
   lib/
     session.ts                # Sesión cifrada con iron-session (cookie)
 
@@ -201,6 +207,7 @@ prisma/
 | `/ahorros` | Metas de ahorro |
 | `/inversiones` | Lista de inversiones |
 | `/inversiones/[id]` | Detalle de inversión |
+| `/presupuestos` | Gestión y control de presupuestos |
 
 ### Manejo de estado
 
@@ -208,7 +215,7 @@ Tres React Contexts anidados en `components/providers.tsx`:
 
 1. **AuthContext** → autenticación (login/logout) y sesión en memoria + cookie cifrada via iron-session
 2. **CurrencyContext** → moneda activa (USD/ARS) y formateo
-3. **DataContext** → datos de la app (transacciones, categorías, ahorros, inversiones) con CRUD completo
+3. **DataContext** → datos de la app (transacciones, categorías, ahorros, inversiones, cuentas corrientes, presupuestos) con CRUD completo
 
 Todos usan el patrón `createContext<T | null>(null)` + hook `useX()` que lanza error si se usa fuera del provider.
 
@@ -221,10 +228,13 @@ Definidos en `lib/types.ts` usando `interface` para objetos y `type` para unione
 - `Currency` = `"USD"` | `"ARS"`
 - `TransactionKind` = `"income"` | `"expense"`
 - `Category` — id, name, kind, color
-- `Transaction` — id, kind, amount (USD base), description, categoryId, date (ISO)
-- `SavingGoal` — id, name, target, saved, color, deadline?
-- `Investment` — id, name, description, invested, currentValue, contributions[], createdAt
-- `InvestmentContribution` — id, date, amount, note?
+- `Transaction` — id, kind, amount (USD base), description, categoryId, date (ISO), currency, checkingAccountId?
+- `SavingGoal` — id, name, target, saved, color, currency, deadline?, checkingAccountId?
+- `Investment` — id, name, description, invested, currentValue, currency, contributions[], checkingAccountId?, createdAt
+- `InvestmentContribution` — id, date, amount, currency, checkingAccountId?, note?
+- `CheckingAccount` — id, name, bankName?, accountNumber?, cbuOrAlias?, currency, initialBalance, overdraftLimit, color, isDefault, isActive
+- `AccountTransfer` — id, sourceAccountId, targetAccountId, sourceAmount, targetAmount, exchangeRate?, date, description?
+- `Budget` — id, name, startDate, endDate, amountLimit, categoryId?, currency, checkingAccountId?
 
 Los IDs son auto-incrementales manejados por Prisma/PostgreSQL.
 

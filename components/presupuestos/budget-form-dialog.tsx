@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { useData } from "@/context/data-context"
-import type { Budget } from "@/lib/types"
+import type { Budget, Currency } from "@/lib/types"
 
 interface BudgetFormDialogProps {
   open: boolean
@@ -44,7 +44,7 @@ export function BudgetFormDialog({
   budget,
   onSubmit,
 }: BudgetFormDialogProps) {
-  const { categoriesByKind } = useData()
+  const { categoriesByKind, checkingAccounts, activeAccount } = useData()
   const expenseCategories = categoriesByKind("expense")
 
   const [name, setName] = useState("")
@@ -52,6 +52,8 @@ export function BudgetFormDialog({
   const [endDate, setEndDate] = useState("")
   const [amountLimit, setAmountLimit] = useState("")
   const [categoryId, setCategoryId] = useState<number | null>(null)
+  const [checkingAccountId, setCheckingAccountId] = useState<number | null>(null)
+  const [currency, setCurrency] = useState<Currency>("ARS")
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -62,6 +64,8 @@ export function BudgetFormDialog({
         setEndDate(budget.endDate.slice(0, 10))
         setAmountLimit(String(budget.amountLimit))
         setCategoryId(budget.categoryId)
+        setCheckingAccountId(budget.checkingAccountId ?? null)
+        setCurrency(budget.currency ?? "ARS")
       } else {
         const defaults = getDefaultDates()
         setName("")
@@ -69,9 +73,16 @@ export function BudgetFormDialog({
         setEndDate(defaults.end)
         setAmountLimit("")
         setCategoryId(null)
+        if (activeAccount) {
+          setCheckingAccountId(activeAccount.id)
+          setCurrency(activeAccount.currency)
+        } else {
+          setCheckingAccountId(null)
+          setCurrency("ARS")
+        }
       }
     }
-  }, [open, budget])
+  }, [open, budget, activeAccount])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -106,6 +117,8 @@ export function BudgetFormDialog({
         endDate: new Date(endDate).toISOString(),
         amountLimit: parsedLimit,
         categoryId,
+        currency,
+        checkingAccountId,
       })
       onOpenChange(false)
     } catch (error) {
@@ -122,8 +135,8 @@ export function BudgetFormDialog({
           <DialogTitle>{budget ? "Editar Presupuesto" : "Nuevo Presupuesto"}</DialogTitle>
           <DialogDescription>
             {budget
-              ? "Modificá el límite, categoría o vigencia de este presupuesto."
-              : "Definí un tope de gasto para un período y categoría determinada."}
+              ? "Modificá el límite, categoría, cuenta o vigencia de este presupuesto."
+              : "Definí un tope de gasto para un período, categoría o cuenta determinada."}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,18 +154,64 @@ export function BudgetFormDialog({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="budget-limit">Monto Límite</FieldLabel>
-              <Input
-                id="budget-limit"
-                type="number"
-                step="any"
-                min="0.01"
-                value={amountLimit}
-                placeholder="0.00"
-                onChange={(e) => setAmountLimit(e.target.value)}
-                required
-              />
+              <FieldLabel htmlFor="budget-account">Cuenta asociada (opcional)</FieldLabel>
+              <select
+                id="budget-account"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-xs transition-colors"
+                value={checkingAccountId === null ? "" : String(checkingAccountId)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === "") {
+                    setCheckingAccountId(null)
+                  } else {
+                    const accId = Number(val)
+                    setCheckingAccountId(accId)
+                    const acc = checkingAccounts.find((a) => a.id === accId)
+                    if (acc) setCurrency(acc.currency)
+                  }
+                }}
+              >
+                <option value="">Todas las cuentas (Presupuesto Global)</option>
+                {checkingAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.currency})
+                  </option>
+                ))}
+              </select>
             </Field>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Field>
+                  <FieldLabel htmlFor="budget-limit">Monto Límite</FieldLabel>
+                  <Input
+                    id="budget-limit"
+                    type="number"
+                    step="any"
+                    min="0.01"
+                    value={amountLimit}
+                    placeholder="0.00"
+                    onChange={(e) => setAmountLimit(e.target.value)}
+                    required
+                  />
+                </Field>
+              </div>
+              <div>
+                <Field>
+                  <FieldLabel htmlFor="budget-currency">Moneda</FieldLabel>
+                  <select
+                    id="budget-currency"
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-xs transition-colors disabled:opacity-60"
+                    value={currency}
+                    disabled={checkingAccountId !== null}
+                    onChange={(e) => setCurrency(e.target.value as Currency)}
+                  >
+                    <option value="ARS">ARS</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
 
             <Field>
               <FieldLabel htmlFor="budget-category">Categoría</FieldLabel>

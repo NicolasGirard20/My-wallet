@@ -5,12 +5,19 @@ import json
 import os
 import sys
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 
 def generate_config(stack, project_root):
     config = {
-        "project": stack.get("project_name", os.path.basename(project_root)),
+        "project": "{{PROJECT_NAME}}",
         "agent": {
-            "on_session_start": ".agents/init.sh",
+            "on_session_start": ".agents/init.py",
             "rules_source": "AGENTS.md",
             "coding_rules": ".agents/rules/coding-rules.json"
         },
@@ -61,7 +68,7 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "config.json")
 
-    with open(output_path, "w") as f:
-        json.dump(config, f, indent=2)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
 
     print(f"config.json generado en {output_path}")

@@ -44,10 +44,9 @@ Agentes_IA/
 
 ## ⚙️ Instalación y Configuración
 
-1. **Clonar el repositorio**:
+1. **Usar esta plantilla en tu proyecto**:
    ```bash
-   git clone https://github.com/NicolasGirard20/Agentes_IA.git
-   cd Agentes_IA
+   cd <tu-proyecto>
    ```
 
 2. **Crear y activar un entorno virtual** (opcional pero recomendado):

@@ -24,9 +24,11 @@ if [ ! -f "$PROJECT_ROOT/.agents/skills/project-mapper/scripts/generate_map.py" 
     exit 1
 fi
 
-if [ ! -f "$MAP_FILE" ] || [ "$(find "$MAP_FILE" -mmin +120 2>/dev/null)" ]; then
+PYTHON_BIN=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "python")
+
+if [ ! -f "$MAP_FILE" ] || [ ! -s "$MAP_FILE" ] || ! grep -q '"generated_at"' "$MAP_FILE" || [ "$(find "$MAP_FILE" -mmin +120 2>/dev/null)" ]; then
     echo "Regenerando mapa del proyecto..."
-    python3 "$PROJECT_ROOT/.agents/skills/project-mapper/scripts/generate_map.py" \
+    "$PYTHON_BIN" "$PROJECT_ROOT/.agents/skills/project-mapper/scripts/generate_map.py" \
         --project "$PROJECT_ROOT" \
         --output "$MAP_FILE" \
         --force

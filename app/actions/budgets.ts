@@ -3,7 +3,11 @@
 import { requireSession } from "@/app/lib/session"
 import * as service from "@/app/service/budget.service"
 import { logger } from "@/app/imports/dev"
-import type { Budget } from "@/lib/types"
+import type { Budget, Currency } from "@/lib/types"
+
+function isCurrency(value: unknown): value is Currency {
+  return value === "USD" || value === "ARS"
+}
 
 function mapBudget(b: {
   id: number
@@ -12,6 +16,8 @@ function mapBudget(b: {
   endDate: Date
   amountLimit: number
   categoryId: number | null
+  currency?: string
+  checkingAccountId?: number | null
 }): Budget {
   return {
     id: b.id,
@@ -20,6 +26,8 @@ function mapBudget(b: {
     endDate: b.endDate.toISOString(),
     amountLimit: b.amountLimit,
     categoryId: b.categoryId,
+    currency: (b.currency as Currency) ?? "ARS",
+    checkingAccountId: b.checkingAccountId ?? null,
   }
 }
 
@@ -55,12 +63,26 @@ export async function createBudgetAction(data: Omit<Budget, "id">): Promise<Budg
       throw new Error("La fecha de inicio no puede ser posterior a la fecha de fin")
     }
 
+    let currency: Currency = "ARS"
+    if (data.currency) {
+      if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
+      currency = data.currency
+    }
+
+    let checkingAccountId: number | null = null
+    if (data.checkingAccountId !== undefined && data.checkingAccountId !== null) {
+      if (typeof data.checkingAccountId !== "number") throw new Error("ID de cuenta inválido")
+      checkingAccountId = data.checkingAccountId
+    }
+
     const created = await service.createBudget({
       name: data.name.trim(),
       startDate,
       endDate,
       amountLimit: data.amountLimit,
       categoryId: data.categoryId ?? null,
+      currency,
+      checkingAccountId,
       userId: session.userId,
     })
 
@@ -89,6 +111,8 @@ export async function updateBudgetAction(
       endDate: Date
       amountLimit: number
       categoryId: number | null
+      currency: string
+      checkingAccountId: number | null
     }> = {}
 
     if (data.name !== undefined) {
@@ -105,6 +129,18 @@ export async function updateBudgetAction(
 
     if (data.categoryId !== undefined) {
       payload.categoryId = data.categoryId
+    }
+
+    if (data.currency !== undefined) {
+      if (!isCurrency(data.currency)) throw new Error("Moneda inválida")
+      payload.currency = data.currency
+    }
+
+    if (data.checkingAccountId !== undefined) {
+      if (data.checkingAccountId !== null && typeof data.checkingAccountId !== "number") {
+        throw new Error("ID de cuenta inválido")
+      }
+      payload.checkingAccountId = data.checkingAccountId
     }
 
     if (data.startDate !== undefined) {

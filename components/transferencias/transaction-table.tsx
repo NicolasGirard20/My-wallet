@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { PencilIcon, Trash2Icon, SearchIcon, ArrowUpDownIcon, CheckIcon } from "lucide-react"
+import { PencilIcon, Trash2Icon, SearchIcon, ArrowUpDownIcon, CheckIcon, Download } from "lucide-react"
 
 import {
   Table,
@@ -26,8 +26,10 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { CategoryBadge } from "@/components/shared/category-badge"
 import { AmountDisplay } from "@/components/shared/amount-display"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
+import { DateRangePicker } from "@/components/shared/date-range-picker"
 import { useData } from "@/context/data-context"
 import { useCurrency } from "@/context/currency-context"
+import { exportTransactionsToExcel } from "@/lib/excel"
 import { formatCurrency, formatDate } from "@/lib/format"
 import type { Category, Transaction, TransactionKind } from "@/lib/types"
 
@@ -152,6 +154,10 @@ export function TransactionTable({
     return `¿Seguro que querés eliminar "${pendingDelete.description}"? Esta acción no se puede deshacer.`
   }, [pendingDelete, savings])
 
+  function handleExport() {
+    exportTransactionsToExcel(rows, categories, currency, checkingAccounts)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -169,26 +175,19 @@ export function TransactionTable({
 
 
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <span>Desde</span>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-36"
-                aria-label="Desde"
-              />
-            </label>
-            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <span>Hasta</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-36"
-                aria-label="Hasta"
-              />
-            </label>
+            <DateRangePicker
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onChange={(from, to) => {
+                setDateFrom(from)
+                setDateTo(to)
+              }}
+              onClear={() => {
+                setDateFrom("")
+                setDateTo("")
+              }}
+              placeholder="Filtrar por fecha"
+            />
 
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline" className="w-full sm:w-48 justify-start" />}>
@@ -218,6 +217,11 @@ export function TransactionTable({
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="size-4" />
+              Exportar
+            </Button>
           </div>
         </div>
       </div>

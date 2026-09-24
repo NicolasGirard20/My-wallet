@@ -1,4 +1,6 @@
-# 🗺️ Guía de Uso — Project Mapper
+# Guía de uso — Project Mapper
+
+> Los comandos usan `.agents` para una instalación directa. En este repositorio, reemplaza ese prefijo por `local/.agents`.
 
 ## 🚀 Instalación y Requisitos
 
@@ -58,7 +60,7 @@ pip install llmlingua
 
 ```bash
 # Regenerar forzado
-python .\.agent\skills\project-mapper\scripts\generate_map.py --project . --output .\.agent\skills\project-mapper\resources\project_map.json --force
+python .agents/skills/project-mapper/scripts/generate_map.py --project . --output .agents/skills/project-mapper/resources/project_map.json --force
 ```
 
 ---

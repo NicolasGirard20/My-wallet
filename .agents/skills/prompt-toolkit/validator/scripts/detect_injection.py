@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 import json, sys, re
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
+if sys.platform == "win32":
+    try:
+        sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 def scan(prompt: str, rules: dict):
     issues = []
     for pattern in rules.get("forbidden_patterns", []):

@@ -19,6 +19,8 @@ export async function createBudget(data: {
   endDate: Date
   amountLimit: number
   categoryId: number | null
+  currency?: string
+  checkingAccountId?: number | null
   userId: number
 }) {
   try {
@@ -29,6 +31,8 @@ export async function createBudget(data: {
         endDate: data.endDate,
         amountLimit: data.amountLimit,
         categoryId: data.categoryId,
+        currency: data.currency ?? "ARS",
+        checkingAccountId: data.checkingAccountId ?? null,
         userId: data.userId,
       },
     })
@@ -47,6 +51,8 @@ export async function updateBudget(
     endDate: Date
     amountLimit: number
     categoryId: number | null
+    currency: string
+    checkingAccountId: number | null
   }>
 ) {
   try {

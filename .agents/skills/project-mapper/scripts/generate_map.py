@@ -11,8 +11,15 @@ import ast
 import re
 import argparse
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Set, Any, Optional
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 
 LANGUAGE_MAP = {
@@ -172,6 +179,9 @@ class ProjectMapper:
         'dist', 'build', '.idea', '.vscode', '.agents', '.agent', 'coverage',
         '.tox', 'htmlcov', '.mypy_cache', '.ruff_cache', '.next', 'out',
         '.gitignore', '.dockerignore', '.env', '.env.local',
+        'bin', 'obj', 'packages', '.vs', '.nuget', 'TestResults',
+        '.angular', '.svelte-kit', '.astro', '.turbo', '.cache',
+        'vendor', 'target', 'Pods', 'DerivedData',
     }
     
     IGNORE_FILES = {
@@ -179,7 +189,7 @@ class ProjectMapper:
         '.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.woff', '.woff2',
         '.ttf', '.eot', '.mp3', '.mp4', '.wav', '.avi', '.mov', '.zip',
         '.tar', '.gz', '.rar', '.7z', '.pdf', '.doc', '.docx', '.xls',
-        '.lock', '.log', '.min.js', '.min.css',
+        '.lock', '.log', '.min.js', '.min.css', '.pdb', '.user', '.suo',
     }
     
     def __init__(self, project_path: Path):
@@ -298,7 +308,7 @@ class ProjectMapper:
         except Exception:
             return None
         
-        rel_path = str(file_path.relative_to(self.project_path))
+        rel_path = str(file_path.relative_to(self.project_path)).replace('\\', '/')
         suffix = file_path.suffix.lower()
         language = LANGUAGE_MAP.get(suffix, 'unknown')
         
@@ -419,7 +429,7 @@ class ProjectMapper:
         
         return {
             'project_name': self.project_path.name,
-            'generated_at': datetime.utcnow().isoformat() + 'Z',
+            'generated_at': datetime.now(timezone.utc).isoformat(),
             'total_files': len(self.files_data),
             'total_symbols': self.total_symbols,
             'architecture': architecture,
@@ -438,6 +448,8 @@ def main():
     parser.add_argument('--project', '-p', type=str, default='.', help='Ruta al proyecto')
     parser.add_argument('--output', '-o', type=str, required=True, help='Ruta de salida del JSON')
     parser.add_argument('--force', '-f', action='store_true', help='Forzar regeneración')
+    parser.add_argument('--max-age-hours', type=float, default=2.0,
+                        help='Edad máxima del mapa existente antes de regenerarlo')
     
     args = parser.parse_args()
     
@@ -450,9 +462,11 @@ def main():
             with open(output_path, 'r', encoding='utf-8') as f:
                 existing = json.load(f)
             generated = datetime.fromisoformat(existing['generated_at'].replace('Z', '+00:00'))
-            age = (datetime.utcnow() - generated.replace(tzinfo=None)).total_seconds() / 3600
+            if generated.tzinfo is None:
+                generated = generated.replace(tzinfo=timezone.utc)
+            age = (datetime.now(timezone.utc) - generated).total_seconds() / 3600
             
-            if age < 2:
+            if age < args.max_age_hours:
                 print(f"✅ Mapa reciente ({age:.1f}h). Usando existente.")
                 print(f"   Archivo: {output_path}")
                 return

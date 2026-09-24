@@ -3,7 +3,15 @@
 
 import json
 import os
+import subprocess
 import sys
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 
 def generate_coding_rules(stack, project_root):
@@ -66,6 +74,45 @@ def generate_coding_rules(stack, project_root):
         rules["react"]["forms_library"] = "react-hook-form"
         rules["react"]["modals_library"] = "unknown"
         rules["react"]["notifications_library"] = "sonner"
+    elif framework in ("dotnet-mvc", "aspnet-mvc"):
+        rules["csharp"] = {
+            "controllers": "Controllers/*Controller.cs",
+            "models": "Models/*.cs",
+            "views": "Views/{Controller}/{Action}.cshtml",
+            "razor_encoding": "utf-8-sig"
+        }
+        rules["nomenclature"] = {
+            "controllers": "*Controller.cs",
+            "models": "*Model.cs | *ViewModel.cs",
+            "views": "*.cshtml",
+            "folders": "PascalCase",
+            "code_language": "es",
+            "ui_language": "es"
+        }
+        rules["styling"] = {
+            "framework": "bootstrap",
+            "version": "5.3",
+            "ui_library": "bootstrap",
+            "icon_library": "bootstrap-icons-1.11.3",
+            "notifications_library": "sweetalert2"
+        }
+        rules["architecture"] = {
+            "pattern": "MVC (.NET Framework 4.8)",
+            "view_engine": "Razor",
+            "orm": "EntityFramework 6",
+            "controllers_path": "Controllers/",
+            "views_path": "Views/",
+            "models_path": "Models/",
+            "scripts_path": "Scripts/",
+            "content_path": "Content/"
+        }
+        rules["code_quality"] = {
+            "razor_bom_mandatory": True,
+            "lint_before_finish": False,
+            "no_new_deps_without_justification": True
+        }
+        rules.pop("typescript", None)
+        rules.pop("react", None)
 
     if auth:
         rules["security"]["auth_type"] = auth
@@ -91,6 +138,61 @@ def generate_agents_md(stack, project_root):
     auth = stack.get("auth", None)
     lang = stack.get("language", "typescript")
     project_name = stack.get("project_name", os.path.basename(project_root))
+
+    if framework in ("dotnet-mvc", "aspnet-mvc"):
+        return f"""# {project_name} — Reglas de Diseño y Arquitectura
+
+> Este documento es la fuente de verdad para cualquier agente o desarrollador que trabaje en este proyecto. Toda regla aquí descrita debe respetarse sin excepción.
+
+---
+
+## 1. Arquitectura del Proyecto
+
+El sistema está desarrollado sobre **ASP.NET MVC (.NET Framework 4.8)** utilizando el motor de vistas **Razor (`.cshtml`)**.
+
+### Estructura de Carpetas
+```
+{_generate_folder_tree(project_root)}
+```
+
+### Capas y Responsabilidades
+1. **Controladores (`Controllers/`)**: Manejan las peticiones HTTP, orquestan la lógica y devuelven vistas Razor o `JsonResult`.
+2. **Modelos y ViewModels (`Models/`)**: Clases de dominio, entidades de Entity Framework y modelos fuertemente tipados para vistas.
+3. **Vistas (`Views/`)**: Vistas Razor (`.cshtml`) organizadas por controlador y vistas parciales compartidas (`Views/Shared/`).
+4. **Recursos Estáticos (`Content/`, `Scripts/`, `Images/`)**: Estilos CSS, scripts del cliente (jQuery, Bootstrap) e imágenes.
+
+---
+
+## 2. Reglas Críticas de Desarrollo
+
+### Codificación Obligatoria: UTF-8 con BOM en Vistas Razor (.cshtml)
+- **OBLIGATORIO**: Todo archivo `.cshtml` DEBE guardarse estrictamente con codificación **UTF-8 con BOM** (`utf-8-sig` / bytes `0xEF, 0xBB, 0xBF`).
+- En .NET Framework sobre IIS, los archivos Razor sin BOM se interpretan por defecto como ANSI (Windows-1252), corrompiendo caracteres con tildes (`á`, `é`, `í`), la `ñ` y signos (`¿`, `¡`).
+- Preferir entidades HTML (`&aacute;`, `&oacute;`, `&ntilde;`, etc.) para blindar textos fijos ante variaciones de encoding.
+
+### Interfaz de Usuario y Componentes Visuales
+- Utilizar exclusivamente **Bootstrap Icons 1.11.3** (`<i class="bi bi-[nombre]"></i>`).
+- Tarjetas de Acción (`.action-card`): bordes redondeados (`border-radius: 16px`), elevación suave y contenedor de ícono con colores semánticos (`.icon-green`, `.icon-purple`, `.icon-amber`, `.icon-blue`).
+- Notificaciones: Usar la función global `ShowAlert(mensaje, tipo)` basada en SweetAlert2.
+- Indicadores de Carga: Usar `ShowLoading()` y `HideLoading()` integrados en `_Layout.cshtml`.
+
+### Seguridad
+- **Prohibido incluir secrets en código o Web.config**: Utilizar `secrets.config` (ignorado en git) referenciado desde `Web.config`: `<appSettings file="secrets.config">`.
+- Usar siempre `@Html.AntiForgeryToken()` en formularios y `[ValidateAntiForgeryToken]` en acciones POST.
+
+---
+
+## 3. Integración con Agentes de IA
+
+| Recurso | Función |
+| :--- | :--- |
+| `.opencode/config.json` | Configuración técnica del agente y triggers |
+| `.agents/init.ps1` / `init.sh` | Inicialización y verificación de estado |
+| `.agents/rules/DESIGN.md` | Guía de diseño visual y patrones de componentes |
+| `.agents/rules/FRONTEND_ENCODING.md` | Regla obligatoria de UTF-8 con BOM |
+| `.agents/rules/MAPPER.md` | Reglas operativas del Project Mapper nativo |
+| `.agents/skills/project-mapper/` | Mapeo estructurado y filtrado de contexto |
+"""
 
     md = f"""# {project_name} — Reglas de Diseño y Arquitectura
 
@@ -221,6 +323,17 @@ def _generate_folder_tree(project_root, max_depth=2):
     return "\n".join(lines[:20]) if lines else "  (pendiente de escanear)"
 
 
+def generate_design_file(stack, project_root):
+    """Genera DESIGN.md sin sobrescribir decisiones del usuario."""
+    design_script = os.path.join(os.path.dirname(__file__), "generate_design.py")
+    subprocess.run(
+        [sys.executable, design_script, project_root],
+        input=json.dumps(stack),
+        text=True,
+        check=True,
+    )
+
+
 if __name__ == "__main__":
     project_root = sys.argv[1] if len(sys.argv) > 1 else "."
     stack_input = sys.stdin.read() if not sys.stdin.isatty() else "{}"
@@ -232,10 +345,16 @@ if __name__ == "__main__":
     rules_dir = os.path.join(project_root, ".agents", "rules")
     os.makedirs(rules_dir, exist_ok=True)
 
-    with open(os.path.join(rules_dir, "coding-rules.json"), "w") as f:
-        json.dump(rules, f, indent=2)
+    with open(os.path.join(rules_dir, "coding-rules.json"), "w", encoding="utf-8") as f:
+        json.dump(rules, f, indent=2, ensure_ascii=False)
     print("coding-rules.json generado")
 
-    with open(os.path.join(project_root, "AGENTS.md"), "w") as f:
-        f.write(agents_md)
-    print("AGENTS.md generado")
+    agents_path = os.path.join(project_root, "AGENTS.md")
+    if os.path.exists(agents_path):
+        print(f"AGENTS.md ya existe; se conserva: {agents_path}")
+    else:
+        with open(agents_path, "w", encoding="utf-8") as f:
+            f.write(agents_md)
+        print("AGENTS.md generado")
+
+    generate_design_file(stack, project_root)

@@ -10,6 +10,13 @@ import json
 import os
 import sys
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 
 def _base_rules(stack, project_root):
     lang = stack.get("language", "typescript")
@@ -238,6 +245,15 @@ if __name__ == "__main__":
     rules_dir = os.path.join(project_root, ".agents", "rules")
     os.makedirs(rules_dir, exist_ok=True)
 
-    with open(os.path.join(rules_dir, "coding-rules.json"), "w") as f:
-        json.dump(rules, f, indent=2)
+    with open(os.path.join(rules_dir, "coding-rules.json"), "w", encoding="utf-8") as f:
+        json.dump(rules, f, indent=2, ensure_ascii=False)
     print("coding-rules.json generado (fallback por framework)")
+
+    design_script = os.path.join(os.path.dirname(__file__), "generate_design.py")
+    import subprocess
+    subprocess.run(
+        [sys.executable, design_script, project_root],
+        input=json.dumps(stack),
+        text=True,
+        check=True,
+    )
