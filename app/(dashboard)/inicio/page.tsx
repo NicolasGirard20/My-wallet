@@ -14,6 +14,7 @@ import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
 import {
   categoryBreakdownCrossCurrency,
+  isSavingsOrInvestmentTransaction,
   monthlySeriesCrossCurrency,
   totalsCrossCurrency,
 } from "@/lib/selectors"
@@ -47,36 +48,58 @@ export default function InicioPage() {
 
   const inRange = period.mode === "range"
   const rangedTransactions = useMemo(() => {
-    if (period.mode !== "range") return currentTxs
-    return currentTxs.filter((t) => {
+    const base = currentTxs.filter((t) => !isSavingsOrInvestmentTransaction(t, categories))
+    if (period.mode !== "range") return base
+    return base.filter((t) => {
       const d = t.date.slice(0, 10)
       return d >= period.from && d <= period.to
     })
-  }, [currentTxs, period])
+  }, [currentTxs, categories, period])
 
-  const { income, expense, balance } = totalsCrossCurrency(rangedTransactions, convert)
+  const { income, expense, balance } = totalsCrossCurrency(rangedTransactions, convert, categories)
   const monthly = monthlySeriesCrossCurrency(
     rangedTransactions,
     convert,
     inRange ? { from: period.from, to: period.to } : { count: 6 },
+    categories,
   )
   const expenseSlices = categoryBreakdownCrossCurrency(
     rangedTransactions, categories, "expense", convert,
   )
 
-  const totalSaved = allSavings.reduce((acc, s) => convert(s.saved, s.currency) + acc, 0)
-  const invValue = allInvestments.reduce((acc, i) => convert(i.currentValue, i.currency) + acc, 0)
-  const periodContributions = useMemo(() => {
+  const filteredSavings = useMemo(
+    () =>
+      selectedAccountId === "all"
+        ? allSavings
+        : allSavings.filter((s) => s.checkingAccountId === selectedAccountId),
+    [allSavings, selectedAccountId],
+  )
+
+  const filteredInvestments = useMemo(
+    () =>
+      selectedAccountId === "all"
+        ? allInvestments
+        : allInvestments.filter((i) => i.checkingAccountId === selectedAccountId),
+    [allInvestments, selectedAccountId],
+  )
+
+  const totalSaved = filteredSavings.reduce((acc, s) => acc + convert(s.saved, s.currency), 0)
+  const invValue = filteredInvestments.reduce((acc, i) => acc + convert(i.currentValue, i.currency), 0)
+  const periodSavingsAndInvestments = useMemo(() => {
     if (period.mode !== "range") return 0
-    let sum = 0
-    for (const inv of allInvestments) {
+    let sum = totalSaved
+    for (const inv of filteredInvestments) {
+      const createdDate = inv.createdAt.slice(0, 10)
+      if (createdDate >= period.from && createdDate <= period.to) {
+        sum += convert(inv.invested, inv.currency)
+      }
       for (const c of inv.contributions) {
         const d = c.date.slice(0, 10)
         if (d >= period.from && d <= period.to) sum += convert(c.amount, c.currency)
       }
     }
     return sum
-  }, [allInvestments, period, convert])
+  }, [filteredInvestments, totalSaved, period, convert])
 
   const recent = [...rangedTransactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -127,10 +150,10 @@ export default function InicioPage() {
           hint={inRange ? `Gastos en el período · ${periodLabel}` : "USD + ARS convertidos"}
         />
         <StatCard
-          title={inRange ? "Aportes en el período" : "Ahorros + Inversiones"}
-          value={inRange ? periodContributions : totalSaved + invValue}
+          title="Ahorros + Inversiones"
+          value={inRange ? periodSavingsAndInvestments : totalSaved + invValue}
           icon={PiggyBank}
-          hint={inRange ? "Contribuciones netas de inversiones · USD + ARS convertidos" : "USD + ARS convertidos"}
+          hint={inRange ? `Ahorros + inversiones en el período · ${periodLabel}` : "USD + ARS convertidos"}
         />
       </div>
 
