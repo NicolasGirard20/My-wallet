@@ -148,7 +148,7 @@ export default function InversionDetallePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Invertido</CardTitle>
+            <CardTitle>Valor invertido inicial</CardTitle>
           </CardHeader>
           <CardContent>
             <AmountDisplay value={investment.invested} from={investment.currency} className="text-2xl font-semibold" />
@@ -319,7 +319,7 @@ export default function InversionDetallePage() {
         open={confirmDeleteContribId !== null}
         onOpenChange={(open) => { if (!open) setConfirmDeleteContribId(null) }}
         title="Eliminar movimiento"
-        description="¿Estás seguro de eliminar este movimiento? El valor invertido y actual se ajustarán automáticamente, y la transferencia vinculada se eliminará."
+        description="¿Estás seguro de eliminar este movimiento? El valor actual de la inversión se ajustará automáticamente."
         onConfirm={() => {
           if (confirmDeleteContribId !== null) deleteContribution(confirmDeleteContribId)
         }}

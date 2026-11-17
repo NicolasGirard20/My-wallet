@@ -1,5 +1,4 @@
 import { prisma } from "@/app/service/db"
-import { getOrCreateInvestmentCategory } from "@/app/service/category.service"
 import { logger } from "@/app/imports/dev"
 
 export async function getInvestments(userId: number, currency?: string) {
@@ -41,27 +40,7 @@ export async function createInvestment(data: {
   userId: number
 }) {
   try {
-    return await prisma.$transaction(async (tx) => {
-      const investment = await tx.investment.create({ data })
-
-      if (data.invested > 0) {
-        const cat = await getOrCreateInvestmentCategory(data.userId, "expense", tx)
-        await tx.transaction.create({
-          data: {
-            kind: "expense",
-            amount: data.invested,
-            description: `Inversión inicial en ${data.name}`,
-            categoryId: cat.id,
-            currency: data.currency,
-            checkingAccountId: investment.checkingAccountId ?? null,
-            date: new Date(),
-            userId: data.userId,
-          },
-        })
-      }
-
-      return investment
-    })
+    return await prisma.investment.create({ data })
   } catch (error) {
     logger.error("createInvestment failed:", error)
     throw new Error("Error al crear la inversión")
@@ -124,24 +103,7 @@ export async function addContribution(investmentId: number, userId: number, data
       await tx.investment.update({
         where: { id: investmentId, userId },
         data: {
-          invested: { increment: amount },
           currentValue: { increment: amount },
-        },
-      })
-
-      const kind = amount > 0 ? "expense" : "income"
-      const cat = await getOrCreateInvestmentCategory(userId, kind, tx)
-      await tx.transaction.create({
-        data: {
-          kind,
-          amount: Math.abs(amount),
-          description: amount > 0 ? `Aporte a ${investment.name}` : `Retiro de ${investment.name}`,
-          categoryId: cat.id,
-          currency: data.currency,
-          checkingAccountId: targetCheckingAccountId ?? null,
-          date: data.date,
-          userId,
-          investmentContributionId: contribution.id,
         },
       })
 
@@ -166,7 +128,6 @@ export async function deleteContribution(contributionId: number, userId: number)
       await tx.investment.update({
         where: { id: contribution.investmentId, userId },
         data: {
-          invested: { decrement: amount },
           currentValue: { decrement: amount },
         },
       })
@@ -215,27 +176,9 @@ export async function updateContribution(
         await tx.investment.update({
           where: { id: previous.investmentId, userId },
           data: {
-            invested: { increment: delta },
             currentValue: { increment: delta },
           },
         })
-
-        const linkedTx = await tx.transaction.findFirst({
-          where: { investmentContributionId: contributionId, userId },
-        })
-        if (linkedTx) {
-          const kind = data.amount > 0 ? "expense" : "income"
-          await tx.transaction.update({
-            where: { id: linkedTx.id },
-            data: {
-              kind,
-              amount: Math.abs(data.amount),
-              description: data.amount > 0
-                ? `Aporte a ${investment.name}`
-                : `Retiro de ${investment.name}`,
-            },
-          })
-        }
       }
 
       return contribution

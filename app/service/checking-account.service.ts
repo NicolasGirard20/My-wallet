@@ -14,11 +14,18 @@ export async function getCheckingAccounts(userId: number) {
 
     const accountIds = accounts.map((a) => a.id)
 
-    // Calculate income and expense sums per account
+    // Calculate income and expense sums per account (excluding saving/investment movements)
     const txs = await prisma.transaction.findMany({
       where: {
         userId,
         checkingAccountId: { in: accountIds },
+        savingGoalId: null,
+        investmentContributionId: null,
+        category: {
+          name: {
+            notIn: ["Ahorros", "Inversiones"],
+          },
+        },
       },
       select: {
         checkingAccountId: true,
