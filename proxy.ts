@@ -16,11 +16,12 @@ const sessionOptions = {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
+    maxAge: undefined,
   },
 }
 
 const PUBLIC_ROUTES = ["/login"]
-const DASHBOARD_PREFIX = ["/inicio", "/transferencias", "/ahorros", "/inversiones", "/usuarios"]
+const DASHBOARD_PREFIX = ["/inicio", "/transferencias", "/ahorros", "/inversiones", "/presupuestos", "/usuarios"]
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
