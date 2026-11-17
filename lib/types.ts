@@ -92,6 +92,8 @@ export interface Investment {
   createdAt: string
 }
 
+export type BudgetFrequency = "daily" | "weekly" | "monthly" | "yearly"
+
 export interface Budget {
   id: number
   name: string
@@ -101,6 +103,8 @@ export interface Budget {
   categoryId: number | null
   currency: Currency
   checkingAccountId?: number | null
+  isRecurring?: boolean
+  recurringFrequency?: BudgetFrequency | null
 }
 
 export type BudgetStatus = "normal" | "warning" | "danger"

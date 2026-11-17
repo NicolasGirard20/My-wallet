@@ -156,17 +156,19 @@ model AccountTransfer {
 }
 
 model Budget {
-  id                Int              @id @default(autoincrement())
-  name              String
-  startDate         DateTime
-  endDate           DateTime
-  amountLimit       Float
-  categoryId        Int?
-  currency          String           @default("ARS")
-  checkingAccountId Int?
-  userId            Int
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  id                 Int              @id @default(autoincrement())
+  name               String
+  startDate          DateTime
+  endDate            DateTime
+  amountLimit        Float
+  categoryId         Int?
+  currency           String           @default("ARS")
+  checkingAccountId  Int?
+  isRecurring        Boolean          @default(false)
+  recurringFrequency String?
+  userId             Int
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)

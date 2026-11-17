@@ -3,10 +3,14 @@
 import { requireSession } from "@/app/lib/session"
 import * as service from "@/app/service/budget.service"
 import { logger } from "@/app/imports/dev"
-import type { Budget, Currency } from "@/lib/types"
+import type { Budget, BudgetFrequency, Currency } from "@/lib/types"
 
 function isCurrency(value: unknown): value is Currency {
   return value === "USD" || value === "ARS"
+}
+
+function isBudgetFrequency(value: unknown): value is BudgetFrequency {
+  return value === "daily" || value === "weekly" || value === "monthly" || value === "yearly"
 }
 
 function mapBudget(b: {
@@ -18,6 +22,8 @@ function mapBudget(b: {
   categoryId: number | null
   currency?: string
   checkingAccountId?: number | null
+  isRecurring?: boolean
+  recurringFrequency?: string | null
 }): Budget {
   return {
     id: b.id,
@@ -28,6 +34,8 @@ function mapBudget(b: {
     categoryId: b.categoryId,
     currency: (b.currency as Currency) ?? "ARS",
     checkingAccountId: b.checkingAccountId ?? null,
+    isRecurring: b.isRecurring ?? false,
+    recurringFrequency: isBudgetFrequency(b.recurringFrequency) ? b.recurringFrequency : null,
   }
 }
 
@@ -75,6 +83,15 @@ export async function createBudgetAction(data: Omit<Budget, "id">): Promise<Budg
       checkingAccountId = data.checkingAccountId
     }
 
+    const isRecurring = Boolean(data.isRecurring)
+    let recurringFrequency: BudgetFrequency | null = null
+    if (isRecurring) {
+      if (!isBudgetFrequency(data.recurringFrequency)) {
+        throw new Error("Frecuencia de repetición inválida")
+      }
+      recurringFrequency = data.recurringFrequency
+    }
+
     const created = await service.createBudget({
       name: data.name.trim(),
       startDate,
@@ -83,6 +100,8 @@ export async function createBudgetAction(data: Omit<Budget, "id">): Promise<Budg
       categoryId: data.categoryId ?? null,
       currency,
       checkingAccountId,
+      isRecurring,
+      recurringFrequency,
       userId: session.userId,
     })
 
@@ -113,6 +132,8 @@ export async function updateBudgetAction(
       categoryId: number | null
       currency: string
       checkingAccountId: number | null
+      isRecurring: boolean
+      recurringFrequency: string | null
     }> = {}
 
     if (data.name !== undefined) {
@@ -153,6 +174,24 @@ export async function updateBudgetAction(
       const e = new Date(data.endDate)
       if (Number.isNaN(e.getTime())) throw new Error("Fecha de fin inválida")
       payload.endDate = e
+    }
+
+    if (data.isRecurring !== undefined) {
+      const isRecurring = Boolean(data.isRecurring)
+      payload.isRecurring = isRecurring
+      if (isRecurring) {
+        if (!isBudgetFrequency(data.recurringFrequency)) {
+          throw new Error("Frecuencia de repetición inválida")
+        }
+        payload.recurringFrequency = data.recurringFrequency
+      } else {
+        payload.recurringFrequency = null
+      }
+    } else if (data.recurringFrequency !== undefined) {
+      if (data.recurringFrequency !== null && !isBudgetFrequency(data.recurringFrequency)) {
+        throw new Error("Frecuencia de repetición inválida")
+      }
+      payload.recurringFrequency = data.recurringFrequency
     }
 
     const updated = await service.updateBudget(id, session.userId, payload)
