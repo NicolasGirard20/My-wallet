@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -48,24 +49,26 @@ export function FloatingQuickCreate() {
         />
 
         <DropdownMenuContent side="top" align="end" sideOffset={12} className="w-48">
-          <DropdownMenuLabel>Crear nuevo</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setActiveModal("transaction")}>
-            <ArrowLeftRight className="size-4" />
-            Transferencias
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setActiveModal("saving")}>
-            <PiggyBank className="size-4" />
-            Ahorros
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setActiveModal("budget")}>
-            <Target className="size-4" />
-            Presupuestos
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setActiveModal("investment")}>
-            <TrendingUp className="size-4" />
-            Inversiones
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Crear nuevo</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setActiveModal("transaction")}>
+              <ArrowLeftRight className="size-4" />
+              Transferencias
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveModal("saving")}>
+              <PiggyBank className="size-4" />
+              Ahorros
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveModal("budget")}>
+              <Target className="size-4" />
+              Presupuestos
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveModal("investment")}>
+              <TrendingUp className="size-4" />
+              Inversiones
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
