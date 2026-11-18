@@ -2,10 +2,30 @@ import type { Budget, BudgetConsumption, BudgetStatus, Category, Currency, Trans
 
 export type ConvertFn = (amount: number, from: Currency) => number
 
-export function totals(transactions: Transaction[]) {
+const SAVINGS_OR_INVESTMENT_DESCRIPTION_RE =
+  /^(Inversión inicial en |Aporte a |Retiro de |Depósito a |Extracción de )/
+
+export function isSavingsOrInvestmentTransaction(t: Transaction, categories?: Category[]): boolean {
+  if (t.savingGoalId != null || t.investmentContributionId != null) {
+    return true
+  }
+  if (SAVINGS_OR_INVESTMENT_DESCRIPTION_RE.test(t.description)) {
+    return true
+  }
+  if (categories) {
+    const category = categories.find((c) => c.id === t.categoryId)
+    if (category && (category.name === "Ahorros" || category.name === "Inversiones")) {
+      return true
+    }
+  }
+  return false
+}
+
+export function totals(transactions: Transaction[], categories?: Category[]) {
   let income = 0
   let expense = 0
   for (const t of transactions) {
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     if (t.kind === "income") income += t.amount
     else expense += t.amount
   }
@@ -19,7 +39,11 @@ export interface MonthlyPoint {
   expense: number
 }
 
-export function monthlySeries(transactions: Transaction[], count = 6): MonthlyPoint[] {
+export function monthlySeries(
+  transactions: Transaction[],
+  count = 6,
+  categories?: Category[],
+): MonthlyPoint[] {
   const now = new Date()
   const points: MonthlyPoint[] = []
   for (let i = count - 1; i >= 0; i--) {
@@ -34,6 +58,7 @@ export function monthlySeries(transactions: Transaction[], count = 6): MonthlyPo
   }
   const index = new Map(points.map((p) => [p.key, p]))
   for (const t of transactions) {
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     const d = new Date(t.date)
     const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     const point = index.get(key)
@@ -59,6 +84,7 @@ export function categoryBreakdown(
   const byCat = new Map<number, number>()
   for (const t of transactions) {
     if (t.kind !== kind) continue
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     byCat.set(t.categoryId, (byCat.get(t.categoryId) ?? 0) + t.amount)
   }
   return categories
@@ -73,10 +99,15 @@ export function categoryBreakdown(
     .sort((a, b) => b.value - a.value)
 }
 
-export function totalsCrossCurrency(transactions: Transaction[], convert: ConvertFn) {
+export function totalsCrossCurrency(
+  transactions: Transaction[],
+  convert: ConvertFn,
+  categories?: Category[],
+) {
   let income = 0
   let expense = 0
   for (const t of transactions) {
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     const converted = convert(t.amount, t.currency)
     if (t.kind === "income") income += converted
     else expense += converted
@@ -88,6 +119,7 @@ export function monthlySeriesCrossCurrency(
   transactions: Transaction[],
   convert: ConvertFn,
   options: { count?: number; from?: string; to?: string } = {},
+  categories?: Category[],
 ): MonthlyPoint[] {
   const now = new Date()
   const points: MonthlyPoint[] = []
@@ -126,6 +158,7 @@ export function monthlySeriesCrossCurrency(
 
   const index = new Map(points.map((p) => [p.key, p]))
   for (const t of transactions) {
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     const d = new Date(t.date)
     const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     const point = index.get(key)
@@ -146,6 +179,7 @@ export function categoryBreakdownCrossCurrency(
   const byCat = new Map<number, number>()
   for (const t of transactions) {
     if (t.kind !== kind) continue
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
     const converted = convert(t.amount, t.currency)
     byCat.set(t.categoryId, (byCat.get(t.categoryId) ?? 0) + converted)
   }
@@ -161,20 +195,62 @@ export function categoryBreakdownCrossCurrency(
     .sort((a, b) => b.value - a.value)
 }
 
+export function getEffectiveBudgetPeriod(
+  budget: Budget,
+  now = new Date(),
+): { start: Date; end: Date } {
+  if (!budget.isRecurring || !budget.recurringFrequency) {
+    const start = new Date(budget.startDate)
+    start.setUTCHours(0, 0, 0, 0)
+    const end = new Date(budget.endDate)
+    end.setUTCHours(23, 59, 59, 999)
+    return { start, end }
+  }
+
+  const year = now.getUTCFullYear()
+  const month = now.getUTCMonth()
+  const day = now.getUTCDate()
+
+  switch (budget.recurringFrequency) {
+    case "daily":
+      return {
+        start: new Date(Date.UTC(year, month, day, 0, 0, 0, 0)),
+        end: new Date(Date.UTC(year, month, day, 23, 59, 59, 999)),
+      }
+    case "weekly": {
+      const dayOfWeek = now.getUTCDay()
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+      return {
+        start: new Date(Date.UTC(year, month, day + diffToMonday, 0, 0, 0, 0)),
+        end: new Date(Date.UTC(year, month, day + diffToMonday + 6, 23, 59, 59, 999)),
+      }
+    }
+    case "monthly":
+      return {
+        start: new Date(Date.UTC(year, month, 1, 0, 0, 0, 0)),
+        end: new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)),
+      }
+    case "yearly":
+      return {
+        start: new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0)),
+        end: new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999)),
+      }
+  }
+}
+
 export function calculateBudgetConsumption(
   budget: Budget,
   transactions: Transaction[],
   convert?: ConvertFn,
+  categories?: Category[],
 ): BudgetConsumption {
-  const start = new Date(budget.startDate)
-  start.setUTCHours(0, 0, 0, 0)
-  const end = new Date(budget.endDate)
-  end.setUTCHours(23, 59, 59, 999)
+  const { start, end } = getEffectiveBudgetPeriod(budget)
 
   let spent = 0
 
   for (const t of transactions) {
     if (t.kind !== "expense") continue
+    if (isSavingsOrInvestmentTransaction(t, categories)) continue
 
     if (budget.categoryId !== null && budget.categoryId !== undefined && t.categoryId !== budget.categoryId) {
       continue

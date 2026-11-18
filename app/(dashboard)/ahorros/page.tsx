@@ -365,7 +365,7 @@ export default function AhorrosPage() {
         title={depositGoal ? `Aportar a "${depositGoal.name}"` : "Aportar a ahorro"}
         description={
           depositGoal
-            ? `Ahorrado actual: ${depositGoal.saved.toLocaleString("es-AR")} ${depositGoal.currency}. Ingresá el monto a depositar (se debitará de la cuenta corriente seleccionada).`
+            ? `Ahorrado actual: ${depositGoal.saved.toLocaleString("es-AR")} ${depositGoal.currency}. Ingresá el monto a depositar.`
             : undefined
         }
         confirmLabel="Confirmar aporte"
@@ -410,7 +410,7 @@ export default function AhorrosPage() {
         title={withdrawGoal ? `Extraer de "${withdrawGoal.name}"` : "Extraer de ahorro"}
         description={
           withdrawGoal
-            ? `Ahorrado actual disponible: ${withdrawGoal.saved.toLocaleString("es-AR")} ${withdrawGoal.currency}. Ingresá el monto a retirar (se acreditará en la cuenta corriente seleccionada).`
+            ? `Ahorrado actual disponible: ${withdrawGoal.saved.toLocaleString("es-AR")} ${withdrawGoal.currency}. Ingresá el monto a retirar.`
             : undefined
         }
         confirmLabel="Confirmar extracción"

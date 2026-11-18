@@ -18,6 +18,7 @@ const sessionOptions: SessionOptions = {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
+    maxAge: undefined,
   },
 }
 

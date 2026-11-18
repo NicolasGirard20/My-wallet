@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertTriangle, CreditCard, Pencil, Trash2 } from "lucide-react"
+import { AlertTriangle, CreditCard, Pencil, Repeat, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,10 +8,17 @@ import { Progress, ProgressTrack, ProgressIndicator } from "@/components/ui/prog
 import { AmountDisplay } from "@/components/shared/amount-display"
 import { useCurrency } from "@/context/currency-context"
 import { useData } from "@/context/data-context"
-import { calculateBudgetConsumption } from "@/lib/selectors"
+import { calculateBudgetConsumption, getEffectiveBudgetPeriod } from "@/lib/selectors"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { Budget } from "@/lib/types"
+import type { Budget, BudgetFrequency } from "@/lib/types"
+
+const RECURRING_LABELS: Record<BudgetFrequency, string> = {
+  daily: "Se repite cada día",
+  weekly: "Se repite cada semana",
+  monthly: "Se repite cada mes",
+  yearly: "Se repite cada año",
+}
 
 interface BudgetCardProps {
   budget: Budget
@@ -31,8 +38,9 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
     ? checkingAccounts.find((a) => a.id === budget.checkingAccountId)
     : null
 
-  const formattedStart = formatDate(budget.startDate, "short")
-  const formattedEnd = formatDate(budget.endDate, "short")
+  const effectivePeriod = getEffectiveBudgetPeriod(budget)
+  const formattedStart = formatDate(effectivePeriod.start.toISOString(), "short")
+  const formattedEnd = formatDate(effectivePeriod.end.toISOString(), "short")
   const isOverbudget = consumption.percentage >= 100
 
   return (
@@ -58,6 +66,12 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
             ) : (
               <Badge variant="secondary" className="text-xs">
                 Todas las cuentas
+              </Badge>
+            )}
+            {budget.isRecurring && budget.recurringFrequency && (
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <Repeat className="size-3" />
+                {RECURRING_LABELS[budget.recurringFrequency]}
               </Badge>
             )}
           </div>

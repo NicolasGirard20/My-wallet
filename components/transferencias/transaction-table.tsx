@@ -31,6 +31,7 @@ import { useData } from "@/context/data-context"
 import { useCurrency } from "@/context/currency-context"
 import { exportTransactionsToExcel } from "@/lib/excel"
 import { formatCurrency, formatDate } from "@/lib/format"
+import { isSavingsOrInvestmentTransaction } from "@/lib/selectors"
 import type { Category, Transaction, TransactionKind } from "@/lib/types"
 
 type SortKey = "date" | "amount"
@@ -89,7 +90,9 @@ export function TransactionTable({
   }, [selectedCategories, catMap])
 
   const rows = useMemo(() => {
-    let list = transactions.filter((t) => t.kind === kind)
+    let list = transactions.filter(
+      (t) => t.kind === kind && !isSavingsOrInvestmentTransaction(t, categories),
+    )
 
     if (selectedCategories.size > 0) {
       list = list.filter((t) => selectedCategories.has(t.categoryId))
@@ -125,7 +128,7 @@ export function TransactionTable({
     })
 
     return list
-  }, [transactions, kind, selectedCategories, dateFrom, dateTo, query, catMap, sortKey, sortDir])
+  }, [transactions, categories, kind, selectedCategories, dateFrom, dateTo, query, catMap, sortKey, sortDir])
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {

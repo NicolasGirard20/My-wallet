@@ -21,9 +21,12 @@ export async function createBudget(data: {
   categoryId: number | null
   currency?: string
   checkingAccountId?: number | null
+  isRecurring?: boolean
+  recurringFrequency?: string | null
   userId: number
 }) {
   try {
+    const isRecurring = data.isRecurring ?? false
     return await prisma.budget.create({
       data: {
         name: data.name,
@@ -33,6 +36,8 @@ export async function createBudget(data: {
         categoryId: data.categoryId,
         currency: data.currency ?? "ARS",
         checkingAccountId: data.checkingAccountId ?? null,
+        isRecurring,
+        recurringFrequency: isRecurring ? (data.recurringFrequency ?? null) : null,
         userId: data.userId,
       },
     })
@@ -53,6 +58,8 @@ export async function updateBudget(
     categoryId: number | null
     currency: string
     checkingAccountId: number | null
+    isRecurring: boolean
+    recurringFrequency: string | null
   }>
 ) {
   try {

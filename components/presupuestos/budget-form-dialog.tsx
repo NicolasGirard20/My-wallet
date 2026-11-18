@@ -15,13 +15,32 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { useData } from "@/context/data-context"
-import type { Budget, Currency } from "@/lib/types"
+import { getEffectiveBudgetPeriod } from "@/lib/selectors"
+import type { Budget, BudgetFrequency, Currency } from "@/lib/types"
 
 interface BudgetFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   budget?: Budget | null
   onSubmit: (data: Omit<Budget, "id">) => Promise<void> | void
+}
+
+function getRecurringDateRange(frequency: BudgetFrequency) {
+  const { start, end } = getEffectiveBudgetPeriod({
+    id: 0,
+    name: "",
+    startDate: "",
+    endDate: "",
+    amountLimit: 0,
+    categoryId: null,
+    currency: "ARS",
+    isRecurring: true,
+    recurringFrequency: frequency,
+  })
+  return {
+    start: start.toISOString().slice(0, 10),
+    end: end.toISOString().slice(0, 10),
+  }
 }
 
 function getDefaultDates() {
@@ -54,6 +73,8 @@ export function BudgetFormDialog({
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [checkingAccountId, setCheckingAccountId] = useState<number | null>(null)
   const [currency, setCurrency] = useState<Currency>("ARS")
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurringFrequency, setRecurringFrequency] = useState<BudgetFrequency>("monthly")
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -66,6 +87,8 @@ export function BudgetFormDialog({
         setCategoryId(budget.categoryId)
         setCheckingAccountId(budget.checkingAccountId ?? null)
         setCurrency(budget.currency ?? "ARS")
+        setIsRecurring(Boolean(budget.isRecurring))
+        setRecurringFrequency(budget.recurringFrequency ?? "monthly")
       } else {
         const defaults = getDefaultDates()
         setName("")
@@ -73,6 +96,8 @@ export function BudgetFormDialog({
         setEndDate(defaults.end)
         setAmountLimit("")
         setCategoryId(null)
+        setIsRecurring(false)
+        setRecurringFrequency("monthly")
         if (activeAccount) {
           setCheckingAccountId(activeAccount.id)
           setCurrency(activeAccount.currency)
@@ -119,6 +144,8 @@ export function BudgetFormDialog({
         categoryId,
         currency,
         checkingAccountId,
+        isRecurring,
+        recurringFrequency: isRecurring ? recurringFrequency : null,
       })
       onOpenChange(false)
     } catch (error) {
@@ -231,6 +258,49 @@ export function BudgetFormDialog({
                 ))}
               </select>
             </Field>
+
+            <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isRecurring}
+                  onChange={(e) => {
+                    const checked = e.target.checked
+                    setIsRecurring(checked)
+                    if (checked) {
+                      const range = getRecurringDateRange(recurringFrequency)
+                      setStartDate(range.start)
+                      setEndDate(range.end)
+                    }
+                  }}
+                  className="size-4 rounded border-input accent-primary"
+                />
+                <span>Presupuesto repetitivo</span>
+              </label>
+
+              {isRecurring && (
+                <Field>
+                  <FieldLabel htmlFor="budget-frequency">Frecuencia de renovación</FieldLabel>
+                  <select
+                    id="budget-frequency"
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-xs transition-colors"
+                    value={recurringFrequency}
+                    onChange={(e) => {
+                      const freq = e.target.value as BudgetFrequency
+                      setRecurringFrequency(freq)
+                      const range = getRecurringDateRange(freq)
+                      setStartDate(range.start)
+                      setEndDate(range.end)
+                    }}
+                  >
+                    <option value="daily">Diario - Todos los días</option>
+                    <option value="weekly">Semanal - Todas las semanas</option>
+                    <option value="monthly">Mensual - Todos los meses</option>
+                    <option value="yearly">Anual - Todos los años</option>
+                  </select>
+                </Field>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <Field>

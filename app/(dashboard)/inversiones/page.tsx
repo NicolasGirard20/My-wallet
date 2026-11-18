@@ -111,7 +111,7 @@ export default function InversionesPage() {
               <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción breve" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Monto / Valor inicial</label>
+              <label className="text-sm font-medium">Valor invertido inicial</label>
               <Input type="number" min="0" value={currentValue} onChange={(e) => setCurrentValue(e.target.value)} />
             </div>
             <div className="space-y-2">
@@ -181,7 +181,7 @@ export default function InversionesPage() {
                     <AmountDisplay value={item.currentValue} from={item.currency} className="font-semibold" />
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Invertido</span>
+                    <span className="text-muted-foreground">Valor invertido inicial</span>
                     <AmountDisplay value={item.invested} from={item.currency} className="font-medium" />
                   </div>
                   <div className="flex items-center justify-between text-sm">

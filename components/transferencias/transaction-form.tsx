@@ -35,6 +35,7 @@ interface TransactionFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   editing?: Transaction | null
+  allowKindSwitch?: boolean
 }
 
 function todayInput() {
@@ -44,7 +45,13 @@ function todayInput() {
   return `${d.getFullYear()}-${month}-${day}`
 }
 
-export function TransactionForm({ kind, open, onOpenChange, editing }: TransactionFormProps) {
+export function TransactionForm({
+  kind,
+  open,
+  onOpenChange,
+  editing,
+  allowKindSwitch = false,
+}: TransactionFormProps) {
   const { currency: globalCurrency } = useCurrency()
   const {
     categoriesByKind,
@@ -55,7 +62,9 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     addTransaction,
     updateTransaction,
   } = useData()
-  const categories = categoriesByKind(kind)
+
+  const [activeKind, setActiveKind] = useState<TransactionKind>(kind)
+  const categories = categoriesByKind(activeKind)
 
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
@@ -73,6 +82,8 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
 
   useEffect(() => {
     if (!open) return
+    const nextKind = editing ? editing.kind : kind
+    setActiveKind(nextKind)
     if (editing) {
       setAmount(String(editing.amount))
       setDescription(editing.description)
@@ -81,9 +92,10 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       setTxCurrency(editing.currency)
       setDate(editing.date.slice(0, 10))
     } else {
+      const initialCategories = categoriesByKind(nextKind)
       setAmount("")
       setDescription("")
-      setCategoryId(categories[0]?.id ?? null)
+      setCategoryId(initialCategories[0]?.id ?? null)
       const defaultAcc =
         selectedAccountId !== "all"
           ? checkingAccounts.find((a) => a.id === selectedAccountId)
@@ -93,9 +105,15 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       setDate(todayInput())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editing])
+  }, [open, editing, kind])
 
-  const noun = kind === "income" ? "ingreso" : "gasto"
+  const noun = activeKind === "income" ? "ingreso" : "gasto"
+
+  function handleKindChange(nextKind: TransactionKind) {
+    setActiveKind(nextKind)
+    const nextCategories = categoriesByKind(nextKind)
+    setCategoryId(nextCategories[0]?.id ?? null)
+  }
 
   function handleAccountChange(accId: number | null) {
     setAccountId(accId)
@@ -122,9 +140,9 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       return
     }
     const payload = {
-      kind,
+      kind: activeKind,
       amount: parsed,
-      description: description.trim() || (kind === "income" ? "Ingreso" : "Gasto"),
+      description: description.trim() || (activeKind === "income" ? "Ingreso" : "Gasto"),
       categoryId,
       currency: txCurrency,
       checkingAccountId: accountId ?? undefined,
@@ -138,10 +156,10 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
 
     if (editing) {
       updateTransaction(editing.id, payload)
-      toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
+      toast.success(`${activeKind === "income" ? "Ingreso" : "Gasto"} actualizado`)
     } else {
       addTransaction(payload)
-      toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} agregado`)
+      toast.success(`${activeKind === "income" ? "Ingreso" : "Gasto"} agregado`)
     }
     onOpenChange(false)
   }
@@ -160,7 +178,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
       const goal = savings.find((s) => s.id === editing.savingGoalId)
       const goalName = goal?.name ?? "una meta de ahorro"
       const impact =
-        kind === "expense"
+        activeKind === "expense"
           ? delta > 0
             ? `aumentará en ${deltaText}`
             : `se reducirá en ${deltaText}`
@@ -172,7 +190,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
 
     if (editing.investmentContributionId) {
       const impact =
-        kind === "expense"
+        activeKind === "expense"
           ? delta > 0
             ? `aumentará en ${deltaText}`
             : `se reducirá en ${deltaText}`
@@ -183,7 +201,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
     }
 
     return ""
-  }, [pendingPayload, editing, savings, kind])
+  }, [pendingPayload, editing, savings, activeKind])
 
   const confirmTitle = useMemo(() => {
     if (!editing) return "Editar transferencia vinculada"
@@ -206,6 +224,38 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
 
         <form onSubmit={handleSubmit} id="transaction-form">
           <FieldGroup>
+            {allowKindSwitch && !editing ? (
+              <Field>
+                <FieldLabel>Tipo de operación</FieldLabel>
+                <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+                  <button
+                    type="button"
+                    onClick={() => handleKindChange("expense")}
+                    className={cn(
+                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      activeKind === "expense"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Gasto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleKindChange("income")}
+                    className={cn(
+                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      activeKind === "income"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Ingreso
+                  </button>
+                </div>
+              </Field>
+            ) : null}
+
             {/* Cuenta Corriente */}
             <Field>
               <FieldLabel>Cuenta Corriente</FieldLabel>
@@ -263,7 +313,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
               <Input
                 id="description"
                 value={description}
-                placeholder={kind === "income" ? "Ej: Sueldo mensual" : "Ej: Supermercado"}
+                placeholder={activeKind === "income" ? "Ej: Sueldo mensual" : "Ej: Supermercado"}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </Field>
@@ -318,7 +368,7 @@ export function TransactionForm({ kind, open, onOpenChange, editing }: Transacti
         onConfirm={() => {
           if (editing && pendingPayload) {
             updateTransaction(editing.id, pendingPayload)
-            toast.success(`${kind === "income" ? "Ingreso" : "Gasto"} actualizado`)
+            toast.success(`${activeKind === "income" ? "Ingreso" : "Gasto"} actualizado`)
             setPendingPayload(null)
             onOpenChange(false)
           }

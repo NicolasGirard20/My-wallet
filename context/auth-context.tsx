@@ -21,6 +21,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    if (!sessionStorage.getItem("mywallet_active_session")) {
+      logoutAction().then(() => {
+        setUsername(null)
+        setHydrated(true)
+      })
+      return
+    }
     getSessionAction().then((session) => {
       if (session?.username) {
         setUsername(session.username)
@@ -33,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (user: string, pass: string) => {
     const result = await loginAction(user, pass)
     if (result.ok) {
+      sessionStorage.setItem("mywallet_active_session", "1")
       setUsername(user.trim())
       return { ok: true as const }
     }
@@ -40,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
+    sessionStorage.removeItem("mywallet_active_session")
     await logoutAction()
     setUsername(null)
   }, [])
@@ -48,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const result = await changePasswordAction(currentPassword, newPassword)
     if (result.ok) {
       // Force logout after a successful password change
+      sessionStorage.removeItem("mywallet_active_session")
       await logoutAction()
       setUsername(null)
       return { ok: true as const }
