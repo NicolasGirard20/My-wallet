@@ -18,3 +18,5 @@ node_modules
 # agentes
 .agents
 .opencode
+
+.playwright-cli/

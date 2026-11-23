@@ -3,7 +3,8 @@
     "argv": [
       "/home/nico/.nvm/versions/node/v24.19.0/bin/node",
       "/home/nico/Desktop/Personal Proyects/my-wallet/node_modules/@playwright/test/cli.js",
-      "test"
+      "test",
+      "test/e2e/wallet-auth-crud.spec.ts"
     ],
     "configFile": "/home/nico/Desktop/Personal Proyects/my-wallet/playwright.config.ts",
     "rootDir": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e",
@@ -116,20 +117,20 @@
   },
   "suites": [
     {
-      "title": "wallet-fixes.spec.ts",
-      "file": "wallet-fixes.spec.ts",
+      "title": "wallet-auth-crud.spec.ts",
+      "file": "wallet-auth-crud.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "My Wallet — Validación E2E de correcciones y nuevas funcionalidades",
-          "file": "wallet-fixes.spec.ts",
-          "line": 39,
+          "title": "My Wallet — Autenticación, rutas protegidas e ingresos E2E",
+          "file": "wallet-auth-crud.spec.ts",
+          "line": 15,
           "column": 15,
           "specs": [
             {
-              "title": "1. Cierre de sesión al salir del navegador (cookie de sesión efímera + sessionStorage)",
+              "title": "1. Rutas protegidas redirigen a /login sin sesión activa",
               "ok": true,
               "tags": [],
               "tests": [
@@ -139,8 +140,8 @@
                     {
                       "type": "serial",
                       "location": {
-                        "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-fixes.spec.ts",
-                        "line": 39,
+                        "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                        "line": 15,
                         "column": 15
                       }
                     }
@@ -153,22 +154,22 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8388,
+                      "duration": 2509,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "(node:144028) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.\nIn the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.\n\nTo prepare for this change:\n- If you want the current behavior, explicitly use 'sslmode=verify-full'\n- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'\n\nSee https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                          "text": "(node:78096) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.\nIn the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.\n\nTo prepare for this change:\n- If you want the current behavior, explicitly use 'sslmode=verify-full'\n- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'\n\nSee https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-11-18T00:09:39.074Z",
+                      "startTime": "2026-11-23T18:09:15.525Z",
                       "annotations": [
                         {
                           "type": "serial",
                           "location": {
-                            "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-fixes.spec.ts",
-                            "line": 39,
+                            "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                            "line": 15,
                             "column": 15
                           }
                         }
@@ -179,13 +180,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "acac49b8ba30c3bdcdfb-d42f58b6a4fffa1d3553",
-              "file": "wallet-fixes.spec.ts",
-              "line": 96,
+              "id": "c13ed6fdb19830449d7d-eac4e786ad68acc4ab48",
+              "file": "wallet-auth-crud.spec.ts",
+              "line": 68,
               "column": 3
             },
             {
-              "title": "2. Flujo completo: botón '+', ahorros/inversiones sin gastos, estadísticas, valor invertido inicial y presupuesto repetitivo",
+              "title": "2. Login con credenciales inválidas muestra error y no autentica",
               "ok": true,
               "tags": [],
               "tests": [
@@ -195,8 +196,8 @@
                     {
                       "type": "serial",
                       "location": {
-                        "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-fixes.spec.ts",
-                        "line": 39,
+                        "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                        "line": 15,
                         "column": 15
                       }
                     }
@@ -209,18 +210,18 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 37641,
+                      "duration": 2687,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-18T00:09:50.262Z",
+                      "startTime": "2026-11-23T18:09:21.261Z",
                       "annotations": [
                         {
                           "type": "serial",
                           "location": {
-                            "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-fixes.spec.ts",
-                            "line": 39,
+                            "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                            "line": 15,
                             "column": 15
                           }
                         }
@@ -231,9 +232,61 @@
                   "status": "expected"
                 }
               ],
-              "id": "acac49b8ba30c3bdcdfb-33bdbf3648e8fd82bc56",
-              "file": "wallet-fixes.spec.ts",
-              "line": 130,
+              "id": "c13ed6fdb19830449d7d-3ca377c855040a212c73",
+              "file": "wallet-auth-crud.spec.ts",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "3. Login válido, creación de ingreso y navegación por secciones",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                        "line": 15,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10642,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-23T18:09:23.962Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "/home/nico/Desktop/Personal Proyects/my-wallet/test/e2e/wallet-auth-crud.spec.ts",
+                            "line": 15,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c13ed6fdb19830449d7d-531d571a9b8424f70010",
+              "file": "wallet-auth-crud.spec.ts",
+              "line": 86,
               "column": 3
             }
           ]
@@ -243,9 +296,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-18T00:09:32.999Z",
-    "duration": 57346.89,
-    "expected": 2,
+    "startTime": "2026-11-23T18:09:13.751Z",
+    "duration": 22537.177,
+    "expected": 3,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
