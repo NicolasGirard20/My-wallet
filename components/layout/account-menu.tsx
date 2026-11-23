@@ -6,6 +6,7 @@ import { ChevronsUpDown, KeyRound, LogOut, Settings, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { useAuth } from "@/context/auth-context"
+import { SettingsDialog } from "@/components/layout/settings-dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,6 +46,7 @@ export function AccountMenu({
 }: AccountMenuProps) {
   const router = useRouter()
   const { username, isAdmin, logout, changePassword } = useAuth()
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -60,6 +62,7 @@ export function AccountMenu({
   }
 
   function openPasswordDialog() {
+    setSettingsOpen(false)
     setCurrentPassword("")
     setNewPassword("")
     setConfirmPassword("")
@@ -153,16 +156,22 @@ export function AccountMenu({
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+            <Settings />
+            Configuración
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={openPasswordDialog}>
             <KeyRound />
             Cambiar contraseña
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
           {isAdmin && (
-            <DropdownMenuItem onClick={() => { router.push("/usuarios"); onNavigate?.() }}>
-              <Users />
-              Gestionar usuarios
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => { router.push("/usuarios"); onNavigate?.() }}>
+                <Users />
+                Gestionar usuarios
+              </DropdownMenuItem>
+            </>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={handleLogout}>
@@ -222,12 +231,18 @@ export function AccountMenu({
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>Cancelar</DialogClose>
             <Button type="submit" form="change-password-form" disabled={submitting}>
-              <Settings className="size-4" data-icon="inline-start" />
+              <KeyRound className="size-4" data-icon="inline-start" />
               {submitting ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onOpenChangePassword={openPasswordDialog}
+      />
     </>
   )
 }
