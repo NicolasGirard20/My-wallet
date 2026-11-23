@@ -1,6 +1,11 @@
 import { prisma } from "@/app/service/db"
 import { logger } from "@/app/imports/dev"
 import bcrypt from "bcryptjs"
+import {
+  DEFAULT_THEME_PALETTE,
+  isValidThemePalette,
+  type ThemePaletteId,
+} from "@/lib/theme"
 import type { User, UserRole } from "@/lib/types"
 
 const SALT_ROUNDS = 12
@@ -28,6 +33,29 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function normalizeThemePalette(value: unknown): ThemePaletteId {
+  return isValidThemePalette(value) ? value : DEFAULT_THEME_PALETTE
+}
+
+function toSafeUser(user: {
+  id: number
+  username: string
+  name: string
+  email: string
+  role: string
+  themePalette: string
+  createdAt: Date
+  passwordHash: string
+}): User {
+  const { passwordHash: _, ...safe } = user
+  return {
+    ...safe,
+    role: safe.role as UserRole,
+    themePalette: normalizeThemePalette(safe.themePalette),
+    createdAt: safe.createdAt.toISOString(),
+  }
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, SALT_ROUNDS)
 }
@@ -36,18 +64,13 @@ export async function getUsers(): Promise<User[]> {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
   })
-  return users.map(({ passwordHash: _, ...u }) => ({
-    ...u,
-    role: u.role as UserRole,
-    createdAt: u.createdAt.toISOString(),
-  }))
+  return users.map(toSafeUser)
 }
 
 export async function getUserById(id: number): Promise<User | null> {
   const user = await prisma.user.findUnique({ where: { id } })
   if (!user) return null
-  const { passwordHash: _, ...safe } = user
-  return { ...safe, role: safe.role as UserRole, createdAt: safe.createdAt.toISOString() }
+  return toSafeUser(user)
 }
 
 export async function createUser(data: {
@@ -92,8 +115,7 @@ export async function createUser(data: {
     data: allDefaults.map((cat) => ({ ...cat, userId: user.id })),
   })
 
-  const { passwordHash: _, ...safe } = user
-  return { ...safe, role: safe.role as UserRole, createdAt: safe.createdAt.toISOString() }
+  return toSafeUser(user)
 }
 
 export async function updateUser(
@@ -120,8 +142,24 @@ export async function updateUser(
   }
 
   const updated = await prisma.user.update({ where: { id }, data: updateData })
-  const { passwordHash: _, ...safe } = updated
-  return { ...safe, role: safe.role as UserRole, createdAt: safe.createdAt.toISOString() }
+  return toSafeUser(updated)
+}
+
+export async function updateUserThemePalette(
+  userId: number,
+  palette: ThemePaletteId,
+): Promise<ThemePaletteId> {
+  if (!isValidThemePalette(palette)) {
+    throw new Error("Paleta de tema inválida")
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { themePalette: palette },
+    select: { themePalette: true },
+  })
+
+  return normalizeThemePalette(updated.themePalette)
 }
 
 export async function deleteUser(id: number): Promise<void> {

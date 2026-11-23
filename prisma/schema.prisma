@@ -13,6 +13,7 @@ model User {
   name                    String
   email                   String                   @unique
   role                    String                   @default("user")
+  themePalette            String                   @default("classic")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   categories              Category[]

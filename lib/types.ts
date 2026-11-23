@@ -1,3 +1,5 @@
+import type { ThemePaletteId } from "@/lib/theme"
+
 export type Currency = "USD" | "ARS"
 
 export type TransactionKind = "income" | "expense"
@@ -10,6 +12,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  themePalette: ThemePaletteId
   createdAt: string
 }
 
